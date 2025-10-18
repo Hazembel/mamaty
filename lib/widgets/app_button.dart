@@ -36,9 +36,9 @@ class _AppButtonState extends State<AppButton>
       case ButtonSize.md:
         return const EdgeInsets.symmetric(vertical: 14, horizontal: 20);
       case ButtonSize.lg:
-        return const EdgeInsets.symmetric(vertical: 15, horizontal: 15);
+        return const EdgeInsets.symmetric(vertical: 19, horizontal: 20);
     }
-  }
+  } 
 
   double get fontSize {
     switch (widget.size) {
@@ -67,7 +67,7 @@ class _AppButtonState extends State<AppButton>
             backgroundColor: AppColors.premier,
             padding: padding,
             shape: RoundedRectangleBorder(borderRadius: AppBorders.all),
-            shadowColor: Colors.black.withOpacity(0.15),
+     
             elevation: 4,
           ),
           child: Listener(

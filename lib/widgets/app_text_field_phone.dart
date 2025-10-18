@@ -1,18 +1,17 @@
-// lib/widgets/app_text_field.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 👈 needed for input formatters
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../theme/border_radius.dart';
-import 'package:flutter/services.dart'; // 👈 needed for input formatters
 
-class AppTextField extends StatelessWidget {
+class AppTextFieldPhone extends StatelessWidget {
   final String labelText;
   final TextEditingController? controller;
-  final String? errorText; // <-- new
+  final String? errorText;
 
-  const AppTextField({
+  const AppTextFieldPhone({
     super.key,
-    required this.labelText,
+    this.labelText = 'Quel est votre numéro de téléphone ?',
     this.controller,
     this.errorText,
   });
@@ -24,7 +23,11 @@ class AppTextField extends StatelessWidget {
       children: [
         TextField(
           controller: controller,
-          inputFormatters: [LengthLimitingTextInputFormatter(20)],
+          keyboardType: TextInputType.number, // 👈 number keyboard
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly, // only digits
+            LengthLimitingTextInputFormatter(8), // max 8 digits
+          ],
           style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
           decoration: InputDecoration(
             labelText: labelText,

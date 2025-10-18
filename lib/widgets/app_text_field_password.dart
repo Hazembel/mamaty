@@ -3,6 +3,7 @@ import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../theme/border_radius.dart';
 import '../icons/app_icons.dart';
+import 'package:flutter/services.dart'; // 👈 needed for input formatters
 
 class AppTextFieldPassword extends StatefulWidget {
   final String labelText;
@@ -30,6 +31,7 @@ class _AppTextFieldPasswordState extends State<AppTextFieldPassword> {
       children: [
         TextField(
           controller: widget.controller,
+          inputFormatters: [LengthLimitingTextInputFormatter(20)],
           obscureText: _obscureText, // hides or shows text
           style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
           decoration: InputDecoration(
@@ -47,14 +49,18 @@ class _AppTextFieldPasswordState extends State<AppTextFieldPassword> {
             enabledBorder: OutlineInputBorder(
               borderRadius: AppBorders.all,
               borderSide: BorderSide(
-                color: widget.errorText != null ? Colors.red : AppColors.premier,
+                color: widget.errorText != null
+                    ? Colors.red
+                    : AppColors.premier,
                 width: 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: AppBorders.all,
               borderSide: BorderSide(
-                color: widget.errorText != null ? Colors.red : AppColors.premier,
+                color: widget.errorText != null
+                    ? Colors.red
+                    : AppColors.premier,
                 width: 1.5,
               ),
             ),
@@ -68,15 +74,16 @@ class _AppTextFieldPasswordState extends State<AppTextFieldPassword> {
               child: Padding(
                 padding: const EdgeInsets.only(right: 12.0),
                 child: AppIcons.svg(
-                  _obscureText
-                      ? AppIcons.showPassword
-                      : AppIcons.hidePassword,
+                  _obscureText ? AppIcons.showPassword : AppIcons.hidePassword,
                   size: 22,
                   color: AppColors.black,
                 ),
               ),
             ),
-            suffixIconConstraints: const BoxConstraints(minWidth: 48, minHeight: 24),
+            suffixIconConstraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 24,
+            ),
           ),
         ),
         if (widget.errorText != null)

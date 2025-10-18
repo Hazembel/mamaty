@@ -2,93 +2,130 @@ import 'package:flutter/material.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_text_field_password.dart';
-import '../widgets/app_back_button.dart';
-import '../widgets/app_top_bar.dart'; // 👈 import the top bar
+import '../widgets/app_top_bar.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
+import '../controllers/form_controllers.dart';
+import '../widgets/app_text_field_date.dart';
+import '../widgets/app_text_field_phone.dart';
 
-class TestPage extends StatelessWidget {
+class TestPage extends StatefulWidget {
   const TestPage({super.key});
+
+  @override
+  State<TestPage> createState() => _TestPageState();
+}
+
+class _TestPageState extends State<TestPage> {
+  String? nameError;
+  String? emailError;
+  String? phoneError;
+  String? passwordError;
+  String? confirmPasswordError;
+  String? birthdayError;
+
+  void _validateForm() {
+    setState(() {
+      nameError = FormControllers.validateName(
+        FormControllers.nameController.text,
+      );
+      emailError = FormControllers.validateEmail(
+        FormControllers.emailController.text,
+      );
+      phoneError = FormControllers.validatePhone(
+        FormControllers.phoneController.text,
+      );
+      passwordError = FormControllers.validatePassword(
+        FormControllers.passwordController.text,
+      );
+      confirmPasswordError = FormControllers.validateConfirmPassword(
+        FormControllers.confirmPasswordController.text,
+      );
+      birthdayError = FormControllers().validateBirthday(
+        FormControllers.birthdayController.text,
+      ); // only birthday is non-static
+    });
+
+    if ([
+      nameError,
+      emailError,
+      phoneError,
+      passwordError,
+      confirmPasswordError,
+      birthdayError,
+    ].every((element) => element == null)) {
+      debugPrint('✅ Form is valid!');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Formulaire valide 🎉')));
+    } else {
+      debugPrint('❌ Form has errors');
+    }
+  }
+
+  @override
+  void dispose() {
+    FormControllers.dispose(); // disposes all static controllers
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      // Remove default AppBar
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 🔹 Custom top bar with back button
             const AppTopBar(),
-
             const SizedBox(height: 20),
 
-            // Input field test
-            const Text('Input Field', style: AppTextStyles.inter16SemiBold),
-            const SizedBox(height: 8),
-            const AppTextField(labelText: 'Quel est votre nom ?'),
+            AppTextField(
+              labelText: 'Nom',
+              controller: FormControllers.nameController,
+              errorText: nameError,
+            ),
+            const SizedBox(height: 16),
 
+            AppTextField(
+              labelText: 'Email',
+              controller: FormControllers.emailController,
+              errorText: emailError,
+            ),
+            const SizedBox(height: 16),
+
+            AppTextFieldPhone(
+              controller: FormControllers.phoneController,
+              errorText: phoneError,
+            ),
             const SizedBox(height: 16),
 
             AppTextFieldPassword(
               labelText: 'Mot de passe',
-              errorText: 'Le mot de passe est requis', // optional
+              controller: FormControllers.passwordController,
+              errorText: passwordError,
             ),
+            const SizedBox(height: 16),
 
+            AppTextFieldPassword(
+              labelText: 'Confirmer mot de passe',
+              controller: FormControllers.confirmPasswordController,
+              errorText: confirmPasswordError,
+            ),
+            const SizedBox(height: 16),
+
+            AppTextFieldDate(
+              labelText: 'Date de naissance',
+              controller: FormControllers.birthdayController,
+              errorText: birthdayError,
+            ),
             const SizedBox(height: 20),
 
-            // Small Button
-            const Text('Small Button', style: AppTextStyles.inter16SemiBold),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: AppButton(
-                title: 'Small Button',
-                size: ButtonSize.sm,
-                fullWidth: false,
-                onPressed: () {
-                  debugPrint('Small button pressed');
-                },
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Medium Button
-            const Text('Medium Button', style: AppTextStyles.inter16SemiBold),
-            const SizedBox(height: 8),
             AppButton(
-              title: 'Medium Button',
-              size: ButtonSize.md,
-              onPressed: () {
-                debugPrint('Medium button pressed');
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            // Large Button
-            const Text('Large Button', style: AppTextStyles.inter16SemiBold),
-            const SizedBox(height: 8),
-            AppButton(
-              title: 'Large Button',
+              title: 'Valider le formulaire',
+              onPressed: _validateForm,
               size: ButtonSize.lg,
-              onPressed: () {
-                debugPrint('Large button pressed');
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            // Loading Button
-            const Text('Loading Button', style: AppTextStyles.inter16SemiBold),
-            const SizedBox(height: 8),
-            const AppButton(
-              title: 'Loading...',
-              loading: true,
-              size: ButtonSize.md,
             ),
           ],
         ),

@@ -4,6 +4,7 @@
 import 'package:flutter/widgets.dart';
 
 // Import flutter_svg — a package that lets us render SVG code directly in Flutter.
+// ignore: depend_on_referenced_packages
 import 'package:flutter_svg/flutter_svg.dart';
 
 /// 🔷 AppIcons
@@ -67,7 +68,22 @@ class AppIcons {
 ''';
 
 
+ ///  📅 Date picker
+  static const String datepicker = '''
+<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8.90918 2V5" stroke="#111214" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.90918 2V5" stroke="black" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16.9092 2V5" stroke="#111214" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M16.9092 2V5" stroke="black" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M21.9092 8.5V17C21.9092 20 20.4092 22 16.9092 22H8.90918C5.40918 22 3.90918 20 3.90918 17V8.5C3.90918 5.5 5.40918 3.5 8.90918 3.5H16.9092C20.4092 3.5 21.9092 5.5 21.9092 8.5Z" stroke="#111214" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M21.9092 8.5V17C21.9092 20 20.4092 22 16.9092 22H8.90918C5.40918 22 3.90918 20 3.90918 17V8.5C3.90918 5.5 5.40918 3.5 8.90918 3.5H16.9092C20.4092 3.5 21.9092 5.5 21.9092 8.5Z" stroke="black" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.90918 11H16.9092" stroke="#111214" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.90918 11H16.9092" stroke="black" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.90918 16H12.9092" stroke="#111214" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.90918 16H12.9092" stroke="black" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
 
+''';
 
 
 
