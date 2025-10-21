@@ -1,27 +1,43 @@
-// Import statements go at the top
 import 'package:flutter/material.dart';
-import 'pages/test_page.dart'; // your login page widget
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
 
-// Entry point of the app
+// Import route maps
+import 'routes/routes.dart';
+
 void main() {
   runApp(const MyApp());
 }
 
-// MyApp is a StatelessWidget that wraps your whole app
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mamatyp',
+      onGenerateTitle: (context) =>
+          AppLocalizations.of(context)?.appTitle ?? 'Mamatyp',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      // This is the first page that will be shown
-      home: const TestPage(),
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+
+      // 👇 Register routes
+      routes: {
+        ...publicRoutes,
+        ...privateRoutes,
+      },
+
+      // 👇 initial page (can change later after login)
+      initialRoute: '/',
     );
   }
 }

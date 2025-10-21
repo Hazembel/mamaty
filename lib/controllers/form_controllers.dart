@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 class FormControllers {
   // 📌 Controllers
-  static final TextEditingController nameController = TextEditingController();
-  static final TextEditingController emailController = TextEditingController();
-  static final TextEditingController phoneController = TextEditingController();
-  static final TextEditingController passwordController = TextEditingController();
-  static final TextEditingController confirmPasswordController = TextEditingController();
-  static final TextEditingController birthdayController = TextEditingController();
+   final TextEditingController nameController = TextEditingController();
+   final TextEditingController emailController = TextEditingController();
+   final TextEditingController phoneController = TextEditingController();
+   final TextEditingController passwordController = TextEditingController();
+   final TextEditingController confirmPasswordController = TextEditingController();
+   final TextEditingController birthdayController = TextEditingController();
 
   // 📌 Validation Functions
 // Validator for birthday (must be at least 18 years old)
@@ -28,7 +28,7 @@ class FormControllers {
     return null; // validr
   }
   /// Name: required
-  static String? validateName(String? value) {
+    String? validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Le nom est requis';
     }
@@ -36,7 +36,7 @@ class FormControllers {
   }
 
   /// Phone: required + 8 digits
-  static String? validatePhone(String? value) {
+   String? validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Le numéro est requis';
     }
@@ -50,7 +50,7 @@ class FormControllers {
   }
 
   /// Email: required + valid + famous domains
-  static String? validateEmail(String? value) {
+   String? validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'L\'email est requis';
     }
@@ -72,7 +72,7 @@ class FormControllers {
   }
 
   /// Password: required + max 20 + must contain letter, number, symbol
-  static String? validatePassword(String? value) {
+   String? validatePassword(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Le mot de passe est requis';
     }
@@ -90,7 +90,7 @@ class FormControllers {
   }
 
   /// Confirm Password: must match password
-  static String? validateConfirmPassword(String? value) {
+   String? validateConfirmPassword(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Veuillez confirmer le mot de passe';
     }
@@ -101,11 +101,12 @@ class FormControllers {
   }
 
   // 📌 Dispose all controllers
-  static void dispose() {
+   void dispose() {
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+    birthdayController.dispose();
   }
 }

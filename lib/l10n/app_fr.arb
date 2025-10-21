@@ -1,0 +1,12 @@
+{
+  "@@locale": "fr",
+  "appTitle": "Mamatyp",
+  "hello": "Bonjour",
+  "submitForm": "Valider le formulaire",
+  "name": "Nom",
+  "email": "Email",
+  "password": "Mot de passe",
+  "confirmPassword": "Confirmer mot de passe",
+  "birthday": "Date de naissance",
+  "formValidSnack": "Formulaire valide 🎉"
+}

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_text_field.dart';
+import '../widgets/app_text_field_password.dart';
+import '../theme/colors.dart';
+import '../theme/text_styles.dart';
+import '../widgets/app_button.dart';
 import '../services/auth_service.dart';
-import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,179 +14,137 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscure = true;
-  bool _loading = false;
+  String? _phoneError;
+  String? _passwordError;
+  bool _isLoading = false;
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (!mounted) return;
+  Future<void> _login() async {
     setState(() {
-      _loading = true;
+      _isLoading = true;
     });
-    final success = await AuthService.login(
-      _phoneController.text.trim(),
-      _passwordController.text,
+    final user = await AuthService().login(
+      phone: _phoneController.text.trim(),
+      password: _passwordController.text,
     );
+
+    // ✅ Check if widget still exists before using context or setState
     if (!mounted) return;
+
     setState(() {
-      _loading = false;
+      _isLoading = false;
     });
-    if (success) {
-      if (!mounted) return;
-      Navigator.of(
+    if (user != null) {
+      _passwordError = null;
+      // Success: show welcome or navigate
+      ScaffoldMessenger.of(
         context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      ).showSnackBar(SnackBar(content: Text('Bienvenue, ${user.name}!')));
     } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Échec de la connexion. Vérifiez vos identifiants.'),
-        ),
-      );
+      setState(() {
+        _passwordError = 'Numéro ou mot de passe incorrect';
+      });
     }
   }
 
-  InputDecoration _inputDecoration(String hint) {
-    return InputDecoration(
-      hintText: hint,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.teal, width: 2),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Colors.teal, width: 3),
-      ),
-    );
+  bool _isPressed = false;
+  void _onTapDown(_) => setState(() => _isPressed = true);
+  void _onTapUp(_) {
+    setState(() => _isPressed = false);
+    // Navigate after tap
+    Navigator.pushNamed(context, '/verify-number');
   }
+
+  void _onTapCancel() => setState(() => _isPressed = false);
+
+  bool _isPressedsignup = false;
+  void _onTapDownsignup(_) => setState(() => _isPressedsignup = true);
+  void _onTapUpsignup(_) {
+    setState(() => _isPressedsignup = false);
+    // Navigate after tap
+    Navigator.pushNamed(context, '/signup');
+  }
+
+  void _onTapCancelsignup() => setState(() => _isPressedsignup = false);
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.background,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: 100),
               Text(
-                'Bon retour ! Au plaisir de\nvous revoir !',
-                style: TextStyle(
-                  color: Colors.teal[800],
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                'Bon retour ! Au plaisir de vous revoir !',
+                style: AppTextStyles.inter24Bold.copyWith(
+                  color: AppColors.premier,
                 ),
+                textAlign: TextAlign.left,
               ),
-              const SizedBox(height: 32),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: _inputDecoration(
-                        'Quel est votre numéro de téléphone ?',
-                      ),
-                      validator: (v) {
-                        if (v == null || v.trim().isEmpty) {
-                          return 'Veuillez entrer votre numéro.';
-                        }
-                        if (v.trim().length < 6) {
-                          return 'Numéro trop court.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _passwordController,
-                      obscureText: _obscure,
-                      decoration:
-                          _inputDecoration(
-                            'Quelle est votre mot de passe ?',
-                          ).copyWith(
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscure
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscure = !_obscure;
-                                });
-                              },
-                            ),
-                          ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) {
-                          return 'Veuillez entrer le mot de passe.';
-                        }
-                        if (v.length < 6) {
-                          return 'Le mot de passe doit contenir au moins 6 caractères.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text('Mot de passe oublié?'),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 64,
-                      child: ElevatedButton(
-                        onPressed: _loading ? null : _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal[700],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 8, 
-                        ),
-                        child: _loading 
-                            ? const CircularProgressIndicator (
-                                color: Colors.white,
-                              )
-                            : const Text(
-                                'Connexion',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 30),
+              AppTextField(
+                labelText: 'Quel est votre numéro de téléphone ?',
+                controller: _phoneController,
+                errorText: _phoneError,
               ),
-              SizedBox(height: mq.height * 0.25),
-              Center(
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'Pas de compte ? Inscrivez-vous !',
-                    style: TextStyle(color: Colors.teal[300]),
+              const SizedBox(height: 12),
+              AppTextFieldPassword(
+                labelText: 'Quelle est votre mot de passe ?',
+                controller: _passwordController,
+                errorText: _passwordError,
+              ),
+              const SizedBox(height: 8),
+              Align(
+                //make the text animated when clicked
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTapDown: _onTapDown,
+                  onTapUp: _onTapUp,
+                  onTapCancel: _onTapCancel,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 100),
+                    style: AppTextStyles.inter14Med.copyWith(
+                      color: AppColors.black,
+                      fontWeight: _isPressed
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                    ),
+                    child: const Text('Mot de passe oublié?'),
                   ),
                 ),
               ),
+              const SizedBox(height: 30),
+              AppButton(
+                title: 'Connexion',
+                onPressed: _isLoading ? null : _login,
+                size: ButtonSize.lg,
+              ),
+              const Spacer(),
+              Align(
+                //make the text animated when clicked
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  onTapDown: _onTapDownsignup,
+                  onTapUp: _onTapUpsignup,
+                  onTapCancel: _onTapCancelsignup,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 100),
+                    style: AppTextStyles.inter14Med.copyWith(
+                      color: AppColors.black,
+                      fontWeight: _isPressedsignup
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                    ),
+                    child: const Text('Pas de compte ? S\'inscrire'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),

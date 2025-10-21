@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "appTitle": "Mamatyp",
+  "hello": "Hello",
+  "submitForm": "Submit form",
+  "name": "Name",
+  "email": "Email",
+  "password": "Password",
+  "confirmPassword": "Confirm password",
+  "birthday": "Date of birth",
+  "formValidSnack": "Form is valid 🎉"
+}

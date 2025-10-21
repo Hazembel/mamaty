@@ -45,9 +45,9 @@ class _AppButtonState extends State<AppButton>
       case ButtonSize.sm:
         return 14;
       case ButtonSize.md:
-        return 16;
+        return 15;
       case ButtonSize.lg:
-        return 18;
+        return 16;
     }
   }
 
@@ -78,7 +78,7 @@ class _AppButtonState extends State<AppButton>
             onPointerCancel: (_) => _onTapCancel(),
             child: Text(
               widget.loading ? 'Loading...' : widget.title,
-              style: AppTextStyles.inter16SemiBold.copyWith(
+              style: AppTextStyles.inter16medium.copyWith(
                 fontSize: fontSize,
                 color: AppColors.white,
               ),

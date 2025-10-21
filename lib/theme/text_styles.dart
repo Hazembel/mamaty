@@ -13,6 +13,11 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     fontFamily: 'Inter',
   );
+  static const inter16medium = TextStyle( 
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    fontFamily: 'Inter',
+  );
 
   static const inter14Reg = TextStyle(
     fontSize: 14,

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_text_field.dart';
 import '../widgets/app_text_field_password.dart';
 import '../widgets/app_top_bar.dart';
 import '../theme/colors.dart';
-import '../theme/text_styles.dart';
+
 import '../controllers/form_controllers.dart';
 import '../widgets/app_text_field_date.dart';
 import '../widgets/app_text_field_phone.dart';
@@ -17,6 +18,8 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
+  final FormControllers controllers = FormControllers();
+
   String? nameError;
   String? emailError;
   String? phoneError;
@@ -25,25 +28,14 @@ class _TestPageState extends State<TestPage> {
   String? birthdayError;
 
   void _validateForm() {
-    setState(() {
-      nameError = FormControllers.validateName(
-        FormControllers.nameController.text,
-      );
-      emailError = FormControllers.validateEmail(
-        FormControllers.emailController.text,
-      );
-      phoneError = FormControllers.validatePhone(
-        FormControllers.phoneController.text,
-      );
-      passwordError = FormControllers.validatePassword(
-        FormControllers.passwordController.text,
-      );
-      confirmPasswordError = FormControllers.validateConfirmPassword(
-        FormControllers.confirmPasswordController.text,
-      );
-      birthdayError = FormControllers().validateBirthday(
-        FormControllers.birthdayController.text,
-      ); // only birthday is non-static
+      setState(() {
+      // Use instance methods and controllers
+      nameError = controllers.validateName(controllers.nameController.text);
+      emailError = controllers.validateEmail(controllers.emailController.text);
+      phoneError = controllers.validatePhone(controllers.phoneController.text);
+      passwordError = controllers.validatePassword(controllers.passwordController.text);
+      confirmPasswordError = controllers.validateConfirmPassword(controllers.confirmPasswordController.text);
+      birthdayError = controllers.validateBirthday(controllers.birthdayController.text);
     });
 
     if ([
@@ -65,7 +57,7 @@ class _TestPageState extends State<TestPage> {
 
   @override
   void dispose() {
-    FormControllers.dispose(); // disposes all static controllers
+ controllers.dispose(); // disposes all static controllers
     super.dispose();
   }
 
@@ -82,48 +74,54 @@ class _TestPageState extends State<TestPage> {
             const SizedBox(height: 20),
 
             AppTextField(
-              labelText: 'Nom',
-              controller: FormControllers.nameController,
+              labelText: AppLocalizations.of(context)?.name ?? 'Nom',
+              controller: controllers.nameController,
               errorText: nameError,
             ),
             const SizedBox(height: 16),
 
             AppTextField(
-              labelText: 'Email',
-              controller: FormControllers.emailController,
+              labelText: AppLocalizations.of(context)?.email ?? 'Email',
+              controller: controllers.emailController,
               errorText: emailError,
             ),
             const SizedBox(height: 16),
 
             AppTextFieldPhone(
-              controller: FormControllers.phoneController,
+              controller: controllers.phoneController,
               errorText: phoneError,
             ),
             const SizedBox(height: 16),
 
             AppTextFieldPassword(
-              labelText: 'Mot de passe',
-              controller: FormControllers.passwordController,
+              labelText:
+                  AppLocalizations.of(context)?.password ?? 'Mot de passe',
+              controller: controllers.passwordController,
               errorText: passwordError,
             ),
             const SizedBox(height: 16),
 
             AppTextFieldPassword(
-              labelText: 'Confirmer mot de passe',
-              controller: FormControllers.confirmPasswordController,
+              labelText:
+                  AppLocalizations.of(context)?.confirmPassword ??
+                  'Confirmer mot de passe',
+              controller: controllers.confirmPasswordController,
               errorText: confirmPasswordError,
             ),
             const SizedBox(height: 16),
 
             AppTextFieldDate(
-              labelText: 'Date de naissance',
-              controller: FormControllers.birthdayController,
+              labelText:
+                  AppLocalizations.of(context)?.birthday ?? 'Date de naissance',
+              controller: controllers.birthdayController,
               errorText: birthdayError,
             ),
             const SizedBox(height: 20),
 
             AppButton(
-              title: 'Valider le formulaire',
+              title:
+                  AppLocalizations.of(context)?.submitForm ??
+                  'Valider le formulaire',
               onPressed: _validateForm,
               size: ButtonSize.lg,
             ),
