@@ -27,11 +27,18 @@ class _AvatarSelectorState extends State<AvatarSelector> {
   @override
   void initState() {
     super.initState();
-    selectedIndex = (widget.avatars.length / 2).floor();
+    selectedIndex = 1;
     _pageController = PageController(
-      viewportFraction: 0.42,
+      viewportFraction: 0.38,
       initialPage: selectedIndex,
     );
+
+      // Immediately notify parent after build
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (widget.onAvatarSelected != null) {
+      widget.onAvatarSelected!(selectedIndex);
+    }
+  });
   }
 
   @override

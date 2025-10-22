@@ -4,28 +4,19 @@ import '../theme/colors.dart';
 import '../icons/app_icons.dart';
 import '../theme/text_styles.dart';
 
-class GenderSelector extends StatefulWidget {
+class GenderSelector extends StatelessWidget {
   final ValueChanged<String> onGenderSelected;
+  final ValueNotifier<String?> controller; // external controller
 
-  const GenderSelector({super.key, required this.onGenderSelected});
-
-  @override
-  State<GenderSelector> createState() => _GenderSelectorState();
-}
-
-class _GenderSelectorState extends State<GenderSelector> {
-  // Use ValueNotifier to isolate state
-  final ValueNotifier<String?> _selectedGender = ValueNotifier<String?>(null);
-
-  @override
-  void dispose() {
-    _selectedGender.dispose();
-    super.dispose();
-  }
+  const GenderSelector({
+    super.key,
+    required this.onGenderSelected,
+    required this.controller,
+  });
 
   void _selectGender(String gender) {
-    _selectedGender.value = gender;
-    widget.onGenderSelected(gender);
+    controller.value = gender;
+    onGenderSelected(gender);
   }
 
   @override
@@ -38,7 +29,7 @@ class _GenderSelectorState extends State<GenderSelector> {
         ),
         const SizedBox(height: 12),
         ValueListenableBuilder<String?>(
-          valueListenable: _selectedGender,
+          valueListenable: controller,
           builder: (context, selectedGender, _) {
             return Row(
               mainAxisAlignment: MainAxisAlignment.center,

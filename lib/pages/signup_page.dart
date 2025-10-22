@@ -5,6 +5,7 @@ import '../widgets/app_gender_box.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../theme/dimensions.dart';
+import '../controllers/form_controllers.dart';
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -30,8 +31,12 @@ class _SignupPageState extends State<SignupPage> {
 
   List<String> currentAvatars = [];
 
-  int selectedAvatarIndex = 0;
+  int selectedAvatarIndex = 1;
   String? selectedGender;
+
+// controllers
+final FormControllers controllers = FormControllers();
+
 
   @override
   void initState() {
@@ -93,14 +98,13 @@ class _SignupPageState extends State<SignupPage> {
 
             // Gender selector
             GenderSelector(
+               controller: controllers.gender, // <- bind the controller
               onGenderSelected: _onGenderSelected,
             ),
 
             const SizedBox(height: 30),
 
-            // Display chosen values for debug
-            Text('Avatar choisi: avatar${selectedAvatarIndex + 1}'),
-            if (selectedGender != null) Text('Genre choisi: $selectedGender'),
+           
 
             // TODO: Add signup form fields here
           ],

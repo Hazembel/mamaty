@@ -9,6 +9,7 @@ class FormControllers {
    final TextEditingController passwordController = TextEditingController();
    final TextEditingController confirmPasswordController = TextEditingController();
    final TextEditingController birthdayController = TextEditingController();
+  final ValueNotifier<String?> gender = ValueNotifier<String?>(null);
 
   // 📌 Validation Functions
 // Validator for birthday (must be at least 18 years old)
@@ -108,5 +109,6 @@ class FormControllers {
     passwordController.dispose();
     confirmPasswordController.dispose();
     birthdayController.dispose();
+       gender.dispose();
   }
 }
