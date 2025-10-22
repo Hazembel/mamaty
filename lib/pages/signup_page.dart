@@ -6,6 +6,9 @@ import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../theme/dimensions.dart';
 import '../controllers/form_controllers.dart';
+import '../widgets/app_text_field_date.dart';
+import '../widgets/app_button.dart';
+import '../l10n/app_localizations.dart';
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -32,17 +35,45 @@ class _SignupPageState extends State<SignupPage> {
   List<String> currentAvatars = [];
 
   int selectedAvatarIndex = 1;
-  String? selectedGender;
+ String selectedGender = 'male'; // default male
 
-// controllers
+// controllers for sigup fields
 final FormControllers controllers = FormControllers();
+ String? birthdayError;
+
+void _validateForm() {
+      setState(() {
+      // Use instance methods and controllers
+  birthdayError = controllers.validateBirthday(controllers.birthdayController.text);
+    });
+
+    if ([
+     
+      birthdayError,
+    ].every((element) => element == null)) {
+      debugPrint('✅ Form is valid!');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Formulaire valide 🎉')));
+    } else {
+      debugPrint('❌ Form has errors');
+    }
+  }
+
 
 
   @override
   void initState() {
     super.initState();
-    // Default to father avatars
-    currentAvatars = fatherAvatars;
+   super.initState();
+  // Default to father avatars
+  currentAvatars = fatherAvatars;
+  selectedAvatarIndex = 1;      // default avatar2
+  selectedGender = 'male';       // default gender
+
+  // Call gender selection once so debugPrint fires
+  _onGenderSelected(selectedGender);
+   
   }
 
   void _onGenderSelected(String gender) {
@@ -94,19 +125,36 @@ final FormControllers controllers = FormControllers();
               onAvatarSelected: _onAvatarSelected,
             ),
 
+     // TODO: Add signup form fields here
+
+
+
+
+
+
+
             const SizedBox(height: 20),
 
             // Gender selector
             GenderSelector(
-               controller: controllers.gender, // <- bind the controller
-              onGenderSelected: _onGenderSelected,
+              
+                defaultGender: selectedGender, // male by default
+  onGenderSelected: _onGenderSelected,
             ),
 
             const SizedBox(height: 30),
 
-           
+           // button for form validation
+const SizedBox(height: 20),
 
-            // TODO: Add signup form fields here
+            AppButton(
+              title:
+                  AppLocalizations.of(context)?.submitForm ??
+                  'Valider le formulaire',
+              onPressed: _validateForm,
+              size: ButtonSize.lg,
+            ),
+        
           ],
         ),
       ),

@@ -4,19 +4,32 @@ import '../theme/colors.dart';
 import '../icons/app_icons.dart';
 import '../theme/text_styles.dart';
 
-class GenderSelector extends StatelessWidget {
+class GenderSelector extends StatefulWidget {
   final ValueChanged<String> onGenderSelected;
-  final ValueNotifier<String?> controller; // external controller
+  final String defaultGender; // default gender
 
   const GenderSelector({
     super.key,
     required this.onGenderSelected,
-    required this.controller,
+    this.defaultGender = 'male',
   });
 
+  @override
+  State<GenderSelector> createState() => _GenderSelectorState();
+}
+
+class _GenderSelectorState extends State<GenderSelector> {
+  late String selectedGender;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedGender = widget.defaultGender; // male by default
+  }
+
   void _selectGender(String gender) {
-    controller.value = gender;
-    onGenderSelected(gender);
+    setState(() => selectedGender = gender);
+    widget.onGenderSelected(gender);
   }
 
   @override
@@ -28,26 +41,21 @@ class GenderSelector extends StatelessWidget {
           style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
         ),
         const SizedBox(height: 12),
-        ValueListenableBuilder<String?>(
-          valueListenable: controller,
-          builder: (context, selectedGender, _) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _GenderBox(
-                  iconSvg: AppIcons.femaleicon,
-                  isSelected: selectedGender == 'female',
-                  onTap: () => _selectGender('female'),
-                ),
-                const SizedBox(width: 12),
-                _GenderBox(
-                  iconSvg: AppIcons.maleicon,
-                  isSelected: selectedGender == 'male',
-                  onTap: () => _selectGender('male'),
-                ),
-              ],
-            );
-          },
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _GenderBox(
+              iconSvg: AppIcons.femaleicon,
+              isSelected: selectedGender == 'female',
+              onTap: () => _selectGender('female'),
+            ),
+            const SizedBox(width: 12),
+            _GenderBox(
+              iconSvg: AppIcons.maleicon,
+              isSelected: selectedGender == 'male',
+              onTap: () => _selectGender('male'),
+            ),
+          ],
         ),
       ],
     );
