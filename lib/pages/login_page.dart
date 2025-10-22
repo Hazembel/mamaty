@@ -5,7 +5,7 @@ import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../widgets/app_button.dart';
 import '../services/auth_service.dart';
-
+import '../theme/dimensions.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -74,11 +74,11 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          padding: AppDimensions.pagePadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 100),
+              const SizedBox(height: 90),
               Text(
                 'Bon retour ! Au plaisir de vous revoir !',
                 style: AppTextStyles.inter24Bold.copyWith(

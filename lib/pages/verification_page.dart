@@ -4,6 +4,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_top_bar.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
+import '../theme/dimensions.dart';
 
 class VerificationPage extends StatefulWidget {
   final String phoneNumber;
@@ -56,7 +57,7 @@ class _VerificationPageState extends State<VerificationPage> {
       body: SafeArea(
         child: Padding(
           
-          padding: const EdgeInsets.symmetric(horizontal: 20.0 , vertical: 30.0),
+          padding:  AppDimensions.pagePadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

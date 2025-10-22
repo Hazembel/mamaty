@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_top_bar.dart';
-import '../widgets/app_avatar.dart';
+import '../widgets/app_avatar_selector.dart';
+import '../widgets/app_gender_box.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
-
+import '../theme/dimensions.dart';
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -12,28 +13,51 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  final List<String> avatarImages = const [
-    'assets/images/father/avatar1.png',
-    'assets/images/father/avatar2.png',
-    'assets/images/father/avatar3.png',
-    'assets/images/father/avatar4.png',
+  // Separate avatar lists
+  final List<String> fatherAvatars = const [
+    'assets/images/father/avatar1.jpg',
+    'assets/images/father/avatar2.jpg',
+    'assets/images/father/avatar3.jpg',
+    'assets/images/father/avatar4.jpg',
   ];
 
-  late final PageController _pageController;
+  final List<String> motherAvatars = const [
+    'assets/images/mother/avatar1.jpg',
+    'assets/images/mother/avatar2.jpg',
+    'assets/images/mother/avatar3.jpg',
+    'assets/images/mother/avatar4.jpg',
+  ];
+
+  List<String> currentAvatars = [];
+
+  int selectedAvatarIndex = 0;
+  String? selectedGender;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      viewportFraction: 0.32, // smaller fraction = items closer
-      initialPage: (avatarImages.length / 2).floor(),
-    );
+    // Default to father avatars
+    currentAvatars = fatherAvatars;
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  void _onGenderSelected(String gender) {
+    setState(() {
+      selectedGender = gender;
+      selectedAvatarIndex = 0; // reset avatar selection
+      if (gender == 'male') {
+        currentAvatars = fatherAvatars;
+      } else {
+        currentAvatars = motherAvatars;
+      }
+    });
+    debugPrint('Selected gender: $gender');
+  }
+
+  void _onAvatarSelected(int index) {
+    setState(() {
+      selectedAvatarIndex = index;
+    });
+    debugPrint('Selected avatar: ${currentAvatars[index]}');
   }
 
   @override
@@ -41,7 +65,7 @@ class _SignupPageState extends State<SignupPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        padding: AppDimensions.pagePadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -58,47 +82,25 @@ class _SignupPageState extends State<SignupPage> {
 
             const SizedBox(height: 30),
 
-            // Avatar scroller
-            SizedBox(
-              height: 140,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: avatarImages.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  return AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, child) {
-                      double value = 0;
-                      if (_pageController.hasClients &&
-                          _pageController.position.haveDimensions) {
-                        value = _pageController.page! - index;
-                      } else {
-                        value = (_pageController.initialPage - index)
-                            .toDouble();
-                      }
-                      value = value.abs();
-
-                      final double scale = (1 - (value * 0.25)).clamp(
-                       0.9,
-                        1.0,
-                      );
-
-                      return Center(
-                        child: SizedBox(
-                          width: 120, // fixed width
-                          height: 120, // fixed height → keeps square
-                          child: Transform.scale(
-                            scale: scale,
-                            child: AvatarTile(imagePath: avatarImages[index]),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+            // Avatar selector
+            AvatarSelector(
+              avatars: currentAvatars,
+              size: 120,
+              onAvatarSelected: _onAvatarSelected,
             ),
+
+            const SizedBox(height: 20),
+
+            // Gender selector
+            GenderSelector(
+              onGenderSelected: _onGenderSelected,
+            ),
+
+            const SizedBox(height: 30),
+
+            // Display chosen values for debug
+            Text('Avatar choisi: avatar${selectedAvatarIndex + 1}'),
+            if (selectedGender != null) Text('Genre choisi: $selectedGender'),
 
             // TODO: Add signup form fields here
           ],

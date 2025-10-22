@@ -7,6 +7,7 @@ import '../theme/text_styles.dart';
 import '../controllers/form_controllers.dart';
 import '../services/auth_service.dart'; // ✅ add this import for API simulation
 import 'verification_page.dart';
+import '../theme/dimensions.dart';
 class VerificationNumeroPage extends StatefulWidget {
   const VerificationNumeroPage({super.key});
 
@@ -74,7 +75,7 @@ class _VerificationNumeroPageState extends State<VerificationNumeroPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding:  AppDimensions.pagePadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
