@@ -31,16 +31,15 @@ class _AvatarSelectorState extends State<AvatarSelector> {
     super.initState();
     selectedIndex = widget.initialSelectedIndex;
     _pageController = PageController(
-      viewportFraction: 0.38,
+      viewportFraction: 0.30,
       initialPage: selectedIndex,
     );
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-  if (mounted) {
-    widget.onAvatarSelected?.call(selectedIndex);
-  }
-});
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.onAvatarSelected?.call(selectedIndex);
+      }
+    });
   }
 
   // ✅ If parent rebuilds with new avatars or index, update controller
@@ -62,16 +61,15 @@ class _AvatarSelectorState extends State<AvatarSelector> {
     super.dispose();
   }
 
-void _onPageChanged(int index) {
-  selectedIndex = index;
+  void _onPageChanged(int index) {
+    selectedIndex = index;
 
-  // Call parent callback after the current frame
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
-    widget.onAvatarSelected?.call(selectedIndex);
-  });
-}
-
+    // Call parent callback after the current frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      widget.onAvatarSelected?.call(selectedIndex);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,15 +82,18 @@ void _onPageChanged(int index) {
         physics: const BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           final bool isSelected = index == selectedIndex;
-          final double scale = isSelected ? 1.0 : 0.9;
-
+          final double scale = isSelected ? 1.0 : 0.8;
+          final double opacity = isSelected ? 1.0 : 0.4; // ✅ add opacity
           return Center(
             child: SizedBox(
               width: widget.size,
               height: widget.size,
               child: Transform.scale(
                 scale: scale,
-                child: AvatarTile(imagePath: widget.avatars[index]),
+                child: Opacity(
+                  opacity: opacity, // ✅ apply opacity
+                  child: AvatarTile(imagePath: widget.avatars[index]),
+                ),
               ),
             ),
           );

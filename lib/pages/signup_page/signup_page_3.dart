@@ -122,19 +122,13 @@ class _SignupPage3State extends State<SignupPage3> {
               const SizedBox(height: 32),
 
               // 🧩 Animated verify button to prevent page blinking
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: _isLoading
-                    ? const Center(
-                        key: ValueKey('loading'),
-                        child: CircularProgressIndicator(),
-                      )
-                    : AppButton(
-                        key: const ValueKey('verifyBtn'),
-                        title: 'Vérifier',
-                        onPressed: _code?.length == 4 ? _verifyCode : null,
-                        size: ButtonSize.lg,
-                      ),
+              AppButton(
+                key: const ValueKey('verifyBtn'),
+                title: 'Vérifier',
+                onPressed: _code?.length == 4 ? _verifyCode : null,
+                size: ButtonSize.lg,
+                loading: _isLoading,
+                loadingText: 'Vérifier...', // dynamic text
               ),
 
               const Spacer(),

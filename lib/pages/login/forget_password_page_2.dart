@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_code_input.dart';
-import '../widgets/app_button.dart';
-import '../widgets/app_top_bar.dart';
-import '../theme/colors.dart';
-import '../theme/text_styles.dart';
-import '../theme/dimensions.dart';
+import '../../widgets/app_code_input.dart';
+import '../../widgets/app_button.dart';
+import '../../widgets/app_top_bar.dart';
+import '../../theme/colors.dart';
+import '../../theme/text_styles.dart';
+import '../../theme/dimensions.dart';
+import '../../models/forgetpassword_data.dart';
 
-class VerificationPage extends StatefulWidget {
-  final String phoneNumber;
+class ForgetPasswordPage2 extends StatefulWidget {
+  final ForgetpasswordData forgetData; // ✅ shared data
+  final VoidCallback onNext; // go next
+  final VoidCallback onBack; // go back
 
-  const VerificationPage({super.key, required this.phoneNumber});
+  const ForgetPasswordPage2({
+    super.key,
+    required this.forgetData,
+    required this.onNext,
+    required this.onBack,
+  });
 
   @override
-  State<VerificationPage> createState() => _VerificationPageState();
+  State<ForgetPasswordPage2> createState() => _ForgetPasswordPage2State();
 }
 
-class _VerificationPageState extends State<VerificationPage> {
+class _ForgetPasswordPage2State extends State<ForgetPasswordPage2> {
   String? _code;
   bool _isLoading = false;
 
@@ -32,7 +40,7 @@ class _VerificationPageState extends State<VerificationPage> {
       _isLoading = true;
     });
 
-    // Simulate verification delay
+    // simulate API delay
     await Future.delayed(const Duration(seconds: 1));
 
     if (!mounted) return;
@@ -41,18 +49,23 @@ class _VerificationPageState extends State<VerificationPage> {
       _isLoading = false;
     });
 
-    debugPrint('Code verified: $_code');
+    // Save OTP code in ForgetpasswordData
+    widget.forgetData.otpCode = _code;
+
+    debugPrint('✅ Code verified: $_code');
+
+    // Continue to next step
+    widget.onNext();
   }
 
   void _resendCode() {
-    debugPrint('Resending code to ${widget.phoneNumber}');
+    debugPrint('🔁 Resending code to ${widget.forgetData.phone}');
   }
-  // send code to phone number
+
   bool _isPressed = false;
   void _onTapDown(_) => setState(() => _isPressed = true);
   void _onTapUp(_) {
     setState(() => _isPressed = false);
-    // RESEND CODE
     _resendCode();
   }
 
@@ -68,7 +81,7 @@ class _VerificationPageState extends State<VerificationPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const AppTopBar(),
+              AppTopBar(onBack: widget.onBack),
               const SizedBox(height: 30),
               Text(
                 'Vérification OTP',
@@ -87,7 +100,7 @@ class _VerificationPageState extends State<VerificationPage> {
                       ),
                     ),
                     TextSpan(
-                      text: widget.phoneNumber,
+                      text: widget.forgetData.phone ?? '',
                       style: AppTextStyles.inter14Med.copyWith(
                         color: AppColors.black,
                         fontWeight: FontWeight.bold,
@@ -98,7 +111,6 @@ class _VerificationPageState extends State<VerificationPage> {
               ),
               const SizedBox(height: 32),
 
-              // Disable input while verifying
               IgnorePointer(
                 ignoring: _isLoading,
                 child: AppCodeInput(
@@ -106,28 +118,19 @@ class _VerificationPageState extends State<VerificationPage> {
                   onCompleted: _onCodeComplete,
                 ),
               ),
-
               const SizedBox(height: 32),
 
-              // Animate button change to prevent full rebuild
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: _isLoading
-                    ? const Center(
-                        key: ValueKey('loading'),
-                        child: CircularProgressIndicator(),
-                      )
-                    : AppButton(
-                        key: const ValueKey('verifyBtn'),
-                        title: 'Vérifier',
-                        onPressed: _code?.length == 4 ? _verifyCode : null,
-                        size: ButtonSize.lg,
-                      ),
+              AppButton(
+                key: const ValueKey('verifyBtn'),
+                title: 'Vérifier',
+                onPressed: _code?.length == 4 ? _verifyCode : null,
+                size: ButtonSize.lg,
+                loading: _isLoading,
+                loadingText: 'Vérifier...',
               ),
 
               const Spacer(),
-                   Align(
-                //make the text animated when clicked
+              Align(
                 alignment: Alignment.center,
                 child: GestureDetector(
                   onTapDown: _onTapDown,

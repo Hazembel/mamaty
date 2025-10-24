@@ -11,6 +11,7 @@ class AppButton extends StatefulWidget {
   final bool fullWidth;
   final VoidCallback? onPressed;
   final bool loading;
+  final String? loadingText; // ✅ NEW: custom loading text
 
   const AppButton({
     super.key,
@@ -19,6 +20,7 @@ class AppButton extends StatefulWidget {
     this.fullWidth = true,
     this.onPressed,
     this.loading = false,
+    this.loadingText, // ✅ optional
   });
 
   @override
@@ -38,7 +40,7 @@ class _AppButtonState extends State<AppButton>
       case ButtonSize.lg:
         return const EdgeInsets.symmetric(vertical: 19, horizontal: 20);
     }
-  } 
+  }
 
   double get fontSize {
     switch (widget.size) {
@@ -57,6 +59,9 @@ class _AppButtonState extends State<AppButton>
 
   @override
   Widget build(BuildContext context) {
+    final String displayText =
+        widget.loading ? (widget.loadingText ?? 'Loading...') : widget.title;
+
     return SizedBox(
       width: widget.fullWidth ? double.infinity : null,
       child: Transform.scale(
@@ -67,17 +72,14 @@ class _AppButtonState extends State<AppButton>
             backgroundColor: AppColors.premier,
             padding: padding,
             shape: RoundedRectangleBorder(borderRadius: AppBorders.all),
-     
             elevation: 4,
           ),
           child: Listener(
-            // Listener detects pointer down/up faster than GestureDetector
             onPointerDown: _onTapDown,
             onPointerUp: _onTapUp,
-
             onPointerCancel: (_) => _onTapCancel(),
             child: Text(
-              widget.loading ? 'Loading...' : widget.title,
+              displayText,
               style: AppTextStyles.inter16medium.copyWith(
                 fontSize: fontSize,
                 color: AppColors.white,

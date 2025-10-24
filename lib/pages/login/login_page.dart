@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widgets/app_text_field.dart';
-import '../widgets/app_text_field_password.dart';
-import '../theme/colors.dart';
-import '../theme/text_styles.dart';
-import '../widgets/app_button.dart';
-import '../services/auth_service.dart';
-import '../theme/dimensions.dart';
+import '../../widgets/app_text_field.dart';
+import '../../widgets/app_text_field_password.dart';
+import '../../theme/colors.dart';
+import '../../theme/text_styles.dart';
+import '../../widgets/app_button.dart';
+import '../../services/auth_service.dart';
+import '../../theme/dimensions.dart';
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _passwordError;
   bool _isLoading = false;
 
+//login service and token manager
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -40,7 +41,8 @@ class _LoginPageState extends State<LoginPage> {
       // Success: show welcome or navigate
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Bienvenue, ${user.name}!')));
+      ).showSnackBar(SnackBar(content: Text('Bienvenue' )));
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       setState(() {
         _passwordError = 'Numéro ou mot de passe incorrect';
@@ -54,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
   void _onTapUp(_) {
     setState(() => _isPressed = false);
     // Navigate after tap
-    Navigator.pushNamed(context, '/verify-number');
+    Navigator.pushNamed(context, '/forgetpassword');
   }
 
   void _onTapCancel() => setState(() => _isPressed = false);

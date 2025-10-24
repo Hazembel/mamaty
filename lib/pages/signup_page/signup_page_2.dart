@@ -39,7 +39,7 @@ final AuthService _authService = AuthService(); //  ✅ API simulation
   String? passwordError;
   String? confirmPasswordError;
   String? birthdayError;
-
+bool _isLoading = false;
   void _validateForm() {
     setState(() {
       // Use instance methods and controllers
@@ -78,12 +78,16 @@ final AuthService _authService = AuthService(); //  ✅ API simulation
 Future<void> _verifyPhoneAndContinue() async {
   final phone = controllers.phoneController.text.trim();
 
+ setState(() {
+      _isLoading = true;
+    });
 
-
-  final code = await _authService.signupVerifyPhoneNumber(phone);
+  final code = await _authService.signupVerifyPhoneSendCode(phone);
 
   if (!mounted) return;
-
+ setState(() {
+      _isLoading = false;
+    });
   if (code != null) {
     debugPrint('✅ Code reçu: $code');
   ScaffoldMessenger.of(context).showSnackBar(
@@ -184,6 +188,9 @@ void initState() {
               title: 'Continuer',
               onPressed: _validateForm,
               size: ButtonSize.lg,
+              loading: _isLoading,
+     loadingText: 'Envoi du code...',
+
             ),
           ],
         ),

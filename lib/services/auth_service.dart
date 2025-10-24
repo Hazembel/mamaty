@@ -1,66 +1,156 @@
 import '../data/test_login_data.dart';
 import 'dart:math';
 import 'dart:developer' as developer;
+ import 'package:shared_preferences/shared_preferences.dart';
+import '../models/login_data.dart';
+
 
 class AuthService {
+
   /// Simulates an API login call using test data.
+  
+  
   /// Returns the TestUser if credentials match, null otherwise.
-  Future<TestUser?> login({
+  
+  //********* LOGIN *********//  
+
+ Future<LoginData?> login({
     required String phone,
     required String password,
   }) async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
+
     for (final user in testUsers) {
       if (user.phone == phone && user.password == password) {
-        return user;
+        // ✅ Simulate a token
+        final token = 'token_${user.phone}_${DateTime.now().millisecondsSinceEpoch}';
+
+        // ✅ Save token locally
+        final loginData = LoginData(phone: phone, password: password, token: token);
+        await _saveLoginData(loginData);
+
+        return loginData;
       }
     }
     return null;
   }
 
-/// Simulates verifying if a phone number exists in test data
-/// Verify phone and return a random code from testCodes
-  Future<String?> loginVerifyPhoneNumber(String phone) async {
-    await Future.delayed(const Duration(milliseconds: 500)); // simulate API delay
+  Future<void> _saveLoginData(LoginData data) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('login_phone', data.phone ?? '');
+    await prefs.setString('login_token', data.token ?? '');
+  }
 
-    // Check if user exists
+  Future<LoginData?> loadLoginData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final phone = prefs.getString('login_phone');
+    final token = prefs.getString('login_token');
+    if (phone != null && phone.isNotEmpty && token != null && token.isNotEmpty) {
+      return LoginData(phone: phone, token: token);
+    }
+    return null;
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('login_phone');
+    await prefs.remove('login_token');
+  }
+
+//********** FORGET PASSWORD *****/
+
+  /// Simulates verifying if a phone number exists in test data (for login)
+  Future<String?> forgetPassVerifyPhoneSendCode(String phone) async {
+    await Future.delayed(const Duration(milliseconds: 500));
     final exists = testUsers.any((user) => user.phone == phone);
     if (!exists) return null;
 
-    // Generate random code
     final random = Random();
     final code = testCodes[random.nextInt(testCodes.length)];
 
-    // Simulate backend sending SMS (for test)
-    developer.log('📱 [Test] Sending code $code to $phone');
-
+    developer.log('📱 [Test] Sending login code $code to $phone');
     return code;
   }
 
 
-Future<String?> signupVerifyPhoneNumber(String phone) async {
-  await Future.delayed(const Duration(milliseconds: 500)); // simulate API delay
+
+  /// ✅ Simulates creating a new password after OTP verification
+  Future<bool> forgetPassCreatePassword({
+    required String phone,
+    required String password,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    // Try to find user in test data
+    final userIndex = testUsers.indexWhere((user) => user.phone == phone);
+
+    if (userIndex == -1) {
+      developer.log('❌ [Test] User not found for password creation: $phone');
+      return false;
+    }
+
+    // Update password in simulated data
+    testUsers[userIndex] = testUsers[userIndex].copyWith(password: password);
+
+    developer.log('🔐 [Test] Password successfully created for $phone');
+    return true;
+  }
+
+
+//************* SIGN UP **********/
+
+  /// Simulates verifying if a phone number can be used to sign up
+  Future<String?> signupVerifyPhoneSendCode(String phone) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final exists = testUsers.any((user) => user.phone == phone);
+    if (exists) {
+      developer.log('🚫 [Test] Phone already registered: $phone');
+      return null;
+    }
+
+    final random = Random();
+    final code = testCodes[random.nextInt(testCodes.length)];
+    developer.log('📱 [Test] Sending signup code $code to $phone');
+    return code;
+  }
+
+Future<bool> createUser({
+  required String name,
+  required String lastname,
+  required String email,
+  required String phone,
+  required String password,
+  String? avatar,
+  String? gender,
+  String? birthday,
+  String? otpCode,
+}) async {
+  await Future.delayed(const Duration(milliseconds: 700));
 
   // Check if phone already exists
   final exists = testUsers.any((user) => user.phone == phone);
   if (exists) {
-    developer.log('🚫 [Test] Phone already registered: $phone');
-    return null; // cannot create new account with existing phone
+    developer.log('❌ [Test] Cannot create user, phone already exists: $phone');
+    return false;
   }
 
-  // Generate random code
-  final random = Random();
-  final code = testCodes[random.nextInt(testCodes.length)];
+  // Add new user to test data
+  final newUser = TestUser(
+    name: name,
+    lastname: lastname,
+    email: email,
+    phone: phone,
+    password: password,
+    avatar: avatar,
+    gender: gender,
+    birthday: birthday,
+    otpCode: otpCode,
+  );
 
-  // Simulate backend sending SMS
-  developer.log('📱 [Test] Sending signup code $code to $phone');
+  testUsers.add(newUser);
 
-  return code;
+  developer.log('✅ [Test] User created: $phone');
+  return true;
 }
-
-
-
-
 
 }
