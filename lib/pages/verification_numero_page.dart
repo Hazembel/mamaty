@@ -6,7 +6,7 @@ import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../controllers/form_controllers.dart';
 import '../services/auth_service.dart'; // ✅ add this import for API simulation
-import 'verification_page.dart';
+import 'verification_opt_page.dart';
 import '../theme/dimensions.dart';
 class VerificationNumeroPage extends StatefulWidget {
   const VerificationNumeroPage({super.key});
@@ -35,7 +35,7 @@ class _VerificationNumeroPageState extends State<VerificationNumeroPage> {
     final phone = controllers.phoneController.text.trim();
 
     try {
-      final code = await _authService.verifyPhoneNumber(phone);
+      final code = await _authService.loginVerifyPhoneNumber(phone);
 
       // ✅ Check if widget is still mounted before using context
       if (!mounted) return;

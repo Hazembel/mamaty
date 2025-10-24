@@ -48,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+// forgot password button
   bool _isPressed = false;
   void _onTapDown(_) => setState(() => _isPressed = true);
   void _onTapUp(_) {
@@ -58,6 +59,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onTapCancel() => setState(() => _isPressed = false);
 
+// signup button
   bool _isPressedsignup = false;
   void _onTapDownsignup(_) => setState(() => _isPressedsignup = true);
   void _onTapUpsignup(_) {

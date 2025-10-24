@@ -32,23 +32,31 @@ class _VerificationPageState extends State<VerificationPage> {
       _isLoading = true;
     });
 
-    // TODO: Implement actual verification logic
+    // Simulate verification delay
     await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
     });
 
-    if (mounted) {
-      // TODO: Navigate to next screen on success
-      debugPrint('Code verified: $_code');
-    }
+    debugPrint('Code verified: $_code');
   }
 
   void _resendCode() {
-    // TODO: Implement resend code logic
     debugPrint('Resending code to ${widget.phoneNumber}');
   }
+  // send code to phone number
+  bool _isPressed = false;
+  void _onTapDown(_) => setState(() => _isPressed = true);
+  void _onTapUp(_) {
+    setState(() => _isPressed = false);
+    // RESEND CODE
+    _resendCode();
+  }
+
+  void _onTapCancel() => setState(() => _isPressed = false);
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +64,7 @@ class _VerificationPageState extends State<VerificationPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          
-          padding:  AppDimensions.pagePadding,
+          padding: AppDimensions.pagePadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -82,7 +89,7 @@ class _VerificationPageState extends State<VerificationPage> {
                     TextSpan(
                       text: widget.phoneNumber,
                       style: AppTextStyles.inter14Med.copyWith(
-                        color: AppColors.black, // Different color for phone
+                        color: AppColors.black,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -90,24 +97,52 @@ class _VerificationPageState extends State<VerificationPage> {
                 ),
               ),
               const SizedBox(height: 32),
-              AppCodeInput(length: 4, onCompleted: _onCodeComplete),
-              const SizedBox(height: 32),
-              AppButton(
-                title: 'Vérifier',
-                onPressed: _code?.length == 4 && !_isLoading
-                    ? _verifyCode
-                    : null,
-                size: ButtonSize.lg,
+
+              // Disable input while verifying
+              IgnorePointer(
+                ignoring: _isLoading,
+                child: AppCodeInput(
+                  length: 4,
+                  onCompleted: _onCodeComplete,
+                ),
               ),
+
+              const SizedBox(height: 32),
+
+              // Animate button change to prevent full rebuild
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: _isLoading
+                    ? const Center(
+                        key: ValueKey('loading'),
+                        child: CircularProgressIndicator(),
+                      )
+                    : AppButton(
+                        key: const ValueKey('verifyBtn'),
+                        title: 'Vérifier',
+                        onPressed: _code?.length == 4 ? _verifyCode : null,
+                        size: ButtonSize.lg,
+                      ),
+              ),
+
               const Spacer(),
-              Center(
-                child: TextButton(
-                  onPressed: _resendCode,
-                  child: Text(
-                    'Vous n\'avez pas reçu le code ? Renvoyer !',
+                   Align(
+                //make the text animated when clicked
+                alignment: Alignment.center,
+                child: GestureDetector(
+                  onTapDown: _onTapDown,
+                  onTapUp: _onTapUp,
+                  onTapCancel: _onTapCancel,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 100),
                     style: AppTextStyles.inter14Med.copyWith(
-                      //TODO: know the withvalues to oppacity 
-                      color: AppColors.premier.withValues(alpha: 0.5),
+                      color: AppColors.black,
+                      fontWeight: _isPressed
+                          ? FontWeight.bold
+                          : FontWeight.w500,
+                    ),
+                    child: const Text(
+                      'Vous n\'avez pas reçu le code ? Renvoyer !',
                     ),
                   ),
                 ),

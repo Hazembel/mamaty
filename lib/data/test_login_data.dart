@@ -12,7 +12,7 @@ class TestUser {
 }
 
 const testUsers = <TestUser>[
-  TestUser(phone: '25700200', password: 'password123', name: 'Alice'),
+  TestUser(phone: '01234567', password: 'password123', name: 'Alice'),
   TestUser(phone: '98500200', password: 'azerty', name: 'Bob'),
   TestUser(phone: '99900900', password: 'motdepasse', name: 'Charlie'),
 ];

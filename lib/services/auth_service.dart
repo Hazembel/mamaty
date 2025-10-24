@@ -21,7 +21,7 @@ class AuthService {
 
 /// Simulates verifying if a phone number exists in test data
 /// Verify phone and return a random code from testCodes
-  Future<String?> verifyPhoneNumber(String phone) async {
+  Future<String?> loginVerifyPhoneNumber(String phone) async {
     await Future.delayed(const Duration(milliseconds: 500)); // simulate API delay
 
     // Check if user exists
@@ -37,5 +37,30 @@ class AuthService {
 
     return code;
   }
+
+
+Future<String?> signupVerifyPhoneNumber(String phone) async {
+  await Future.delayed(const Duration(milliseconds: 500)); // simulate API delay
+
+  // Check if phone already exists
+  final exists = testUsers.any((user) => user.phone == phone);
+  if (exists) {
+    developer.log('🚫 [Test] Phone already registered: $phone');
+    return null; // cannot create new account with existing phone
+  }
+
+  // Generate random code
+  final random = Random();
+  final code = testCodes[random.nextInt(testCodes.length)];
+
+  // Simulate backend sending SMS
+  developer.log('📱 [Test] Sending signup code $code to $phone');
+
+  return code;
+}
+
+
+
+
 
 }

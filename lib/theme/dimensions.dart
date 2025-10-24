@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // theme/dimensions.dart
 class AppDimensions {
   // Page padding
-  static const EdgeInsets pagePadding = EdgeInsets.symmetric(horizontal: 20, vertical: 20);
+  static const EdgeInsets pagePadding = EdgeInsets.symmetric(horizontal: 20, vertical: 30);
 
   // Spacing
   static const double small = 8.0;

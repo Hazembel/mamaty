@@ -8,12 +8,14 @@ class AvatarSelector extends StatefulWidget {
   final List<String> avatars;
   final double size;
   final AvatarSelectedCallback? onAvatarSelected;
+  final int initialSelectedIndex; // ✅ new
 
   const AvatarSelector({
     super.key,
     required this.avatars,
     this.size = 120,
     this.onAvatarSelected,
+    this.initialSelectedIndex = 1, // ✅ default same as before
   });
 
   @override
@@ -21,24 +23,37 @@ class AvatarSelector extends StatefulWidget {
 }
 
 class _AvatarSelectorState extends State<AvatarSelector> {
-  late final PageController _pageController;
-  int selectedIndex = 0;
+  late PageController _pageController;
+  late int selectedIndex;
 
   @override
   void initState() {
     super.initState();
-    selectedIndex = 1;
+    selectedIndex = widget.initialSelectedIndex;
     _pageController = PageController(
       viewportFraction: 0.38,
       initialPage: selectedIndex,
     );
 
-      // Immediately notify parent after build
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (widget.onAvatarSelected != null) {
-      widget.onAvatarSelected!(selectedIndex);
+  if (mounted) {
+    widget.onAvatarSelected?.call(selectedIndex);
+  }
+});
+
+  }
+
+  // ✅ If parent rebuilds with new avatars or index, update controller
+  @override
+  void didUpdateWidget(covariant AvatarSelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.avatars != widget.avatars ||
+        oldWidget.initialSelectedIndex != widget.initialSelectedIndex) {
+      setState(() {
+        selectedIndex = widget.initialSelectedIndex;
+      });
+      _pageController.jumpToPage(selectedIndex);
     }
-  });
   }
 
   @override
@@ -47,14 +62,16 @@ class _AvatarSelectorState extends State<AvatarSelector> {
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
-    setState(() {
-      selectedIndex = index;
-    });
-    if (widget.onAvatarSelected != null) {
-      widget.onAvatarSelected!(index);
-    }
-  }
+void _onPageChanged(int index) {
+  selectedIndex = index;
+
+  // Call parent callback after the current frame
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    widget.onAvatarSelected?.call(selectedIndex);
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {

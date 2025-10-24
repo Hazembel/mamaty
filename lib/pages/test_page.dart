@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/app_button.dart';
-import '../widgets/app_text_field.dart';
-import '../widgets/app_text_field_password.dart';
+
 import '../widgets/app_top_bar.dart';
 import '../theme/colors.dart';
 
+import '../widgets/app_text_field_password.dart';
+import '../widgets/app_text_field.dart';
 import '../controllers/form_controllers.dart';
 import '../widgets/app_text_field_date.dart';
 import '../widgets/app_text_field_phone.dart';

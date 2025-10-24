@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 class FormControllers {
   // 📌 Controllers
    final TextEditingController nameController = TextEditingController();
+   final TextEditingController lastnameController= TextEditingController();
    final TextEditingController emailController = TextEditingController();
    final TextEditingController phoneController = TextEditingController();
    final TextEditingController passwordController = TextEditingController();
@@ -31,6 +32,14 @@ class FormControllers {
     String? validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Le nom est requis';
+    }
+    return null;
+  }
+
+  /// lastName: required
+    String? validatelastName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Le prenom est requis';
     }
     return null;
   }
@@ -103,6 +112,7 @@ class FormControllers {
   // 📌 Dispose all controllers
    void dispose() {
     nameController.dispose();
+    lastnameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
