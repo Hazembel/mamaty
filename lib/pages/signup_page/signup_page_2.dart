@@ -86,7 +86,9 @@ Future<void> _verifyPhoneAndContinue() async {
 
   if (code != null) {
     debugPrint('✅ Code reçu: $code');
-
+  ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✅ Code $code envoyé sur $phone')),
+        );
     // Pass phone to SignupPage3 (OTP)
     widget.signupData.otpCode = code;
 
