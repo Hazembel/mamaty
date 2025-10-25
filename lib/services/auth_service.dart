@@ -3,6 +3,9 @@ import 'dart:math';
 import 'dart:developer' as developer;
  import 'package:shared_preferences/shared_preferences.dart';
 import '../models/login_data.dart';
+import '../models/user_data.dart';
+
+UserData? currentUser;
 
 
 class AuthService {
@@ -14,27 +17,46 @@ class AuthService {
   
   //********* LOGIN *********//  
 
- Future<LoginData?> login({
-    required String phone,
-    required String password,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+Future<LoginData?> login({
+  required String phone,
+  required String password,
+}) async {
+  await Future.delayed(const Duration(milliseconds: 500));
 
-    for (final user in testUsers) {
-      if (user.phone == phone && user.password == password) {
-        // ✅ Simulate a token
-        final token = 'token_${user.phone}_${DateTime.now().millisecondsSinceEpoch}';
+  for (final user in testUsers) {
+    if (user.phone == phone && user.password == password) {
+      // ✅ Simulate a token
+      final token = 'token_${user.phone}_${DateTime.now().millisecondsSinceEpoch}';
 
-        // ✅ Save token locally
-        final loginData = LoginData(phone: phone, password: password, token: token);
-        await _saveLoginData(loginData);
+      // ✅ Create login data
+      final loginData = LoginData(
+        phone: phone,
+        password: password,
+        token: token,
+      );
+      await _saveLoginData(loginData);
 
-        return loginData;
-      }
+      // ✅ Fill user data (normally this would come from API)
+      final userData = UserData(
+        name: user.name,
+        lastname: user.lastname,
+        phone: user.phone,
+        email: user.email,
+        avatar: user.avatar,
+        gender: user.gender,
+        birthday: user.birthday,
+        token: token,
+        babies: user.babies, // if test user already has babies
+      );
+
+      // 💾 You can store it in memory or local storage for access later
+      currentUser = userData;
+
+      return loginData;
     }
-    return null;
   }
-
+  return null;
+}
   Future<void> _saveLoginData(LoginData data) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('login_phone', data.phone ?? '');

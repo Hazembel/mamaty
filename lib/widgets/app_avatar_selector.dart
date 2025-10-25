@@ -44,6 +44,7 @@ class _AvatarSelectorState extends State<AvatarSelector> {
 
   // ✅ If parent rebuilds with new avatars or index, update controller
   @override
+
   void didUpdateWidget(covariant AvatarSelector oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.avatars != widget.avatars ||

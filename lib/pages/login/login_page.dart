@@ -67,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
   void _onTapUpsignup(_) {
     setState(() => _isPressedsignup = false);
     // Navigate after tap
-    Navigator.pushNamed(context, '/signup');
+    Navigator.pushNamed(context, '/babyprofile');
   }
 
   void _onTapCancelsignup() => setState(() => _isPressedsignup = false);

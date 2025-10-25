@@ -30,17 +30,17 @@ class SignupPage1 extends StatefulWidget {
 class _SignupPage1State extends State<SignupPage1> {
   // Separate avatar lists
   final List<String> fatherAvatars = const [
-    'assets/images/father/avatar1.jpg',
-    'assets/images/father/avatar2.jpg',
-    'assets/images/father/avatar3.jpg',
-    'assets/images/father/avatar4.jpg',
+    'assets/images/avatars/dad1.jpg',
+    'assets/images/avatars/dad2.jpg',
+    'assets/images/avatars/dad3.jpg',
+    'assets/images/avatars/dad4.jpg',
   ];
 
   final List<String> motherAvatars = const [
-    'assets/images/mother/avatar1.jpg',
-    'assets/images/mother/avatar2.jpg',
-    'assets/images/mother/avatar3.jpg',
-    'assets/images/mother/avatar4.jpg',
+    'assets/images/avatars/mom1.jpg',
+    'assets/images/avatars/mom2.jpg',
+    'assets/images/avatars/mom3.jpg',
+    'assets/images/avatars/mom4.jpg',
   ];
 
   List<String> currentAvatars = [];
@@ -50,31 +50,29 @@ class _SignupPage1State extends State<SignupPage1> {
 
   // 🧩 Pre-fill fields when going back
   @override
-@override
-void initState() {
-  super.initState();
+  @override
+  void initState() {
+    super.initState();
 
-  // Pre-fill gender
-  selectedGender = widget.signupData.gender ?? 'male';
+    // Pre-fill gender
+    selectedGender = widget.signupData.gender ?? 'male';
 
-  // Pre-fill avatars list based on gender
-  currentAvatars = selectedGender == 'male' ? fatherAvatars : motherAvatars;
+    // Pre-fill avatars list based on gender
+    currentAvatars = selectedGender == 'male' ? fatherAvatars : motherAvatars;
 
-  // Pre-fill previously selected avatar if exists
-  if (widget.signupData.avatar != null &&
-      currentAvatars.contains(widget.signupData.avatar)) {
-    selectedAvatarIndex = currentAvatars.indexOf(widget.signupData.avatar!);
-  } else {
-    selectedAvatarIndex = 1; // default avatar2
-    widget.signupData.avatar = currentAvatars[selectedAvatarIndex];
+    // Pre-fill previously selected avatar if exists
+    if (widget.signupData.avatar != null &&
+        currentAvatars.contains(widget.signupData.avatar)) {
+      selectedAvatarIndex = currentAvatars.indexOf(widget.signupData.avatar!);
+    } else {
+      selectedAvatarIndex = 1; // default avatar2
+      widget.signupData.avatar = currentAvatars[selectedAvatarIndex];
+    }
+
+    // Pre-fill birthday field
+    controllers.birthdayController.text = widget.signupData.birthday ?? '';
   }
 
-  // Pre-fill birthday field
-  controllers.birthdayController.text = widget.signupData.birthday ?? '';
-}
-
- 
- 
   // controllers for sigup fields
   final FormControllers controllers = FormControllers();
   String? birthdayError;
@@ -105,42 +103,41 @@ void initState() {
     }
   }
 
-void _onGenderSelected(String gender) {
-  if (gender == selectedGender) return; // no change, do nothing
-
-  setState(() {
-    selectedGender = gender;
-
-    // Update avatars list
-    currentAvatars = gender == 'male' ? fatherAvatars : motherAvatars;
-
-    // Preserve avatar if possible
-    if (widget.signupData.avatar != null &&
-        currentAvatars.contains(widget.signupData.avatar)) {
-      selectedAvatarIndex = currentAvatars.indexOf(widget.signupData.avatar!);
-    } else {
-      selectedAvatarIndex = 0; // fallback to first avatar in list
-      widget.signupData.avatar = currentAvatars[selectedAvatarIndex];
-    }
-  });
-
-  debugPrint('Selected gender: $gender');
-  widget.signupData.gender = gender; // save
-}
-
-void _onAvatarSelected(int index) {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (!mounted) return;
+  void _onGenderSelected(String gender) {
+    if (gender == selectedGender) return; // no change, do nothing
 
     setState(() {
-      selectedAvatarIndex = index;
+      selectedGender = gender;
+
+      // Update avatars list
+      currentAvatars = gender == 'male' ? fatherAvatars : motherAvatars;
+
+      // Preserve avatar if possible
+      if (widget.signupData.avatar != null &&
+          currentAvatars.contains(widget.signupData.avatar)) {
+        selectedAvatarIndex = currentAvatars.indexOf(widget.signupData.avatar!);
+      } else {
+        selectedAvatarIndex = 0; // fallback to first avatar in list
+        widget.signupData.avatar = currentAvatars[selectedAvatarIndex];
+      }
     });
 
-    debugPrint('Selected avatar: ${currentAvatars[index]}');
-    widget.signupData.avatar = currentAvatars[index];
-  });
-}
+    debugPrint('Selected gender: $gender');
+    widget.signupData.gender = gender; // save
+  }
 
+  void _onAvatarSelected(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      setState(() {
+        selectedAvatarIndex = index;
+      });
+
+      debugPrint('Selected avatar: ${currentAvatars[index]}');
+      widget.signupData.avatar = currentAvatars[index];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
