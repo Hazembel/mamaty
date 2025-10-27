@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Bienvenue' )));
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/babyprofile');
     } else {
       setState(() {
         _passwordError = 'Numéro ou mot de passe incorrect';
@@ -65,9 +65,11 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPressedsignup = false;
   void _onTapDownsignup(_) => setState(() => _isPressedsignup = true);
   void _onTapUpsignup(_) {
+/// Called when the signup button is tapped up.
+/// Navigates to the signup page after tap.
     setState(() => _isPressedsignup = false);
     // Navigate after tap
-    Navigator.pushNamed(context, '/babyprofile');
+    Navigator.pushNamed(context, '/signup');
   }
 
   void _onTapCancelsignup() => setState(() => _isPressedsignup = false);

@@ -2,6 +2,11 @@
 import 'package:flutter/material.dart';
 
 class AppTextStyles {
+  static const inter80Bold = TextStyle(
+    fontSize: 80,
+    fontWeight: FontWeight.bold,
+    fontFamily: 'Inter',
+  );
   static const inter24Bold = TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.bold,

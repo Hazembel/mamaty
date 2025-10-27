@@ -31,7 +31,7 @@ class SignupPage2 extends StatefulWidget {
 class _SignupPage2State extends State<SignupPage2> {
   ///
   final FormControllers controllers = FormControllers();
-final AuthService _authService = AuthService(); //  ✅ API simulation
+  final AuthService _authService = AuthService(); //  ✅ API simulation
   String? nameError;
   String? lastnameError;
   String? emailError;

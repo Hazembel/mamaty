@@ -109,10 +109,13 @@ class AppIcons {
 ''';
 
 
+ static const String union = '''
 
-
-
-
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18.8457 11.7793H31.4102V18.8457H18.8457V31.4102H11.7793V18.8457H0V11.7793H11.7793V0H18.8457V11.7793Z" fill="#0E6A74"/>
+</svg>
+ 
+''';
 
 
   // ======================================================

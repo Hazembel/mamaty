@@ -62,20 +62,20 @@ final List<TestUser> testUsers = <TestUser>[
     email: 'alice@example.com',
     gender: 'femme',
     birthday: '1995-03-10',
-    avatar: 'assets/avatars/mom1.png',
+    avatar: 'assets/images/avatars/mom1.jpg',
     babies: [
       BabyProfileData(
         name: 'Léo',
         birthday: '2022-06-12',
         gender: 'garçon',
-        avatar: 'assets/babies/baby1.png',
+        avatar: 'assets/images/avatars/baby1.jpg',
         parentphone: '123',
       ),
       BabyProfileData(
         name: 'Emma',
         birthday: '2024-02-05',
         gender: 'fille',
-        avatar: 'assets/babies/baby2.png',
+        avatar: 'assets/images/avatars/baby2.jpg',
         parentphone: '123',
       ),
     ],
@@ -88,13 +88,13 @@ final List<TestUser> testUsers = <TestUser>[
     email: 'bob@example.com',
     gender: 'homme',
     birthday: '1990-11-02',
-    avatar: 'assets/avatars/dad1.png',
+    avatar: 'assets/images/avatars/dad1.jpg',
     babies: [
       BabyProfileData(
         name: 'Lucas',
         birthday: '2021-08-15',
         gender: 'garçon',
-        avatar: 'assets/babies/baby3.png',
+        avatar: 'assets/images/avatars/baby3.jpg',
         parentphone: '98500200',
       ),
     ],
@@ -107,7 +107,7 @@ final List<TestUser> testUsers = <TestUser>[
     email: 'charlie@example.com',
     gender: 'homme',
     birthday: '1988-05-25',
-    avatar: 'assets/avatars/dad2.png',
+    avatar: 'assets/images/avatars/dad2.jpg',
     babies: [],
   ),
 ];

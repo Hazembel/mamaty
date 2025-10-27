@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
+ 
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -19,12 +20,25 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _checkLogin() async {
     final loginData = await _authService.loadLoginData();
+ 
 
-    // ✅ Ensure the widget is still mounted before navigating
+  // ✅ Load persisted user data
+    final userData = await _authService.loadUserData();
+    if (userData != null) {
+      debugPrint('Persisted user data on splash: $userData');
+    } else {
+      debugPrint('No persisted user data found');
+    }
+
+    // ✅ Ensure widget is still mounted
     if (!mounted) return;
 
+
+
+
     if (loginData != null && loginData.token != null && loginData.token!.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, '/home');
+ 
+      Navigator.pushReplacementNamed(context, '/babyprofile');
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }

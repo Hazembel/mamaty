@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
-import '../theme/text_styles.dart';
+import '../icons/app_icons.dart';
 
 typedef OnCreateCallback = void Function();
 
@@ -20,34 +20,17 @@ class AppCreateBebe extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: size,
-        height: size + 40, // extra space for text
+        height: size, // square box now
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [AppColors.defaultShadow],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: size * 0.5,
-              height: size * 0.5,
-              decoration: BoxDecoration(
-                color: AppColors.premier,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Ajouter un enfant',
-              style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
-            ),
-          ],
+        alignment: Alignment.center, // centers the icon directly
+        child: AppIcons.svg(
+          AppIcons.union,
+          size: 40,
+          color: AppColors.premier,
         ),
       ),
     );
