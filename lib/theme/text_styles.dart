@@ -13,11 +13,21 @@ class AppTextStyles {
     fontFamily: 'Inter',
   );
 
+ static const inter16Bold = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+    fontFamily: 'Inter',
+  );
+
+
   static const inter16SemiBold = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     fontFamily: 'Inter',
   );
+
+
+
   static const inter16medium = TextStyle( 
     fontSize: 16,
     fontWeight: FontWeight.w500,

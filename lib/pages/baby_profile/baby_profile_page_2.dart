@@ -6,7 +6,7 @@ import '../../theme/dimensions.dart';
 import '../../widgets/app_measurement_ruler.dart'; // ✅ import the ruler
 import '../../widgets/app_button.dart';
 import '../../models/baby_profile_data.dart';
-import '../../controllers/height_controllers.dart';
+//import '../../controllers/height_controllers.dart';
 
 
 class BabyProfilePage2 extends StatefulWidget {
@@ -28,17 +28,28 @@ class _BabyProfilePage2State extends State<BabyProfilePage2> {
   double _height = 30; // default height in cm
 
 
-  final HeightControllers controllers = HeightControllers();
+ // final HeightControllers controllers = HeightControllers();
 
-   void _validateHeight() {
-    final h = controllers.current;
-
+  // void _validateHeight() {
+   // final h = controllers.current;
     // ✅ validate dangerous range
-    if (h >= 10 && h <= 20) {
-      debugPrint('Dangerous part: $h');
-    }
+  //  if (h >= 10 && h <= 20) {
+  //    debugPrint('Dangerous part: $h');
+  //  }
     // ✅ add any other validation logic if needed
+ // }
+
+
+ @override
+  void initState() {
+    super.initState();
+    // ✅ Load previous weight if available, fallback to 5
+    _height = widget.babyProfileData.height ?? 30;
+    debugPrint('Baby height: $_height');
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +91,8 @@ class _BabyProfilePage2State extends State<BabyProfilePage2> {
                 onChanged: (value) {
                   setState(() {
                     _height = value;
+                   // controllers.current = value;
+                    widget.babyProfileData.height = value;
                   });
                 },
               ),
@@ -92,7 +105,7 @@ class _BabyProfilePage2State extends State<BabyProfilePage2> {
             AppButton(
               title: 'Continuer',
                onPressed: () {
-                _validateHeight();  
+           //     _validateHeight();  
                 widget.onNext();
               },
               size: ButtonSize.lg,

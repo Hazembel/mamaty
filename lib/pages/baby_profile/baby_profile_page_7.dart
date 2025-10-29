@@ -3,17 +3,16 @@ import '../../widgets/app_top_bar.dart';
 import '../../theme/colors.dart';
 import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
-import '../../widgets/app_weight_ruler.dart'; // ✅ import the weight ruler
+import '../../widgets/app_head_size.dart'; // ✅ vertical ruler for head size
 import '../../widgets/app_button.dart';
 import '../../models/baby_profile_data.dart';
-//import '../../controllers/weight_controllers.dart'; // ✅ new controller
 
-class BabyProfilePage3 extends StatefulWidget {
+class BabyProfilePage7 extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
   final BabyProfileData babyProfileData;
 
-  const BabyProfilePage3({
+  const BabyProfilePage7({
     super.key,
     required this.onNext,
     required this.onBack,
@@ -21,17 +20,17 @@ class BabyProfilePage3 extends StatefulWidget {
   });
 
   @override
-  State<BabyProfilePage3> createState() => _BabyProfilePage3State();
+  State<BabyProfilePage7> createState() => _BabyProfilePage7State();
 }
 
-class _BabyProfilePage3State extends State<BabyProfilePage3> {
-  late double _weight;
+class _BabyProfilePage7State extends State<BabyProfilePage7> {
+  late int _headSize;
 
   @override
   void initState() {
     super.initState();
-    // ✅ Load previous weight if available, fallback to 5
-    _weight = widget.babyProfileData.weight ?? 5;
+    // Load previous head size if available, fallback to 5
+    _headSize = widget.babyProfileData.headSize ?? 5;
   }
 
   @override
@@ -44,17 +43,13 @@ class _BabyProfilePage3State extends State<BabyProfilePage3> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top bar with step
-            AppTopBar(
-              currentStep: 3,
-              totalSteps: 6,
-              onBack: widget.onBack,
-            ),
+            AppTopBar(currentStep: 4, totalSteps: 7, onBack: widget.onBack),
 
             const SizedBox(height: 30),
 
             Center(
               child: Text(
-                'Quel est son poids actuel ?',
+                'Quelle est la taille de sa tête ?',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.inter24Bold.copyWith(
                   color: AppColors.premier,
@@ -64,17 +59,17 @@ class _BabyProfilePage3State extends State<BabyProfilePage3> {
 
             const SizedBox(height: 30),
 
-            // Weight Ruler
+            // Head Size Ruler
             Center(
-              child: WeightRuler(
-                minValue: 0,
-                maxValue: 50,
-                initialValue: _weight,
+              child: VerticalMeasurementRuler(
+                minValue: 5, // minimum head circumference in cm
+                maxValue: 60, // maximum head circumference
+                initialValue: _headSize,
                 onChanged: (value) {
                   setState(() {
-                    _weight = value;
-                    // ✅ Save back to babyProfileData so it persists
-                    widget.babyProfileData.weight = value;
+                    _headSize = value;
+                    // Save to babyProfileData
+                    widget.babyProfileData.headSize = value;
                   });
                 },
               ),

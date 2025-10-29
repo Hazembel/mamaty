@@ -10,7 +10,7 @@ class TestUser {
   final String? gender;
   final String? birthday;
   final String? otpCode;
-  final List<BabyProfileData> babies; // ✅ new
+  final List<BabyProfileData> babies;
 
   TestUser({
     required this.phone,
@@ -22,7 +22,7 @@ class TestUser {
     this.gender,
     this.birthday,
     this.otpCode,
-    this.babies = const [], // ✅ default empty list
+    this.babies = const [],
   });
 
   TestUser copyWith({
@@ -54,6 +54,7 @@ class TestUser {
 
 /// ✅ Example test users with babies
 final List<TestUser> testUsers = <TestUser>[
+  // User with 4 babies (0-6mo, 6-9mo, 9-12mo, + allergy)
   TestUser(
     phone: '123',
     password: '123',
@@ -64,22 +65,69 @@ final List<TestUser> testUsers = <TestUser>[
     birthday: '1995-03-10',
     avatar: 'assets/images/avatars/mom1.jpg',
     babies: [
+      // 👶 0–6 months
       BabyProfileData(
         name: 'Léo',
-        birthday: '2022-06-12',
+        birthday: '2025-06-10',
         gender: 'garçon',
-        avatar: 'assets/images/avatars/baby1.jpg',
+        avatar: 'assets/images/avatars/baby_boy1.jpg',
         parentphone: '123',
+        height: 55,
+        weight: 6,
+        disease: 'aucune',
+        allergy: 'aucune',
+        headSize: 38,
+        autorisation: true,
       ),
+
+      // 👶 6–9 months
       BabyProfileData(
-        name: 'Emma',
-        birthday: '2024-02-05',
+        name: 'Mila',
+        birthday: '2025-02-15',
         gender: 'fille',
-        avatar: 'assets/images/avatars/baby2.jpg',
+        avatar: 'assets/images/avatars/baby_girl1.jpg',
         parentphone: '123',
+        height: 68,
+        weight: 8,
+        disease: 'aucune',
+        allergy: 'aucune',
+        headSize: 43,
+        autorisation: true,
+      ),
+
+      // 👶 9–12 months
+      BabyProfileData(
+        name: 'Noé',
+        birthday: '2024-12-05',
+        gender: 'garçon',
+        avatar: 'assets/images/avatars/baby_boy2.jpg',
+        parentphone: '123',
+        height: 75,
+        weight: 9,
+        disease: 'aucune',
+        allergy: 'aucune',
+        headSize: 45,
+        autorisation: true,
+      ),
+
+      // 👶 Baby with allergy
+      BabyProfileData(
+        name: 'Lina',
+        birthday: '2024-08-20',
+        gender: 'fille',
+        avatar: 'assets/images/avatars/baby_girl2.jpg',
+        parentphone: '123',
+        height: 70,
+        weight: 8,
+        disease: 'aucune',
+        allergy: 'arachides', // 👈 allergy
+        headSize: 44,
+        autorisation: false, // 👈 automatically false
       ),
     ],
   ),
+
+  // Another test user
   TestUser(
     phone: '98500200',
     password: 'azerty',
@@ -94,11 +142,19 @@ final List<TestUser> testUsers = <TestUser>[
         name: 'Lucas',
         birthday: '2021-08-15',
         gender: 'garçon',
-        avatar: 'assets/images/avatars/baby3.jpg',
+        avatar: 'assets/images/avatars/baby_boy3.jpg',
         parentphone: '98500200',
+        height: 60,
+        weight: 20,
+        disease: 'diabète',
+        allergy: 'aucune',
+        headSize: 60,
+        autorisation: false,
       ),
     ],
   ),
+
+  // Empty test user
   TestUser(
     phone: '99900900',
     password: 'motdepasse',

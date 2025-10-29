@@ -47,9 +47,9 @@ class _BabyProfilePage4State extends State<BabyProfilePage4> {
   String selectedGender = 'male'; // default
 
   final FormControllers controllers = FormControllers();
-  String? birthdayError;
+ 
   String? nameError;
-
+String? birthdayError;
   @override
   void initState() {
     super.initState();
@@ -57,6 +57,8 @@ class _BabyProfilePage4State extends State<BabyProfilePage4> {
     // Load previously selected gender
     selectedGender = widget.babyProfileData.gender ?? 'male';
     currentAvatars = selectedGender == 'male' ? boyAvatars : girlAvatars;
+
+
 
     // Preload avatar
     if (widget.babyProfileData.avatar != null &&
@@ -68,8 +70,8 @@ class _BabyProfilePage4State extends State<BabyProfilePage4> {
     }
 
     // Preload birthday and name
-    controllers.birthdayController.text = widget.babyProfileData.birthday ?? '';
     controllers.lastnameController.text = widget.babyProfileData.name ?? '';
+    controllers.birthdayController.text = widget.babyProfileData.birthday ?? '';
   }
 
   void _onGenderSelected(String gender) {
@@ -92,36 +94,36 @@ class _BabyProfilePage4State extends State<BabyProfilePage4> {
     });
   }
 
-  void _validateForm() {
-    setState(() {
-      // Validate birthday
-      birthdayError = controllers.validateBirthday(
-        controllers.birthdayController.text,
-      );
+void _validateForm() {
+  setState(() {
+    // Validate name
+    nameError = controllers.lastnameController.text.isEmpty
+        ? 'Veuillez saisir le nom'
+        : null;
 
-      // Validate name
-      nameError = controllers.lastnameController.text.isEmpty
-          ? 'Veuillez saisir le nom'
-          : null;
-    });
+  // Validate birthday (not empty)
+    birthdayError = controllers.birthdayController.text.isEmpty
+        ? 'Veuillez entrer la date de naissance'
+        : null;
 
-    if (birthdayError == null && nameError == null) {
-      // Save data
-      widget.babyProfileData.birthday = controllers.birthdayController.text;
-      widget.babyProfileData.name = controllers.lastnameController.text;
+  });
 
-      debugPrint('✅ Baby name: ${widget.babyProfileData.name}');
-      debugPrint('✅ Birthday: ${widget.babyProfileData.birthday}');
-      debugPrint('✅ Gender: ${widget.babyProfileData.gender}');
-      debugPrint('✅ Avatar: ${widget.babyProfileData.avatar}');
+  if (nameError == null && birthdayError == null ) {
+    // Save all fields regardless of previous value
+    widget.babyProfileData.name = controllers.lastnameController.text;
+    widget.babyProfileData.birthday = controllers.birthdayController.text;
+    widget.babyProfileData.gender = selectedGender;
+    widget.babyProfileData.avatar = currentAvatars[selectedAvatarIndex];
+ 
 
-      widget.onNext();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez corriger les erreurs ❗')),
-      );
-    }
+    widget.onNext();
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Veuillez corriger les erreurs ❗')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -133,8 +135,8 @@ class _BabyProfilePage4State extends State<BabyProfilePage4> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTopBar(
-              currentStep: 4,
-              totalSteps: 6,
+              currentStep: 5,
+              totalSteps: 7,
               onBack: widget.onBack,
             ),
 

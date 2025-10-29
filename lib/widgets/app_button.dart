@@ -11,7 +11,11 @@ class AppButton extends StatefulWidget {
   final bool fullWidth;
   final VoidCallback? onPressed;
   final bool loading;
-  final String? loadingText; // ✅ NEW: custom loading text
+  final String? loadingText;
+
+  // 🎨 Optional color overrides (safe defaults)
+  final Color? backgroundColor;
+  final Color? textColor;
 
   const AppButton({
     super.key,
@@ -20,7 +24,9 @@ class AppButton extends StatefulWidget {
     this.fullWidth = true,
     this.onPressed,
     this.loading = false,
-    this.loadingText, // ✅ optional
+    this.loadingText,
+    this.backgroundColor, // new
+    this.textColor, // new
   });
 
   @override
@@ -62,6 +68,10 @@ class _AppButtonState extends State<AppButton>
     final String displayText =
         widget.loading ? (widget.loadingText ?? 'Loading...') : widget.title;
 
+    // 🧩 Default colors (safe for all pages)
+    final Color buttonColor = widget.backgroundColor ?? AppColors.premier;
+    final Color textColor = widget.textColor ?? AppColors.white;
+
     return SizedBox(
       width: widget.fullWidth ? double.infinity : null,
       child: Transform.scale(
@@ -69,7 +79,7 @@ class _AppButtonState extends State<AppButton>
         child: ElevatedButton(
           onPressed: widget.loading ? null : widget.onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.premier,
+            backgroundColor: buttonColor,
             padding: padding,
             shape: RoundedRectangleBorder(borderRadius: AppBorders.all),
             elevation: 4,
@@ -82,7 +92,7 @@ class _AppButtonState extends State<AppButton>
               displayText,
               style: AppTextStyles.inter16medium.copyWith(
                 fontSize: fontSize,
-                color: AppColors.white,
+                color: textColor,
               ),
             ),
           ),
