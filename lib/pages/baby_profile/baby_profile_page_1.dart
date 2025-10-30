@@ -94,7 +94,7 @@ void _handleBabyTap(BuildContext context, BabyProfileData baby) {
         primaryText: "Consulter",
         secondaryText: "Modifier",
         onPrimary: () {
-           Navigator.of(context).pushReplacementNamed('/doctors');
+          Navigator.of(context).pushNamed('/doctors');
           debugPrint('🩺 Consulter le dossier médical de ${baby.name}');
         },
         onSecondary: () {
@@ -103,7 +103,7 @@ void _handleBabyTap(BuildContext context, BabyProfileData baby) {
       );
       return;
     }
-    else {  Navigator.of(context).pushReplacementNamed('/home');}
+    else {  Navigator.of(context).pushNamed('/doctors');}
 
     // ✅ Otherwise continue normal flow
     debugPrint('✅ Bébé autorisé, navigation normale...');

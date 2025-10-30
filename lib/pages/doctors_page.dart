@@ -76,7 +76,11 @@ class _DoctorsPageState extends State<DoctorsPage> {
             children: [
               AppTopBarText(
                 title: widget.title,
-                onBack: widget.onBack,
+                 onBack: widget.onBack ?? () {
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  },
               ),
               const SizedBox(height: 15),
               AppSearchInput(
