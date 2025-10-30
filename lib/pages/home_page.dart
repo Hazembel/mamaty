@@ -98,7 +98,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisCount: 2, // 2 columns
             crossAxisSpacing: 15.0, // Spacing between columns
             mainAxisSpacing: 10.0, // Spacing between rows
-            childAspectRatio: 1, // Adjust as needed to fit your card content
+            childAspectRatio: 160 / 180
           ),
           itemCount: _doctorsData.length, // Number of doctor cards
           itemBuilder: (context, index) {

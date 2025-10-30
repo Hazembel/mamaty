@@ -25,27 +25,29 @@ class DoctorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Replaced Card with Container to use custom BoxShadow
     return Container(
-      margin: EdgeInsets.zero, // GridView handles spacing, so no external margin here
+      margin: EdgeInsets.zero,
+      
       decoration: BoxDecoration(
-        color: AppColors.white, // Background color for the container
-                            borderRadius: BorderRadius.circular(AppBorders.defaultRadius),
-
-        boxShadow: [AppColors.defaultShadow], // <--- Applying your custom shadow here
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppBorders.defaultRadius),
+        boxShadow: [AppColors.defaultShadow],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12.0), // Reduced overall padding
+        padding: const EdgeInsets.symmetric( ), // Slightly reduced vertical padding
+        
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          // mainAxisSize: MainAxisSize.min, // Removed to allow Column to take more space
+         mainAxisAlignment: MainAxisAlignment.center, // centers vertically
+    crossAxisAlignment: CrossAxisAlignment.center, // centers horizontally
           children: [
-            // Doctor Image - Reduced radius for a smaller image
+            // Doctor Image - Adjusted radius for 160x180 aspect ratio
             CircleAvatar(
-              radius: 35, // Significantly reduced radius from 50 to 35
+              radius: 35, // Reduced radius from 35 to 30
               backgroundImage: NetworkImage(imageUrl),
               backgroundColor: AppColors.background,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5), // Slightly reduced spacing
 
             // Doctor Name
             Text(
@@ -53,11 +55,11 @@ class DoctorCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.inter12Reg.copyWith(
+              style: AppTextStyles.inter12Med.copyWith(
                 color: AppColors.premier,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 5),
 
             // Specialty
             Text(
@@ -69,66 +71,63 @@ class DoctorCard extends StatelessWidget {
                 color: AppColors.lightPremier,
               ),
             ),
-            const SizedBox(height: 8),
-
+          
+               const SizedBox(height: 5),
             // Rating and Distance Row
-            Flexible(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Rating
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: AppColors.shadow,
-                      borderRadius: BorderRadius.circular(AppBorders.smallRadius),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.string(
-                          AppIcons.star,
-                          width: 8,
-                          height: 8,
-                        ),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            rating.toStringAsFixed(1),
-                            style: AppTextStyles.inter8Med.copyWith(
-                              color: AppColors.lightPremier,
-                            ),
+            // Ensuring this part is at the bottom and uses minimal space
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Rating
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.shadow,
+                    borderRadius: BorderRadius.circular(AppBorders.smallRadius),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.string(
+                        AppIcons.star,
+                        width: 8,
+                        height: 8,
+                      ),
+                      const SizedBox(width: 3),
+                      Flexible(
+                        child: Text(
+                          rating.toStringAsFixed(1),
+                          style: AppTextStyles.inter9Med.copyWith(
+                            color: AppColors.lightPremier,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
+                ),
+                const SizedBox(width: 8,),
 
-                  // Distance
-                  Flexible(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.string(
-                          AppIcons.location,
-                          width: 8,
-                          height: 8,
-                        ),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            distance,
-                            style: AppTextStyles.inter8Med.copyWith(
-                              color: AppColors.lightPremier,
-                            ),
-                          ),
-                        ),
-                      ],
+                // Distance
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.string(
+                      AppIcons.location,
+                      width: 8,
+                      height: 8,
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 3),
+                    Flexible(
+                      child: Text(
+                        distance,
+                        style: AppTextStyles.inter9Med.copyWith(
+                          color: AppColors.lightPremier,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import '../pages/signup_page/signup_flow_page.dart';
 import '../pages/splash_page.dart';
 import '../pages/home_page.dart';
 import '../pages/baby_profile/baby_profile_flow_page.dart';
+import '../pages/doctors_page.dart';
 // Public routes (accessible without login)
 final Map<String, WidgetBuilder> publicRoutes = {
   '/': (context) => const SplashPage(), // ✅ SplashPage now the root
@@ -16,6 +17,8 @@ final Map<String, WidgetBuilder> publicRoutes = {
 // Private routes (for logged-in users)
 final Map<String, WidgetBuilder> privateRoutes = {
   '/home': (context) => const HomePage(),
+  
+  '/doctors': (context) => const DoctorsPage(),
 
   '/babyprofile': (context) => const BabyProfileFlowPage(),
 

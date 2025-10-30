@@ -73,7 +73,7 @@ class AppTextStyles {
 
   static const inter9Med = TextStyle(
     fontSize: 9,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w600,
     fontFamily: 'Inter',
   );
 

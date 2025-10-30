@@ -94,6 +94,7 @@ void _handleBabyTap(BuildContext context, BabyProfileData baby) {
         primaryText: "Consulter",
         secondaryText: "Modifier",
         onPrimary: () {
+           Navigator.of(context).pushReplacementNamed('/doctors');
           debugPrint('🩺 Consulter le dossier médical de ${baby.name}');
         },
         onSecondary: () {
