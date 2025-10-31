@@ -11,7 +11,7 @@ class DoctorCard extends StatelessWidget {
   final String doctorName;
   final String specialty;
   final double rating;
-  final String distance;
+  final String city;
   final String imageUrl;
 
   const DoctorCard({
@@ -19,7 +19,7 @@ class DoctorCard extends StatelessWidget {
     required this.doctorName,
     required this.specialty,
     required this.rating,
-    required this.distance,
+    required this.city,
     required this.imageUrl,
   });
 
@@ -43,7 +43,7 @@ class DoctorCard extends StatelessWidget {
           children: [
             // Doctor Image - Adjusted radius for 160x180 aspect ratio
             CircleAvatar(
-              radius: 35, // Reduced radius from 35 to 30
+              radius: 45, // Reduced radius from 35 to 30
               backgroundImage: NetworkImage(imageUrl),
               backgroundColor: AppColors.background,
             ),
@@ -55,7 +55,7 @@ class DoctorCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.inter12Med.copyWith(
+              style: AppTextStyles.inter14Med.copyWith(
                 color: AppColors.premier,
               ),
             ),
@@ -67,13 +67,13 @@ class DoctorCard extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.inter9Med.copyWith(
+              style: AppTextStyles.inter12Med.copyWith(
                 color: AppColors.lightPremier,
               ),
             ),
           
                const SizedBox(height: 5),
-            // Rating and Distance Row
+            // Rating and city Row
             // Ensuring this part is at the bottom and uses minimal space
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -90,14 +90,14 @@ class DoctorCard extends StatelessWidget {
                     children: [
                       SvgPicture.string(
                         AppIcons.star,
-                        width: 8,
-                        height: 8,
+                        width: 10,
+                        height: 10,
                       ),
                       const SizedBox(width: 3),
                       Flexible(
                         child: Text(
                           rating.toStringAsFixed(1),
-                          style: AppTextStyles.inter9Med.copyWith(
+                          style: AppTextStyles.inter12Med.copyWith(
                             color: AppColors.lightPremier,
                           ),
                         ),
@@ -105,22 +105,22 @@ class DoctorCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8,),
+                const SizedBox(width: 8 ),
 
-                // Distance
+                // city
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     SvgPicture.string(
                       AppIcons.location,
-                      width: 8,
-                      height: 8,
+                      width: 10,
+                      height: 10,
                     ),
                     const SizedBox(width: 3),
                     Flexible(
                       child: Text(
-                        distance,
-                        style: AppTextStyles.inter9Med.copyWith(
+                        city,
+                        style: AppTextStyles.inter12Med.copyWith(
                           color: AppColors.lightPremier,
                         ),
                       ),

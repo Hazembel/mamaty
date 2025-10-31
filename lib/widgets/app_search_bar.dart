@@ -50,7 +50,7 @@ class AppSearchBar extends StatelessWidget {
         ),
 
         // ✅ Padding inside the input field
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
 
         filled: true,
         fillColor: AppColors.white,

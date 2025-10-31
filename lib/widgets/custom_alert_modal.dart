@@ -39,7 +39,7 @@ class CustomAlertModal extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.35),
+      barrierColor: Colors.black.withValues(alpha: 0.3), //TODO : withOpacity
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -118,11 +118,13 @@ class CustomAlertModal extends StatelessWidget {
 
               // ✅ Buttons section
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: AppButton(
+                
+                     AppButton(
                       title: secondaryText ?? '',
-                      size: ButtonSize.sm,
+                      size: ButtonSize.md,
+                             fullWidth: false,
                       backgroundColor: AppColors.lightPremier,
                       textColor: AppColors.white,
                       onPressed: () {
@@ -130,12 +132,13 @@ class CustomAlertModal extends StatelessWidget {
                         if (onSecondary != null) onSecondary!();
                       },
                     ),
-                  ),
+                  
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: AppButton(
+                 
+                   AppButton(
                       title: primaryText ?? '',
-                      size: ButtonSize.sm,
+                      fullWidth: false,
+                      size: ButtonSize.md,
                       backgroundColor: AppColors.premier,
                       textColor: Colors.white,
                       onPressed: () {
@@ -143,7 +146,7 @@ class CustomAlertModal extends StatelessWidget {
                         if (onPrimary != null) onPrimary!();
                       },
                     ),
-                  ),
+                  
                 ],
               ),
 

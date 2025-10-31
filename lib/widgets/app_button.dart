@@ -73,7 +73,7 @@ class _AppButtonState extends State<AppButton>
     final Color textColor = widget.textColor ?? AppColors.white;
 
     return SizedBox(
-      width: widget.fullWidth ? double.infinity : null,
+      width: widget.fullWidth ? double.infinity : 176,
       child: Transform.scale(
         scale: _scale,
         child: ElevatedButton(

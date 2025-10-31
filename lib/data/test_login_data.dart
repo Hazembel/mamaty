@@ -120,7 +120,7 @@ final List<TestUser> testUsers = <TestUser>[
         height: 70,
         weight: 8,
         disease: 'aucune',
-        allergy: 'arachides', // 👈 allergy
+        allergy: 'Produit Laitier', // 👈 allergy
         headSize: 44,
         autorisation: false, // 👈 automatically false
       ),

@@ -45,7 +45,11 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     fontFamily: 'Inter',
   );
-
+  static const inter14semiMed = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight. w600,
+    fontFamily: 'Inter',
+  );
   static const inter14Bold = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w700,
@@ -56,6 +60,12 @@ class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.5,
+    fontFamily: 'Inter',
+  );
+
+ static const inter12bold = TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.bold,
     fontFamily: 'Inter',
   );
 

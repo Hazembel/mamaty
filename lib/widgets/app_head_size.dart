@@ -182,7 +182,7 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black ,
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),

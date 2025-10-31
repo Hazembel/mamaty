@@ -6,7 +6,7 @@ import '../theme/text_styles.dart';
 
 class GenderSelector extends StatefulWidget {
   final ValueChanged<String> onGenderSelected;
-  final String defaultGender; // default gender
+  final String defaultGender; // can be 'male', 'female', 'fille', 'garçon', etc.
 
   const GenderSelector({
     super.key,
@@ -24,11 +24,21 @@ class _GenderSelectorState extends State<GenderSelector> {
   @override
   void initState() {
     super.initState();
-    selectedGender = widget.defaultGender; // male by default
+
+    // ✅ Normalize French values
+    if (widget.defaultGender.toLowerCase() == 'fille') {
+      selectedGender = 'female';
+    } else if (widget.defaultGender.toLowerCase() == 'garçon' ||
+        widget.defaultGender.toLowerCase() == 'garcon') {
+      selectedGender = 'male';
+    } else {
+      selectedGender = widget.defaultGender.toLowerCase();
+    }
   }
 
   void _selectGender(String gender) {
     setState(() => selectedGender = gender);
+    // You can choose to save back 'fille'/'garçon' if needed
     widget.onGenderSelected(gender);
   }
 
@@ -37,7 +47,7 @@ class _GenderSelectorState extends State<GenderSelector> {
     return Column(
       children: [
         Text(
-          'Tu est',
+          'Tu es',
           style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
         ),
         const SizedBox(height: 12),
@@ -86,7 +96,7 @@ class _GenderBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? AppColors.premier : Colors.transparent,
-            width: 1.5,
+            width: 2,
           ),
           boxShadow: [AppColors.defaultShadow],
         ),

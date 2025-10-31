@@ -9,6 +9,8 @@ import '../../widgets/app_create_bebe.dart';
 import '../../services/auth_service.dart';
 import '../../models/user_data.dart';
 import '../../widgets/custom_alert_modal.dart';
+import '../../pages/edit_baby_profile/edit_baby_profile_flow_page.dart';
+
 
 class BabyProfilePage1 extends StatefulWidget {
   final VoidCallback onNext;
@@ -98,12 +100,12 @@ void _handleBabyTap(BuildContext context, BabyProfileData baby) {
           debugPrint('🩺 Consulter le dossier médical de ${baby.name}');
         },
         onSecondary: () {
-          debugPrint('✏️ Modification de la maladie/allergie de ${baby.name}');
+          EditBabyProfileFlow.start(context, baby);
         },
       );
       return;
     }
-    else {  Navigator.of(context).pushNamed('/doctors');}
+    else {  Navigator.of(context).pushNamed('/home');}
 
     // ✅ Otherwise continue normal flow
     debugPrint('✅ Bébé autorisé, navigation normale...');
@@ -123,8 +125,7 @@ void _handleBabyTap(BuildContext context, BabyProfileData baby) {
           children: [
             AppTopBar(
               showBack: false,
-              currentStep: 1,
-              totalSteps: 7,
+               
 showLogout: true,
   onLogout: () async {
     await AuthService().logout();
