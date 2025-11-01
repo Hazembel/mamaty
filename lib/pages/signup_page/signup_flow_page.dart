@@ -53,7 +53,7 @@ class _SignupFlowPageState extends State<SignupFlowPage> {
 
   // ✅ Navigate safely
   if (!mounted) return;
-  Navigator.of(context).pushReplacementNamed('/home'); // go to home
+  Navigator.of(context).pushReplacementNamed('/babyprofile'); // go to home
 }
 
 

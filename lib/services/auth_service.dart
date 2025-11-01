@@ -6,12 +6,9 @@ import '../models/login_data.dart';
 import '../models/user_data.dart';
 import 'package:flutter/material.dart';
 
-UserData? currentUser;
-
 class AuthService {
   //********* LOGIN *********//
 
-  /// Simulated login
   Future<LoginData?> login({
     required String phone,
     required String password,
@@ -20,7 +17,7 @@ class AuthService {
 
     for (final user in testUsers) {
       if (user.phone == phone && user.password == password) {
-        // ✅ Simulate a token
+        // ✅ Simulate token
         final token =
             'token_${user.phone}_${DateTime.now().millisecondsSinceEpoch}';
 
@@ -30,18 +27,15 @@ class AuthService {
           password: password,
           token: token,
         );
+
         await _saveLoginData(loginData);
 
-        // ✅ Fetch user data (simulating /me API)
+        // ✅ Fetch user data (simulate /me)
         final userData = await fetchUser(phone);
         if (userData != null) {
           userData.token = token;
-          currentUser = userData;
-
-          // ✅ Save to SharedPreferences
           await saveUserData(userData);
-
-          debugPrint('Logged in user: $userData');
+          debugPrint('✅ Logged in user: ${userData.name}');
         }
 
         return loginData;
@@ -50,34 +44,33 @@ class AuthService {
     return null;
   }
 
-  /// Simulate a `/user` API fetch
+  //********* FETCH USER *********//
   Future<UserData?> fetchUser(String phone) async {
-    await Future.delayed(const Duration(milliseconds: 300)); // simulate delay
+    await Future.delayed(const Duration(milliseconds: 300));
 
-    final user = testUsers.firstWhere(
-      (u) => u.phone == phone,
-      orElse: () => throw Exception('User not found'),
-    );
+    try {
+      final user = testUsers.firstWhere((u) => u.phone == phone);
 
-    final userData = UserData(
-      name: user.name,
-      lastname: user.lastname,
-      phone: user.phone,
-      email: user.email,
-      avatar: user.avatar,
-      gender: user.gender,
-      birthday: user.birthday,
-      babies: user.babies,
-    );
-
-    return userData;
+      return UserData(
+        name: user.name,
+        lastname: user.lastname,
+        phone: user.phone,
+        email: user.email,
+        avatar: user.avatar,
+        gender: user.gender,
+        birthday: user.birthday,
+        babies: user.babies,
+      );
+    } catch (e) {
+      debugPrint('❌ User not found for phone: $phone');
+      return null;
+    }
   }
 
-  //////////// save user data
+  //********* SAVE / LOAD USER *********//
   Future<void> saveUserData(UserData user) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = jsonEncode(user.toJson());
-    await prefs.setString('user_data', jsonString);
+    await prefs.setString('user_data', jsonEncode(user.toJson()));
   }
 
   Future<UserData?> loadUserData() async {
@@ -87,8 +80,7 @@ class AuthService {
     return UserData.fromJson(jsonDecode(jsonString));
   }
 
-  ////////// save login data
-
+  //********* SAVE / LOAD LOGIN *********//
   Future<void> _saveLoginData(LoginData data) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('login_phone', data.phone ?? '');
@@ -108,18 +100,16 @@ class AuthService {
     return null;
   }
 
+  //********* LOGOUT *********//
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('login_phone');
     await prefs.remove('login_token');
-    currentUser = null;
     await prefs.remove('user_data');
-    debugPrint('User logged out');
+    debugPrint('🚪 User logged out');
   }
 
-  //********** FORGET PASSWORD *****/
-
-  /// Simulates verifying if a phone number exists in test data (for login)
+  //********* FORGET PASSWORD *********//
   Future<String?> forgetPassVerifyPhoneSendCode(String phone) async {
     await Future.delayed(const Duration(milliseconds: 500));
     final exists = testUsers.any((user) => user.phone == phone);
@@ -127,47 +117,33 @@ class AuthService {
 
     final random = Random();
     final code = testCodes[random.nextInt(testCodes.length)];
-
-    debugPrint('📱 [Test] Sending login code $code to $phone');
+    debugPrint('📱 Sending login code $code to $phone');
     return code;
   }
 
-  /// ✅ Simulates creating a new password after OTP verification
   Future<bool> forgetPassCreatePassword({
     required String phone,
     required String password,
   }) async {
     await Future.delayed(const Duration(milliseconds: 700));
 
-    // Try to find user in test data
     final userIndex = testUsers.indexWhere((user) => user.phone == phone);
+    if (userIndex == -1) return false;
 
-    if (userIndex == -1) {
-      debugPrint('❌ [Test] User not found for password creation: $phone');
-      return false;
-    }
-
-    // Update password in simulated data
     testUsers[userIndex] = testUsers[userIndex].copyWith(password: password);
-
-    debugPrint('🔐 [Test] Password successfully created for $phone');
+    debugPrint('🔐 Password updated for $phone');
     return true;
   }
 
-  //************* SIGN UP **********/
-
-  /// Simulates verifying if a phone number can be used to sign up
+  //********* SIGN UP *********//
   Future<String?> signupVerifyPhoneSendCode(String phone) async {
     await Future.delayed(const Duration(milliseconds: 500));
     final exists = testUsers.any((user) => user.phone == phone);
-    if (exists) {
-      debugPrint('🚫 [Test] Phone already registered: $phone');
-      return null;
-    }
+    if (exists) return null;
 
     final random = Random();
     final code = testCodes[random.nextInt(testCodes.length)];
-    debugPrint('📱 [Test] Sending signup code $code to $phone');
+    debugPrint('📱 Sending signup code $code to $phone');
     return code;
   }
 
@@ -184,14 +160,9 @@ class AuthService {
   }) async {
     await Future.delayed(const Duration(milliseconds: 700));
 
-    // Check if phone already exists
     final exists = testUsers.any((user) => user.phone == phone);
-    if (exists) {
-      debugPrint('❌ [Test] Cannot create user, phone already exists: $phone');
-      return false;
-    }
+    if (exists) return false;
 
-    // Add new user to test data
     final newUser = TestUser(
       name: name,
       lastname: lastname,
@@ -205,8 +176,7 @@ class AuthService {
     );
 
     testUsers.add(newUser);
-
-    debugPrint('✅ [Test] User created: $phone');
+    debugPrint('✅ User created: $phone');
     return true;
   }
 }

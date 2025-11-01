@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../widgets/app_top_bar.dart';
 import '../../theme/colors.dart';
 import '../../theme/text_styles.dart';
@@ -6,11 +7,9 @@ import '../../theme/dimensions.dart';
 import '../../models/baby_profile_data.dart';
 import '../../widgets/app_avatar.dart';
 import '../../widgets/app_create_bebe.dart';
-import '../../services/auth_service.dart';
-import '../../models/user_data.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/custom_alert_modal.dart';
 import '../../pages/edit_baby_profile/edit_baby_profile_flow_page.dart';
-
 
 class BabyProfilePage1 extends StatefulWidget {
   final VoidCallback onNext;
@@ -27,95 +26,40 @@ class BabyProfilePage1 extends StatefulWidget {
 }
 
 class _BabyProfilePage1State extends State<BabyProfilePage1> {
-  List<BabyProfileData> _babies = [];
-  final AuthService _authService = AuthService();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadBabies();
-  }
-
-  Future<void> _loadBabies() async {
-    final UserData? userData = await _authService.loadUserData();
-    if (userData != null) {
-      setState(() {
-        _babies = userData.babies;
-        widget.babyProfileData.parentphone = userData.phone;
-      });
-      debugPrint('Loaded babies: $_babies');
-    } else {
-      debugPrint('No user data found');
-    }
-  }
+ 
 
   // ✅ Function to handle baby selection
 void _handleBabyTap(BuildContext context, BabyProfileData baby) {
-  // 🧮 Calculate baby age (as before)
-  try {
-    final birthDate = DateTime.parse(baby.birthday ?? '');
-    final now = DateTime.now();
-    final ageInDays = now.difference(birthDate).inDays;
-    final ageInMonths = (ageInDays / 30.44).floor();
-    final ageInYears = (ageInDays / 365).floor();
+  final userProvider = context.read<UserProvider>();
+  userProvider.selectBaby(baby); // ✅ set selected baby
 
-    String ageDisplay;
-    if (ageInDays < 30) {
-      ageDisplay = '$ageInDays jours';
-    } else if (ageInMonths < 12) {
-      ageDisplay = '$ageInMonths mois';
-    } else {
-      final monthsAfterYear = ageInMonths % 12;
-      ageDisplay = '$ageInYears an${ageInYears > 1 ? "s" : ""}'
-          '${monthsAfterYear > 0 ? " et $monthsAfterYear mois" : ""}';
-    }
-
-    // 🩵 Debug prints
-    debugPrint('👶 Bébé sélectionné: ${baby.name}');
-    debugPrint('🍼 Âge: $ageDisplay');
-    debugPrint('🚻 Genre: ${baby.gender}');
-    debugPrint('⚖️ Poids: ${baby.weight}');
-    debugPrint('📏 Taille: ${baby.height}');
-    debugPrint('🧠 Tour de tête: ${baby.headSize}');
-    debugPrint('💊 Maladie: ${baby.disease}');
-    debugPrint('🥜 Allergie: ${baby.allergy}');
-    debugPrint('📞 Téléphone parent: ${baby.parentphone}');
-    debugPrint('🔐 Autorisation: ${baby.autorisation}');
-
-
-
-    // 🚨 If baby has autorisation = false → show modal
-    if (baby.autorisation == false) {
-      debugPrint('🚨 DANGER: Ce bébé nécessite une autorisation médicale !');
-
-      CustomAlertModal.show(
-        context,
-        title: "Attention médicale requise",
-        message:
-            "Le profil de ${baby.name} indique une maladie ou allergie nécessitant une autorisation spéciale.",
-        primaryText: "Consulter",
-        secondaryText: "Modifier",
-        onPrimary: () {
-          Navigator.of(context).pushNamed('/doctors');
-          debugPrint('🩺 Consulter le dossier médical de ${baby.name}');
-        },
-        onSecondary: () {
-          EditBabyProfileFlow.start(context, baby);
-        },
-      );
-      return;
-    }
-    else {  Navigator.of(context).pushNamed('/home');}
-
-    // ✅ Otherwise continue normal flow
-    debugPrint('✅ Bébé autorisé, navigation normale...');
-  } catch (e) {
-    debugPrint('⚠️ Erreur lors du calcul de l’âge : $e');
+  if (baby.autorisation == false) {
+    CustomAlertModal.show(
+      context,
+      title: "Attention médicale requise",
+      message:
+          "Le profil de ${baby.name} indique une maladie ou allergie nécessitant une autorisation spéciale.",
+      primaryText: "Consulter",
+      secondaryText: "Modifier",
+      onPrimary: () => Navigator.of(context).pushNamed('/doctors'),
+      onSecondary: () => EditBabyProfileFlow.start(context, baby),
+    );
+  } else {
+    Navigator.of(context).pushNamed('/home'); // ✅ home now shows selected baby
   }
 }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Listen to provider
+    final userProvider = context.watch<UserProvider>();
+    final babies = userProvider.user?.babies ?? [];
+
+    // ✅ Keep parent phone updated
+    if (userProvider.user != null) {
+      widget.babyProfileData.parentphone = userProvider.user!.phone;
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
@@ -125,13 +69,14 @@ void _handleBabyTap(BuildContext context, BabyProfileData baby) {
           children: [
             AppTopBar(
               showBack: false,
-               
-showLogout: true,
-  onLogout: () async {
-    await AuthService().logout();
-    Navigator.of(context).pushReplacementNamed('/login');
-  },
-
+              showLogout: true,
+              onLogout: () async {
+                
+                await userProvider.logout(); // ✅ use provider
+                  if (!context.mounted) return;
+                Navigator.of(context).pushReplacementNamed('/login');
+                
+              },
             ),
             const SizedBox(height: 30),
             Center(
@@ -151,7 +96,7 @@ showLogout: true,
               child: GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _babies.length + 1,
+                itemCount: babies.length + 1,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   crossAxisSpacing: 16,
@@ -159,10 +104,10 @@ showLogout: true,
                   childAspectRatio: 1,
                 ),
                 itemBuilder: (context, index) {
-                  if (index < _babies.length) {
-                    final baby = _babies[index];
+                  if (index < babies.length) {
+                    final baby = babies[index];
                     return GestureDetector(
-                      onTap: () => _handleBabyTap(context,baby), // ✅ clean function call
+                      onTap: () => _handleBabyTap(context, baby),
                       child: AvatarTile(
                         imagePath: baby.avatar ?? '',
                         size: 120,

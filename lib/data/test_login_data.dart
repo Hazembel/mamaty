@@ -68,7 +68,7 @@ final List<TestUser> testUsers = <TestUser>[
       // 👶 0–6 months
       BabyProfileData(
         name: 'Léo',
-        birthday: '2025-06-10',
+        birthday: '2025-10-10',
         gender: 'garçon',
         avatar: 'assets/images/avatars/baby_boy1.jpg',
         parentphone: '123',

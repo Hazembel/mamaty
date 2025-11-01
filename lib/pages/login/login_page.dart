@@ -6,6 +6,10 @@ import '../../theme/text_styles.dart';
 import '../../widgets/app_button.dart';
 import '../../services/auth_service.dart';
 import '../../theme/dimensions.dart';
+
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -21,34 +25,42 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
 //login service and token manager
-  Future<void> _login() async {
-    setState(() {
-      _isLoading = true;
-    });
-    final user = await AuthService().login(
-      phone: _phoneController.text.trim(),
-      password: _passwordController.text,
+Future<void> _login() async {
+  setState(() {
+    _isLoading = true;
+  });
+
+  final auth = AuthService();
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+  final loginData = await auth.login(
+    phone: _phoneController.text.trim(),
+    password: _passwordController.text,
+  );
+
+
+
+  setState(() {
+    _isLoading = false;
+  });
+
+  if (loginData != null) {
+    final userData = await auth.loadUserData(); // get saved user
+    if (userData != null) {
+      userProvider.setUser(userData); // ✅ set in provider
+    }
+  if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Bienvenue 👋')),
     );
 
-    // ✅ Check if widget still exists before using context or setState
-    if (!mounted) return;
-
+    Navigator.pushReplacementNamed(context, '/babyprofile');
+  } else {
     setState(() {
-      _isLoading = false;
+      _passwordError = 'Numéro ou mot de passe incorrect';
     });
-    if (user != null) {
-      _passwordError = null;
-      // Success: show welcome or navigate
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Bienvenue' )));
-      Navigator.pushReplacementNamed(context, '/babyprofile');
-    } else {
-      setState(() {
-        _passwordError = 'Numéro ou mot de passe incorrect';
-      });
-    }
   }
+}
 
 // forgot password button
   bool _isPressed = false;

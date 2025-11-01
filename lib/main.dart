@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'l10n/app_localizations.dart';
+import 'package:provider/provider.dart'; // ✅ import provider
 
-// Import route maps
+import 'l10n/app_localizations.dart';
 import 'routes/routes.dart';
+import 'providers/user_provider.dart'; // ✅ import your provider
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => UserProvider()..loadUser(), // ✅ load saved user at start
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -30,13 +36,13 @@ class MyApp extends StatelessWidget {
       ],
       supportedLocales: AppLocalizations.supportedLocales,
 
-      // 👇 Register routes
+      // 👇 Routes
       routes: {
         ...publicRoutes,
         ...privateRoutes,
       },
 
-      // 👇 initial page (can change later after login)
+      // 👇 Start from Splash
       initialRoute: '/',
     );
   }
