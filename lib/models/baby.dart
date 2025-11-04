@@ -11,7 +11,7 @@ class Baby {
   double? headSize;
   bool? autorisation;
   String userId;
-  DateTime? lastHeadSizeUpdate;
+  DateTime? lastheadsizeUpdate;
 
   Baby({
     this.id,
@@ -26,7 +26,7 @@ class Baby {
     this.headSize,
     this.autorisation,
     required this.userId,
-    this.lastHeadSizeUpdate,
+    this.lastheadsizeUpdate,
   });
 
  factory Baby.fromJson(Map<String, dynamic> json) {
@@ -55,7 +55,7 @@ class Baby {
     headSize: (json['headSize'] != null) ? (json['headSize'] as num).toDouble() : null,
     autorisation: json['autorisation'] ?? true,
     userId: userId,
-    lastHeadSizeUpdate: json['lastheadsizeUpdate'] != null
+    lastheadsizeUpdate: json['lastheadsizeUpdate'] != null
         ? DateTime.tryParse(json['lastheadsizeUpdate'])
         : null,
   );
@@ -76,7 +76,7 @@ class Baby {
       'headSize': headSize,
       'autorisation': autorisation,
       'userId': userId, // ✅ match backend
-      'lastheadsizeUpdate': lastHeadSizeUpdate?.toIso8601String(),
+      'lastheadsizeUpdate': lastheadsizeUpdate?.toIso8601String(),
     };
   }
 }

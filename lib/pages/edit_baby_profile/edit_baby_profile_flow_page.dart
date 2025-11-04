@@ -10,6 +10,7 @@ import 'edit_baby_profile_page_5.dart';
 import 'edit_baby_profile_page_6.dart';
 import 'edit_baby_profile_page_7.dart';
 import '../../providers/baby_provider.dart';
+import '../../theme/colors.dart';
 
 class EditBabyProfileFlow extends StatefulWidget {
   final Baby baby;
@@ -53,8 +54,8 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
     );
   }
 
- Future<void> finishBebe() async {
-  // ✅ Autorisation logic
+Future<void> finishBebe() async {
+  // Autorisation logic
   final hasCondition = (babyData.disease != null &&
           babyData.disease!.trim().toLowerCase() != 'aucune') ||
       (babyData.allergy != null &&
@@ -67,26 +68,30 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
       : '✅ Autorisation TRUE.');
 
   try {
-    if (babyData.id == null || babyData.id!.isEmpty) {
-      // 🟢 No ID → create new baby
-      final savedBaby = await BabyService.addBaby(babyData);
+    final babyProvider = context.read<BabyProvider>(); // ✅ use read instead of watch
 
-      if (!mounted) return;
- 
-       final babyProvider = context.watch<BabyProvider>();
-      babyProvider.updateBaby(savedBaby);
+    if (babyData.id == null || babyData.id!.isEmpty) {
+      // Create new baby
+      final savedBaby = await BabyService.addBaby(babyData);
+      babyProvider.addBaby(savedBaby); // Add to provider
 
       debugPrint('🍼 Baby created successfully: ${savedBaby.id}');
     } else {
-      // 🔵 Existing ID → update baby
+      // Update existing baby
       final updatedBaby =
           await BabyService.updateBaby(babyData.id!, babyData.toJson());
-
-      if (!mounted) return;
-       final babyProvider = context.watch<BabyProvider>();
-      babyProvider.updateBaby(updatedBaby);
+      babyProvider.updateBaby(updatedBaby); // Update provider
 
       debugPrint('💾 Baby updated successfully: ${updatedBaby.name}');
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Bébé enregistré avec succès'),
+          backgroundColor: AppColors.premier,
+        ),
+      );
     }
   } catch (e) {
     debugPrint('❌ Failed to save or update baby: $e');

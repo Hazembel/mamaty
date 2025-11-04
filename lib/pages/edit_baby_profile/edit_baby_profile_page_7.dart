@@ -6,7 +6,7 @@ import '../../theme/dimensions.dart';
 import '../../widgets/app_head_size.dart'; // ✅ vertical ruler for head size
 import '../../widgets/app_button.dart';
 import '../../models/baby.dart';
- 
+import '../../widgets/custom_alert_modal.dart';
 
 class EditBabyProfilePage7 extends StatefulWidget {
   final VoidCallback onNext;
@@ -26,13 +26,63 @@ class EditBabyProfilePage7 extends StatefulWidget {
 
 class _EditBabyProfilePage7State extends State<EditBabyProfilePage7> {
   late double _headSize;
+  late double _oldHeadSize;
+  bool _canEditHeadSize = true;
+  int _daysSinceLastUpdate = 0;
 
   @override
   void initState() {
     super.initState();
-    // Load previous head size if available, fallback to 5
-    _headSize = widget.babyProfileData.headSize ?? 5;
+
+    _oldHeadSize = widget.babyProfileData.headSize ?? 5;
+    _headSize = _oldHeadSize;
+
+    final lastUpdate = widget.babyProfileData.lastheadsizeUpdate;
+    if (lastUpdate != null) {
+      final now = DateTime.now();
+      _daysSinceLastUpdate = now.difference(lastUpdate).inDays;
+      if (_daysSinceLastUpdate < 7) {
+        _canEditHeadSize = false;
+      }
+    }
   }
+
+
+
+
+Future<void> _onContinue() async {
+  if (_headSize < _oldHeadSize) {
+    debugPrint('⚠️ New head size ($_headSize) < previous ($_oldHeadSize)');
+
+    await CustomAlertModal.show(
+      context,
+      title: 'Attention médicale requise',
+      message:
+          'La nouvelle mesure de la tête est inférieure à la précédente. Ce cas nécessite une consultation médicale pour garantir le bon suivi de la croissance de votre bébé.',
+      primaryText: 'Consulter',
+      secondaryText: 'Continuer',
+      onPrimary: () async {
+        // Navigate to DoctorsPage
+        await Navigator.of(context).pushNamed('/doctors');
+        // You can optionally continue after returning from DoctorsPage
+      },
+      onSecondary: () {
+        // Just close the modal and continue
+        Navigator.of(context).pop();
+      },
+    );
+
+    // Save head size and continue
+    widget.babyProfileData.headSize = _headSize;
+    widget.onNext();
+    return;
+  }
+
+  // Normal case: head size is fine
+  widget.babyProfileData.headSize = _headSize;
+  widget.onNext();
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +93,8 @@ class _EditBabyProfilePage7State extends State<EditBabyProfilePage7> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar with step
             AppTopBar(currentStep: 4, totalSteps: 7, onBack: widget.onBack),
-
             const SizedBox(height: 30),
-
             Center(
               child: Text(
                 'Quelle est la taille de sa tête ?',
@@ -57,32 +104,36 @@ class _EditBabyProfilePage7State extends State<EditBabyProfilePage7> {
                 ),
               ),
             ),
-
             const SizedBox(height: 30),
-
-            // Head Size Ruler
+            if (!_canEditHeadSize) ...[
+              Center(
+                child: Text(
+                  'La taille de la tête peut être mise à jour après ${7 - _daysSinceLastUpdate} jours.',
+                  style: AppTextStyles.inter14Med.copyWith(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
             Center(
               child: VerticalMeasurementRuler(
-                minValue: 5, // minimum head circumference in cm
-                maxValue: 60, // maximum head circumference
+                minValue: 5,
+                maxValue: 60,
                 initialValue: _headSize,
+                enabled: _canEditHeadSize,
                 onChanged: (value) {
+                  if (!_canEditHeadSize) return;
                   setState(() {
                     _headSize = value;
-                    // Save to babyProfileData
-                    widget.babyProfileData.headSize = value;
+                    // Don't update babyProfileData yet
                   });
                 },
               ),
             ),
-
-            const SizedBox(height: 117),
-
+            const SizedBox(height: 50),
             AppButton(
               title: 'Continuer',
-              onPressed: () {
-                widget.onNext();
-              },
+              onPressed: _onContinue,
               size: ButtonSize.lg,
             ),
           ],
