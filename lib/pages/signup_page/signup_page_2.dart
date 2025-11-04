@@ -8,7 +8,6 @@ import '../../models/signup_data.dart'; // ✅ DATA
 
 import '../../controllers/form_controllers.dart';
 import '../../widgets/app_text_field_phone.dart';
-
 import '../../widgets/app_text_field.dart';
 import '../../services/auth_service.dart';
 
@@ -29,104 +28,82 @@ class SignupPage2 extends StatefulWidget {
 }
 
 class _SignupPage2State extends State<SignupPage2> {
-  ///
   final FormControllers controllers = FormControllers();
-  final AuthService _authService = AuthService(); //  ✅ API simulation
+  final AuthService _authService = AuthService();
+
   String? nameError;
   String? lastnameError;
   String? emailError;
   String? phoneError;
-  String? passwordError;
-  String? confirmPasswordError;
-  String? birthdayError;
-bool _isLoading = false;
+  bool _isLoading = false;
+
   void _validateForm() {
     setState(() {
-      // Use instance methods and controllers
       nameError = controllers.validateName(controllers.nameController.text);
-      lastnameError = controllers.validatelastName(
-        controllers.lastnameController.text,
-      );
+      lastnameError = controllers.validatelastName(controllers.lastnameController.text);
       emailError = controllers.validateEmail(controllers.emailController.text);
       phoneError = controllers.validatePhone(controllers.phoneController.text);
     });
 
-    if ([
-      nameError,
-      emailError,
-      phoneError,
-      lastnameError,
-    ].every((element) => element == null)) {
-      debugPrint('✅ Form is valid!');
-
-      // Save the birthday into shared signupData
-      widget.signupData.name = controllers.nameController.text;
-      widget.signupData.lastname = controllers.lastnameController.text;
-      widget.signupData.email = controllers.emailController.text;
-      widget.signupData.phone = controllers.phoneController.text;
-
- // ✅ Call backend simulation
-  _verifyPhoneAndContinue();
-  
+    if ([nameError, lastnameError, emailError, phoneError].every((e) => e == null)) {
+      _sendOtpAndContinue();
     } else {
       debugPrint('❌ Form has errors');
     }
   }
 
-//verification phone number and send otp code 
+  Future<void> _sendOtpAndContinue() async {
+    final phone = controllers.phoneController.text.trim();
 
-Future<void> _verifyPhoneAndContinue() async {
-  final phone = controllers.phoneController.text.trim();
+    // Save valid data to shared object
+    widget.signupData.name = controllers.nameController.text.trim();
+    widget.signupData.lastname = controllers.lastnameController.text.trim();
+    widget.signupData.email = controllers.emailController.text.trim();
+    widget.signupData.phone = phone;
 
- setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-  final code = await _authService.signupVerifyPhoneSendCode(phone);
+    try {
+      final success = await _authService.requestOtpSignup(phone);
 
-  if (!mounted) return;
- setState(() {
-      _isLoading = false;
-    });
-  if (code != null) {
-    debugPrint('✅ Code reçu: $code');
-  ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Code $code envoyé sur $phone')),
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('✅ Code envoyé à $phone')),
         );
-    // Pass phone to SignupPage3 (OTP)
-    widget.signupData.otpCode = code;
-
-    widget.onNext(); // move to Signup3
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ce numéro est déjà enregistré ❌')),
-    );
+        widget.onNext(); // Go to OTP screen (SignupPage3)
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('❌ Ce numéro est déjà utilisé ou invalide')),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ OTP request error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
-}
 
-
-
-
-
-
-
-
-
-// 🧩 Pre-fill fields when going back
-@override
-void initState() {
-  super.initState();
-
-  // ✅ Pre-fill controllers with saved data if available
-  controllers.nameController.text = widget.signupData.name ?? '';
-  controllers.lastnameController.text = widget.signupData.lastname ?? '';
-  controllers.emailController.text = widget.signupData.email ?? '';
-  controllers.phoneController.text = widget.signupData.phone ?? '';
-}
+  @override
+  void initState() {
+    super.initState();
+    controllers.nameController.text = widget.signupData.name ?? '';
+    controllers.lastnameController.text = widget.signupData.lastname ?? '';
+    controllers.emailController.text = widget.signupData.email ?? '';
+    controllers.phoneController.text = widget.signupData.phone ?? '';
+  }
 
   @override
   void dispose() {
-    controllers.dispose(); // disposes all static controllers
+    controllers.dispose();
     super.dispose();
   }
 
@@ -140,57 +117,41 @@ void initState() {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTopBar(onBack: widget.onBack),
-
             const SizedBox(height: 30),
-
             Text(
               'Compléter les données pour commencer',
-              style: AppTextStyles.inter24Bold.copyWith(
-                color: AppColors.premier,
-              ),
+              style: AppTextStyles.inter24Bold.copyWith(color: AppColors.premier),
             ),
-
             const SizedBox(height: 30),
-
             AppTextField(
-              labelText: 'Quel est votre nom  ?',
+              labelText: 'Quel est votre nom ?',
               controller: controllers.nameController,
               errorText: nameError,
             ),
-
- const SizedBox(height: 16),
-
+            const SizedBox(height: 16),
             AppTextField(
-              labelText: 'Quel est votre prénom  ?',
+              labelText: 'Quel est votre prénom ?',
               controller: controllers.lastnameController,
               errorText: lastnameError,
             ),
-
             const SizedBox(height: 16),
-
             AppTextField(
               labelText: 'Quelle est votre adresse e-mail ?',
               controller: controllers.emailController,
               errorText: emailError,
             ),
             const SizedBox(height: 16),
-
             AppTextFieldPhone(
               controller: controllers.phoneController,
               errorText: phoneError,
             ),
-            const SizedBox(height: 16),
-
-            // Buttons
             const SizedBox(height: 30),
-
             AppButton(
               title: 'Continuer',
-              onPressed: _validateForm,
+              onPressed: _isLoading ? null : _validateForm,
               size: ButtonSize.lg,
               loading: _isLoading,
-     loadingText: 'Envoi du code...',
-
+              loadingText: 'Envoi du code...',
             ),
           ],
         ),

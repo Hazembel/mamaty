@@ -5,14 +5,13 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../widgets/app_head_size.dart'; // ✅ vertical ruler for head size
 import '../../widgets/app_button.dart';
-import '../../models/baby_profile_data.dart';
-
-//TODO: add controller  app_head_size controller
+import '../../models/baby.dart';
+ 
 
 class EditBabyProfilePage7 extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final BabyProfileData babyProfileData;
+  final Baby babyProfileData;
 
   const EditBabyProfilePage7({
     super.key,
@@ -26,7 +25,7 @@ class EditBabyProfilePage7 extends StatefulWidget {
 }
 
 class _EditBabyProfilePage7State extends State<EditBabyProfilePage7> {
-  late int _headSize;
+  late double _headSize;
 
   @override
   void initState() {

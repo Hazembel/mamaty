@@ -5,14 +5,14 @@ import '../../theme/text_styles.dart';
 class VerticalMeasurementRuler extends StatefulWidget {
   final int minValue;
   final int maxValue;
-  final int initialValue;
-  final ValueChanged<int>? onChanged;
+  final double initialValue;
+  final ValueChanged<double>? onChanged; // <-- now double
 
   const VerticalMeasurementRuler({
     super.key,
     this.minValue = 1,
     this.maxValue = 10,
-    this.initialValue = 5,
+    this.initialValue = 5.0,
     this.onChanged,
   });
 
@@ -23,12 +23,12 @@ class VerticalMeasurementRuler extends StatefulWidget {
 
 class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
   late ScrollController _scrollController;
-  late int _currentValue;
-  static const double _itemExtent = 65.0; // spacing between numbers
-  static const double _visibleHeight = 400.0; // ruler height
-  static const double _selectedBoxSize = 120.0; // size of the center box
+  late double _currentValue; // <-- double
+  static const double _itemExtent = 65.0;
+  static const double _visibleHeight = 400.0;
+  static const double _selectedBoxSize = 120.0;
   late final double _verticalPadding;
-  bool isMetric = true; // Inch / Cm toggle
+  bool isMetric = true;
 
   @override
   void initState() {
@@ -36,7 +36,6 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
     _currentValue = widget.initialValue;
     _verticalPadding = (_visibleHeight / 2) - (_itemExtent / 2);
 
-    // initial offset must subtract the top padding so the selected item is centered
     final initialOffset =
         (_currentValue - widget.minValue) * _itemExtent - _verticalPadding;
     _scrollController = ScrollController(
@@ -51,15 +50,14 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
   }
 
   void _onScroll() {
-    final offset =
-        _scrollController.offset + _verticalPadding; // account for top padding
-    int value = (offset / _itemExtent).round() + widget.minValue;
-    value = value.clamp(widget.minValue, widget.maxValue);
+    final offset = _scrollController.offset + _verticalPadding;
+    double value = (offset / _itemExtent) + widget.minValue.toDouble(); // <-- double
+    value = value.clamp(widget.minValue.toDouble(), widget.maxValue.toDouble());
     if (value != _currentValue) {
       setState(() {
         _currentValue = value;
       });
-      widget.onChanged?.call(_currentValue);
+      widget.onChanged?.call(_currentValue); // <-- double
     }
   }
 
@@ -68,7 +66,7 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Unit toggle (Inch / Cm)
+        // Unit toggle
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -124,11 +122,10 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
 
         const SizedBox(height: 12),
 
-        // Ruler with fixed center selection
+        // Ruler
         Stack(
           alignment: Alignment.center,
           children: [
-            // Background numbers
             SizedBox(
               height: _visibleHeight,
               child: NotificationListener<ScrollNotification>(
@@ -148,15 +145,15 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
                   itemCount: widget.maxValue - widget.minValue + 1,
                   itemBuilder: (context, index) {
                     final value = widget.minValue + index;
-                    final isSelected = value == _currentValue;
+                    final isSelected = value.toDouble() == _currentValue;
 
                     return Opacity(
                       opacity: isSelected ? 0.0 : 0.8,
                       child: Center(
                         child: Text(
                           isMetric
-                              ? '$value'
-                              : (value * 0.393701).round().toString(),
+                              ? value.toString()
+                              : (value * 0.393701).toStringAsFixed(0),
                           style: TextStyle(
                             fontSize: 32,
                             color: AppColors.premier,
@@ -167,13 +164,9 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
                     );
                   },
                 ),
-              
-              
-              
               ),
             ),
 
-            // Fixed center selection box
             Container(
               width: _selectedBoxSize,
               height: _selectedBoxSize,
@@ -182,7 +175,7 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black ,
+                    color: Colors.black,
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -194,8 +187,8 @@ class _VerticalMeasurementRulerState extends State<VerticalMeasurementRuler> {
                   children: [
                     Text(
                       isMetric
-                          ? '$_currentValue'
-                          : (_currentValue * 0.393701).round().toString(),
+                          ? _currentValue.toStringAsFixed(0)
+                          : (_currentValue * 0.393701).toStringAsFixed(0),
                       style: const TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,

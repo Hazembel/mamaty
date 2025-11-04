@@ -1,81 +1,126 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/user_provider.dart'; 
+import '../../providers/user_provider.dart';
+import '../../providers/advice_provider.dart';
 import '../../widgets/home_header_card.dart';
 import '../widgets/app_advise_picker.dart';
- 
 import '../../theme/dimensions.dart';
-
-class HomePage extends StatelessWidget {
+import '../../providers/baby_provider.dart';
+import '../pages/baby_profile/baby_profile_page_1.dart';
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
- 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int? _babyAgeInDays;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateBabyAgeAndAdvices();
+    });
+  }
+
+  void _updateBabyAgeAndAdvices() {
+  
+     final babyProvider = context.watch<BabyProvider>();
+    final adviceProvider = context.read<AdviceProvider>();
+    final baby = babyProvider.selectedBaby;
+
+    if (baby != null && baby.birthday != null && baby.birthday!.isNotEmpty) {
+      _babyAgeInDays = _calculateBabyAgeInDays(baby.birthday!);
+      adviceProvider.loadAdvicesForAge(_babyAgeInDays!);
+    } else {
+      _babyAgeInDays = null;
+    }
+  }
+
+  int _calculateBabyAgeInDays(String birthdayString) {
+    try {
+      final birthDate = DateTime.parse(birthdayString);
+      final now = DateTime.now();
+      return now.difference(birthDate).inDays;
+    } catch (e) {
+      debugPrint('⚠️ Invalid birthday format: $birthdayString');
+      return 0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Listen to provider
     final userProvider = context.watch<UserProvider>();
+   final babyProvider = context.watch<BabyProvider>();
+    final adviceProvider = context.watch<AdviceProvider>();
+
     final user = userProvider.user;
     final userName = user?.name ?? 'Utilisateur';
     final userAvatar = user?.avatar;
- 
- // ✅ HERE: get the selected baby from provider
-  final babyProfileData = userProvider.selectedBaby;
+    final babyProfileData = babyProvider.selectedBaby;
+    final advices = adviceProvider.advices;
+
     return Scaffold(
-      
       body: user == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-            
               padding: AppDimensions.pagePadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // 🧩 Header section (dynamic)
+                  // Header
                   if (babyProfileData != null)
-                    HomeHeaderCard(
-                      baby: babyProfileData,
-                      userName: userName,
-                      userAvatar: userAvatar,
-                    )
+                 HomeHeaderCard(
+  baby: babyProfileData,
+  userName: userName,
+  userAvatar: userAvatar,
+  onBabyTap: () {
+Navigator.of(context).pushAndRemoveUntil(
+  MaterialPageRoute(
+    builder: (_) => BabyProfilePage1(
+      onNext: () {}, 
+      babyProfileData: babyProfileData,
+    ),
+  ),
+  (Route<dynamic> route) => false, // remove all previous routes
+);
+
+  },
+  onUserTap: () {
+    Navigator.of(context).pushNamed('/profile'); // or any user profile page
+  },
+)
+
                   else
                     _noBabyCard(),
 
                   const SizedBox(height: 20),
 
-   // ✅ Add the day picker below the header
-            const BabyDayPicker(),
-
-            const SizedBox(height: 20),
-
-                  // 🔹 Placeholder for next widgets
-                  Container(
-                    height: 150,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Center(
+                  // Advices
+                  if (adviceProvider.isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else if (advices.isNotEmpty && _babyAgeInDays != null)
+                    BabyDayPicker(
+                      advices: advices,
+                      babyAgeInDays: _babyAgeInDays!,
+                    )
+                  else
+                    const Center(
                       child: Text(
-                        'Widgets à venir ici...',
+                        'Ajoutez un profil bébé pour voir les conseils.',
                         style: TextStyle(color: Colors.grey),
                       ),
                     ),
-                  ),
+
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
     );
   }
 
-  /// 👶 If user has no baby profiles
   Widget _noBabyCard() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -84,7 +129,7 @@ class HomePage extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.black,
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),

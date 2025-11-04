@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart'; // ✅ import provider
+import 'package:provider/provider.dart';
 
 import 'l10n/app_localizations.dart';
 import 'routes/routes.dart';
-import 'providers/user_provider.dart'; // ✅ import your provider
+import 'providers/user_provider.dart';
+import 'providers/advice_provider.dart';
+import 'providers/baby_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => UserProvider()..loadUser(), // ✅ load saved user at start
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => UserProvider()..loadUser()),
+        ChangeNotifierProvider(create: (_) => AdviceProvider()), // ✅ added provider
+        ChangeNotifierProvider(create: (_) => BabyProvider()), // ✅ added provider
+
+      ],
       child: const MyApp(),
     ),
   );

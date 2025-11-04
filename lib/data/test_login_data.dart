@@ -1,4 +1,4 @@
-import '../models/baby_profile_data.dart';
+import '../models/baby.dart';
 
 class TestUser {
   final String phone;
@@ -10,7 +10,7 @@ class TestUser {
   final String? gender;
   final String? birthday;
   final String? otpCode;
-  final List<BabyProfileData> babies;
+  final List<Baby> babies;
 
   TestUser({
     required this.phone,
@@ -35,7 +35,7 @@ class TestUser {
     String? gender,
     String? birthday,
     String? otpCode,
-    List<BabyProfileData>? babies,
+    List<Baby>? babies,
   }) {
     return TestUser(
       phone: phone ?? this.phone,
@@ -53,6 +53,7 @@ class TestUser {
 }
 
 /// ✅ Example test users with babies
+/* 
 final List<TestUser> testUsers = <TestUser>[
   // User with 4 babies (0-6mo, 6-9mo, 9-12mo, + allergy)
   TestUser(
@@ -66,12 +67,14 @@ final List<TestUser> testUsers = <TestUser>[
     avatar: 'assets/images/avatars/mom1.jpg',
     babies: [
       // 👶 0–6 months
-      BabyProfileData(
+      Baby(
+        id: 1,
+
         name: 'Léo',
-        birthday: '2025-10-10',
+        birthday: DateTime(2025, 10, 10),
         gender: 'garçon',
         avatar: 'assets/images/avatars/baby_boy1.jpg',
-        parentphone: '123',
+       
         height: 55,
         weight: 6,
         disease: 'aucune',
@@ -81,12 +84,12 @@ final List<TestUser> testUsers = <TestUser>[
       ),
 
       // 👶 6–9 months
-      BabyProfileData(
+      Baby(
         name: 'Mila',
-        birthday: '2025-02-15',
+        birthday: DateTime(2025, 02, 15),
         gender: 'fille',
         avatar: 'assets/images/avatars/baby_girl1.jpg',
-        parentphone: '123',
+      
         height: 68,
         weight: 8,
         disease: 'aucune',
@@ -96,12 +99,12 @@ final List<TestUser> testUsers = <TestUser>[
       ),
 
       // 👶 9–12 months
-      BabyProfileData(
+      Baby(
         name: 'Noé',
         birthday: '2024-12-05',
         gender: 'garçon',
         avatar: 'assets/images/avatars/baby_boy2.jpg',
-        parentphone: '123',
+    
         height: 75,
         weight: 9,
         disease: 'aucune',
@@ -111,12 +114,12 @@ final List<TestUser> testUsers = <TestUser>[
       ),
 
       // 👶 Baby with allergy
-      BabyProfileData(
+      Baby(
         name: 'Lina',
         birthday: '2024-08-20',
         gender: 'fille',
         avatar: 'assets/images/avatars/baby_girl2.jpg',
-        parentphone: '123',
+       
         height: 70,
         weight: 8,
         disease: 'aucune',
@@ -138,12 +141,12 @@ final List<TestUser> testUsers = <TestUser>[
     birthday: '1990-11-02',
     avatar: 'assets/images/avatars/dad1.jpg',
     babies: [
-      BabyProfileData(
+      Baby(
         name: 'Lucas',
         birthday: '2021-08-15',
         gender: 'garçon',
         avatar: 'assets/images/avatars/baby_boy3.jpg',
-        parentphone: '98500200',
+    
         height: 60,
         weight: 20,
         disease: 'diabète',
@@ -168,5 +171,6 @@ final List<TestUser> testUsers = <TestUser>[
   ),
 ];
 
+*/
 /// ✅ Test OTP codes for simulation
 const testCodes = ['1234', '4321', '9876', '2468', '1357'];

@@ -5,12 +5,12 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../widgets/app_head_size.dart'; // ✅ vertical ruler for head size
 import '../../widgets/app_button.dart';
-import '../../models/baby_profile_data.dart';
+import '../../models/baby.dart';
 
 class BabyProfilePage7 extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final BabyProfileData babyProfileData;
+  final Baby babyProfileData;
 
   const BabyProfilePage7({
     super.key,
@@ -24,7 +24,7 @@ class BabyProfilePage7 extends StatefulWidget {
 }
 
 class _BabyProfilePage7State extends State<BabyProfilePage7> {
-  late int _headSize;
+  late double _headSize;
 
   @override
   void initState() {

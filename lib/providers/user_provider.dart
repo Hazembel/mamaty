@@ -1,40 +1,48 @@
 import 'package:flutter/foundation.dart';
-import '../models/user_data.dart';
+import '../models/user.dart';
 import '../services/auth_service.dart';
-import '../models/baby_profile_data.dart';
 
 class UserProvider extends ChangeNotifier {
-  UserData? _user;
-  BabyProfileData? _selectedBaby;
+  User? _user;
 
-  UserData? get user => _user;
+  User? get user => _user;
   bool get isLoggedIn => _user != null;
 
-  BabyProfileData? get selectedBaby => _selectedBaby;
-
+  /// Load user from local storage or API
   Future<void> loadUser() async {
-    _user = await AuthService().loadUserData();
-    // Optionally auto-select first baby
-    if (_user != null && _user!.babies.isNotEmpty) {
-      _selectedBaby = _user!.babies.first;
+    try {
+      _user = await AuthService().loadUser();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('❌ Error loading user: $e');
+      _user = null;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-  void setUser(UserData user) {
+  /// Set user manually
+  void setUser(User user) {
     _user = user;
-    if (_user!.babies.isNotEmpty) _selectedBaby = _user!.babies.first;
     notifyListeners();
   }
 
-  void selectBaby(BabyProfileData baby) {
-    _selectedBaby = baby;
+  /// Update user profile
+  void updateUser(User updatedUser) {
+    _user = updatedUser;
     notifyListeners();
   }
 
+  /// Add a baby ID to user
+  void addBabyToUser(String babyId) {
+    if (_user != null && babyId.isNotEmpty && !_user!.babies.contains(babyId)) {
+      _user!.babies.add(babyId);
+      notifyListeners();
+    }
+  }
+
+  /// Logout user
   Future<void> logout() async {
     _user = null;
-    _selectedBaby = null;
     await AuthService().logout();
     notifyListeners();
   }

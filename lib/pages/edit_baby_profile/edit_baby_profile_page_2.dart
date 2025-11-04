@@ -5,14 +5,12 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../widgets/app_measurement_ruler.dart'; // ✅ import the ruler
 import '../../widgets/app_button.dart';
-import '../../models/baby_profile_data.dart';
-//import '../../controllers/height_controllers.dart';
-
-//TODO: add controller  height_controllers
+import '../../models/baby.dart';
+ 
 class EditBabyProfilePage2 extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-final BabyProfileData babyProfileData;
+final Baby babyProfileData;
   const EditBabyProfilePage2({
     super.key,
     required this.onNext,

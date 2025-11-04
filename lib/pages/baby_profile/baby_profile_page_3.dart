@@ -5,13 +5,13 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../widgets/app_weight_ruler.dart'; // ✅ import the weight ruler
 import '../../widgets/app_button.dart';
-import '../../models/baby_profile_data.dart';
+import '../../models/baby.dart';
 //import '../../controllers/weight_controllers.dart'; // ✅ new controller
 
 class BabyProfilePage3 extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-  final BabyProfileData babyProfileData;
+  final Baby babyProfileData;
 
   const BabyProfilePage3({
     super.key,

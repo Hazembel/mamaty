@@ -38,6 +38,8 @@ dependencies:
 
   provider: ^6.1.2
 
+  http: ^1.1.0       # for HTTP requests
+  flutter_secure_storage: ^9.2.4 # for storing JWT token securely
 
   cupertino_icons: ^1.0.8
   intl: ^0.20.2
@@ -47,6 +49,7 @@ dependencies:
   flutter_svg: ^2.0.10
 
   shared_preferences: ^2.5.3
+  flutter_secure_storage_web: ^1.2.1
 
 dev_dependencies:
   flutter_test:

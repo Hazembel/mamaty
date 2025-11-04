@@ -5,14 +5,14 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../widgets/app_measurement_ruler.dart'; // ✅ import the ruler
 import '../../widgets/app_button.dart';
-import '../../models/baby_profile_data.dart';
+import '../../models/baby.dart';
 //import '../../controllers/height_controllers.dart';
 
 
 class BabyProfilePage2 extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
-final BabyProfileData babyProfileData;
+final Baby babyProfileData;
   const BabyProfilePage2({
     super.key,
     required this.onNext,
@@ -26,19 +26,7 @@ final BabyProfileData babyProfileData;
 
 class _BabyProfilePage2State extends State<BabyProfilePage2> {
   double _height = 30; // default height in cm
-
-
- // final HeightControllers controllers = HeightControllers();
-
-  // void _validateHeight() {
-   // final h = controllers.current;
-    // ✅ validate dangerous range
-  //  if (h >= 10 && h <= 20) {
-  //    debugPrint('Dangerous part: $h');
-  //  }
-    // ✅ add any other validation logic if needed
- // }
-
+ 
 
  @override
   void initState() {

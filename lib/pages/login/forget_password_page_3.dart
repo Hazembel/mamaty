@@ -34,16 +34,15 @@ class _ForgetPasswordPage3State extends State<ForgetPasswordPage3> {
   bool _isLoading = false;
 
   void _validateAndContinue() {
+    final password = controllers.passwordController.text;
+    final confirmPassword = controllers.confirmPasswordController.text;
+
     setState(() {
-      passwordError = controllers.validatePassword(
-        controllers.passwordController.text,
-      );
-      confirmPasswordError = controllers.validateConfirmPassword(
-        controllers.confirmPasswordController.text,
-      );
+      passwordError = controllers.validatePassword(password);
+      confirmPasswordError = controllers.validateConfirmPassword(confirmPassword);
     });
 
-    if ([passwordError, confirmPasswordError].every((e) => e == null)) {
+    if (passwordError == null && confirmPasswordError == null) {
       _createPassword();
     } else {
       debugPrint('❌ Password validation failed');
@@ -51,47 +50,61 @@ class _ForgetPasswordPage3State extends State<ForgetPasswordPage3> {
   }
 
   Future<void> _createPassword() async {
-    setState(() => _isLoading = true);
+    final password = controllers.passwordController.text.trim();
+    final phone = widget.forgetData.phone?.trim();
 
-    final password = controllers.passwordController.text;
-    final phone = widget.forgetData.phone;
-
-    if (phone == null) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur : numéro manquant')),
-      );
+    if (phone == null || phone.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erreur : numéro de téléphone manquant')),
+        );
+      }
       return;
     }
 
-    final success = await _authService.forgetPassCreatePassword(
-      phone: phone,
-      password: password,
-    );
+    if (password.isEmpty) return;
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    setState(() => _isLoading = true);
 
-    if (success) {
-      // Save password to shared forgetData
-      widget.forgetData.password = password;
+    try {
+      final success = await _authService.forgetPassword(phone, password);
 
-      debugPrint('✅ Password created for $phone');
-      widget.onFinish(); // continue the flow
-    } else {
-      debugPrint('❌ Failed to create password (user not found)');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur : utilisateur introuvable')),
-      );
+      if (!mounted) return;
+
+      if (success) {
+        // Optionally save the password (usually not needed after reset)
+        widget.forgetData.password = password;
+
+        debugPrint('✅ Mot de passe mis à jour avec succès pour $phone');
+        widget.onFinish();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('❌ Échec : utilisateur non trouvé ou erreur serveur')),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Exception lors de la réinitialisation du mot de passe: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    // pre-fill password if previously entered
-    controllers.passwordController.text = widget.forgetData.password ?? '';
-    controllers.confirmPasswordController.text = widget.forgetData.password ?? '';
+    // Pre-fill if already entered (e.g., during back navigation)
+    final savedPass = widget.forgetData.password;
+    if (savedPass != null) {
+      controllers.passwordController.text = savedPass;
+      controllers.confirmPasswordController.text = savedPass;
+    }
   }
 
   @override
@@ -143,7 +156,7 @@ class _ForgetPasswordPage3State extends State<ForgetPasswordPage3> {
               AppButton(
                 key: const ValueKey('continueBtn'),
                 title: 'Continuer',
-                onPressed: _validateAndContinue,
+                onPressed: _isLoading ? null : _validateAndContinue,
                 size: ButtonSize.lg,
                 loading: _isLoading,
               ),

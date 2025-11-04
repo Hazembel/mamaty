@@ -23,8 +23,8 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _checkLogin() async {
     try {
-      // 1) Load persisted login info (token + phone)
-      final loginData = await _authService.loadLoginData();
+      // 1) Load persisted login data
+      final loginData = await _authService.loadUser();
 
       // 2) Load persisted user data into the provider (reactive)
          if (!mounted) return;

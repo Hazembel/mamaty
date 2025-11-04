@@ -31,47 +31,43 @@ class _ForgetPasswordPage1State extends State<ForgetPasswordPage1> {
   String? phoneError;
   bool isLoading = false;
 
-  Future<void> _verifyPhone() async {
-    setState(() {
-      phoneError = controllers.validatePhone(controllers.phoneController.text);
-    });
+ Future<void> _verifyPhone() async {
+  setState(() {
+    phoneError = controllers.validatePhone(controllers.phoneController.text);
+  });
 
-    if (phoneError != null) return;
+  if (phoneError != null) return;
 
-    setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
-    final phone = controllers.phoneController.text.trim();
-    widget.forgetData.phone = phone; // ✅ save phone to shared data
+  final phone = controllers.phoneController.text.trim();
+  widget.forgetData.phone = phone; // Save phone to shared data
 
-    try {
-      final code = await _authService.forgetPassVerifyPhoneSendCode(phone);
+  try {
+    final success = await _authService.requestOtp(phone);
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      if (code != null) {
-        widget.forgetData.otpCode = code; // ✅ store OTP
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Code $code envoyé sur $phone')),
-        );
-
-        // Navigate to verification page
-        widget.onNext();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ Ce numéro n\'existe pas')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Erreur : $e')));
-      }
-    } finally {
-      if (mounted) setState(() => isLoading = false);
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('✅ Code envoyé sur $phone')),
+      );
+      widget.onNext(); // Go to OTP input screen
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('⚠️ Ce numéro n\'existe pas')),
+      );
     }
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur : $e')),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => isLoading = false);
   }
-
+}
   @override
   void initState() {
     super.initState();

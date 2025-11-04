@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/baby_profile_data.dart';
+import 'package:provider/provider.dart';
+import '../../models/baby.dart'; 
+import '../../services/baby_service.dart';
 
 import 'edit_baby_profile_page_2.dart';
 import 'edit_baby_profile_page_3.dart';
@@ -7,13 +9,14 @@ import 'edit_baby_profile_page_4.dart';
 import 'edit_baby_profile_page_5.dart';
 import 'edit_baby_profile_page_6.dart';
 import 'edit_baby_profile_page_7.dart';
+import '../../providers/baby_provider.dart';
 
 class EditBabyProfileFlow extends StatefulWidget {
-  final BabyProfileData baby;
+  final Baby baby;
 
   const EditBabyProfileFlow({super.key, required this.baby});
 
-  static void start(BuildContext context, BabyProfileData baby) {
+  static void start(BuildContext context, Baby baby) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => EditBabyProfileFlow(baby: baby),
@@ -27,25 +30,13 @@ class EditBabyProfileFlow extends StatefulWidget {
 
 class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
   final PageController _pageController = PageController();
-  late BabyProfileData babyProfileData;
+  late Baby babyData;
 
   @override
   void initState() {
     super.initState();
-    // 🍼 Copy existing baby data into the form
-    babyProfileData = BabyProfileData(
-      name: widget.baby.name,
-      birthday: widget.baby.birthday,
-      gender: widget.baby.gender,
-      avatar: widget.baby.avatar,
-      parentphone: widget.baby.parentphone,
-      height: widget.baby.height,
-      weight: widget.baby.weight,
-      disease: widget.baby.disease,
-      allergy: widget.baby.allergy,
-      headSize: widget.baby.headSize,
-      autorisation: widget.baby.autorisation,
-    );
+    // Copy initial baby object
+    babyData = widget.baby;
   }
 
   void nextPage() {
@@ -62,37 +53,53 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
     );
   }
 
-  void finishBebe() async {
-    final baby = babyProfileData;
+ Future<void> finishBebe() async {
+  // ✅ Autorisation logic
+  final hasCondition = (babyData.disease != null &&
+          babyData.disease!.trim().toLowerCase() != 'aucune') ||
+      (babyData.allergy != null &&
+          babyData.allergy!.trim().toLowerCase() != 'aucune');
 
-    debugPrint('💾 Baby profile updated:');
-    debugPrint('👶 Name: ${baby.name}');
-    debugPrint('🎂 Birthday: ${baby.birthday}');
-    debugPrint('🚻 Gender: ${baby.gender}');
-    debugPrint('🖼️ Avatar: ${baby.avatar}');
-    debugPrint('⚖️ Weight: ${baby.weight}');
-    debugPrint('📏 Height: ${baby.height}');
-    debugPrint('🧠 Head Size: ${baby.headSize}');
-    debugPrint('💊 Disease: ${baby.disease}');
-    debugPrint('🥜 Allergy: ${baby.allergy}');
-    debugPrint('📞 Parent Phone: ${baby.parentphone}');
-    debugPrint('🔐 Autorisation: ${baby.autorisation}');
+  babyData.autorisation = !hasCondition;
 
-    // ✅ Autorisation check logic
-    final hasCondition = (baby.disease != null &&
-            baby.disease!.trim().toLowerCase() != 'aucune') ||
-        (baby.allergy != null &&
-            baby.allergy!.trim().toLowerCase() != 'aucune');
+  debugPrint(hasCondition
+      ? '🚫 Autorisation set to FALSE due to condition.'
+      : '✅ Autorisation TRUE.');
 
-    baby.autorisation = !hasCondition;
+  try {
+    if (babyData.id == null || babyData.id!.isEmpty) {
+      // 🟢 No ID → create new baby
+      final savedBaby = await BabyService.addBaby(babyData);
 
-    debugPrint(hasCondition
-        ? '🚫 Autorisation set to FALSE due to condition.'
-        : '✅ Autorisation TRUE.');
+      if (!mounted) return;
+ 
+       final babyProvider = context.watch<BabyProvider>();
+      babyProvider.updateBaby(savedBaby);
 
-    if (!mounted) return;
-    Navigator.of(context).pop(baby); // ✅ Return updated baby
+      debugPrint('🍼 Baby created successfully: ${savedBaby.id}');
+    } else {
+      // 🔵 Existing ID → update baby
+      final updatedBaby =
+          await BabyService.updateBaby(babyData.id!, babyData.toJson());
+
+      if (!mounted) return;
+       final babyProvider = context.watch<BabyProvider>();
+      babyProvider.updateBaby(updatedBaby);
+
+      debugPrint('💾 Baby updated successfully: ${updatedBaby.name}');
+    }
+  } catch (e) {
+    debugPrint('❌ Failed to save or update baby: $e');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')),
+      );
+    }
   }
+
+  if (!mounted) return;
+  Navigator.of(context).pop(babyData); // Return updated or created baby
+}
 
   @override
   Widget build(BuildContext context) {
@@ -102,32 +109,32 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           EditBabyProfilePage2(
-            babyProfileData: babyProfileData,
+            babyProfileData: babyData,
             onNext: nextPage,
-        onBack: () => Navigator.pop(context), // only the first one exits
+            onBack: () => Navigator.pop(context),
           ),
           EditBabyProfilePage3(
-            babyProfileData: babyProfileData,
+            babyProfileData: babyData,
             onNext: nextPage,
             onBack: prevPage,
           ),
           EditBabyProfilePage7(
-            babyProfileData: babyProfileData,
+            babyProfileData: babyData,
             onNext: nextPage,
             onBack: prevPage,
           ),
           EditBabyProfilePage4(
-            babyProfileData: babyProfileData,
+            babyProfileData: babyData,
             onNext: nextPage,
             onBack: prevPage,
           ),
           EditBabyProfilePage5(
-            babyProfileData: babyProfileData,
+            babyProfileData: babyData,
             onNext: nextPage,
             onBack: prevPage,
           ),
           EditBabyProfilePage6(
-            babyProfileData: babyProfileData,
+            babyProfileData: babyData,
             onNext: finishBebe,
             onBack: prevPage,
           ),

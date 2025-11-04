@@ -4,16 +4,16 @@ import '../theme/colors.dart';
 import '../theme/border_radius.dart';
 import '../icons/app_icons.dart';
 
-class AppLogoutButton extends StatefulWidget {
+class AppEditButton extends StatefulWidget {
   final VoidCallback? onTap; // optional custom action
 
-  const AppLogoutButton({super.key, this.onTap});
+  const AppEditButton({super.key, this.onTap});
 
   @override
-  State<AppLogoutButton> createState() => _AppLogoutButtonState();
+  State<AppEditButton> createState() => _AppEditButtonState();
 }
 
-class _AppLogoutButtonState extends State<AppLogoutButton> {
+class _AppEditButtonState extends State<AppEditButton> {
   double _scale = 1.0;
 
   @override
@@ -36,7 +36,7 @@ class _AppLogoutButtonState extends State<AppLogoutButton> {
             boxShadow: [AppColors.defaultShadow],
           ),
           alignment: Alignment.center,
-          child: AppIcons.svg(AppIcons.logout, size: 20, color: AppColors.premier),
+          child: AppIcons.svg(AppIcons.edit, size: 20, color: AppColors.premier),
         ),
       ),
     );

@@ -3,9 +3,11 @@ import '../../models/signup_data.dart';
 import 'signup_page_1.dart';
 import 'signup_page_2.dart';
 import 'signup_page_3.dart';
-import 'signup_page_4.dart';
- import 'package:shared_preferences/shared_preferences.dart';
- 
+import 'signup_page_4.dart'; 
+import 'package:provider/provider.dart';
+import '../../providers/user_provider.dart';
+import '../../services/auth_service.dart';
+
 class SignupFlowPage extends StatefulWidget {
   const SignupFlowPage({super.key});
 
@@ -31,9 +33,10 @@ class _SignupFlowPageState extends State<SignupFlowPage> {
     );
   }
 
- void finishSignup() async {
-
-  // At this point, all data is collected in signupData
+  /// Finish the signup process and save the collected data to SharedPreferences for auto-login.
+  /// Print all collected data to the console for debugging.
+  /// Navigate safely to the home page (/babyprofile).
+void finishSignup() async {
   debugPrint('🎉 Signup completed with data:');
   debugPrint('Name: ${signupData.name}');
   debugPrint('Lastname: ${signupData.lastname}');
@@ -43,17 +46,49 @@ class _SignupFlowPageState extends State<SignupFlowPage> {
   debugPrint('Avatar: ${signupData.avatar}');
   debugPrint('Gender: ${signupData.gender}');
   debugPrint('Birthday: ${signupData.birthday}');
-  debugPrint('OTP Code: ${signupData.otpCode}');
 
-    // ✅ Save login token/data for auto-login
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('login_phone', signupData.phone ?? '');
-  await prefs.setString('login_token', signupData.otpCode ?? ''); 
-  // you can replace otpCode with a real token from backend later
+  final auth = AuthService();
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-  // ✅ Navigate safely
-  if (!mounted) return;
-  Navigator.of(context).pushReplacementNamed('/babyprofile'); // go to home
+  // 1️⃣ Signup the user
+  final newUser = await auth.signup(
+    avatar: signupData.avatar,
+    gender: signupData.gender,
+    birthday: signupData.birthday,
+    name: signupData.name ?? '',
+    lastname: signupData.lastname ?? '',
+    email: signupData.email ?? '',
+    phone: signupData.phone ?? '',
+    password: signupData.password ?? '',
+  );
+
+  if (newUser == null) {
+      if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Signup failed. Please try again.')),
+    );
+    return;
+  }
+
+  // 2️⃣ Immediately log in the user using the same credentials
+  final loggedUser = await auth.login(
+    phone: signupData.phone ?? '',
+    password: signupData.password ?? '',
+  );
+
+  if (loggedUser != null) {
+    userProvider.setUser(loggedUser);
+    debugPrint('✅ Auto-login successful: ${loggedUser.name}');
+
+    // 3️⃣ Navigate to baby profile
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/babyprofile');
+  } else {
+      if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Login failed after signup')),
+    );
+  }
 }
 
 

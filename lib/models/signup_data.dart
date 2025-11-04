@@ -8,6 +8,7 @@ class SignupData {
   String? email;
   String? password;
   String? otpCode;
+  String? token;
 
   // Add more fields as needed
 }

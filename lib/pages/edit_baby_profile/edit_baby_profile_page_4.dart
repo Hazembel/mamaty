@@ -7,13 +7,13 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../controllers/form_controllers.dart';
 import '../../widgets/app_text_field_date.dart';
-import '../../models/baby_profile_data.dart';
+import '../../models/baby.dart';
 import '../../widgets/app_button.dart';
 import '../../l10n/app_localizations.dart';
 import '../../widgets/app_text_field.dart';
 
 class EditBabyProfilePage4 extends StatefulWidget {
-  final BabyProfileData babyProfileData;
+  final Baby babyProfileData;
   final VoidCallback onNext;
   final VoidCallback onBack;
 

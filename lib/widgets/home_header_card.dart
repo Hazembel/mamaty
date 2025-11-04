@@ -1,33 +1,41 @@
 import 'package:flutter/material.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
-import '../models/baby_profile_data.dart';
+import '../models/baby.dart';
+import 'package:intl/intl.dart';
 
 class HomeHeaderCard extends StatelessWidget {
-  final BabyProfileData baby;
+  final Baby baby;
   final String userName;
   final String? userAvatar;
+  final VoidCallback? onBabyTap; // <-- new
+  final VoidCallback? onUserTap; // <-- new
 
   const HomeHeaderCard({
     super.key,
     required this.baby,
     required this.userName,
     this.userAvatar,
+    this.onBabyTap,
+    this.onUserTap,
   });
 
-  int _calculateDaysOld() {
+  int _calculateDaysOld(String? birthdayString) {
+    if (birthdayString == null || birthdayString.isEmpty) return 0;
+
     try {
-      final birthday = DateTime.parse(baby.birthday ?? '');
-      final now = DateTime.now();
-      return now.difference(birthday).inDays;
-    } catch (_) {
+      final format = DateFormat('dd/MM/yyyy');
+      final birthday = format.parseStrict(birthdayString);
+      return DateTime.now().difference(birthday).inDays;
+    } catch (e) {
+      debugPrint('❌ Failed to parse birthday: $e');
       return 0;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final days = _calculateDaysOld();
+    final int days = _calculateDaysOld(baby.birthday);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -35,10 +43,14 @@ class HomeHeaderCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // 👶 Baby Avatar (left)
-          CircleAvatar(
-            radius: 25,
-            backgroundImage: AssetImage(
-              baby.avatar ?? 'assets/images/default_baby.png',
+          GestureDetector(
+            onTap: onBabyTap, // <-- handle baby tap
+            child: CircleAvatar(
+              radius: 25,
+              backgroundImage: baby.avatar != null
+                  ? NetworkImage(baby.avatar!)
+                  : const AssetImage('assets/images/default_baby.png')
+                        as ImageProvider,
             ),
           ),
 
@@ -67,11 +79,15 @@ class HomeHeaderCard extends StatelessWidget {
           ),
 
           // 🧍 User Avatar (right)
-          CircleAvatar(
-            radius: 25,
-            backgroundImage: userAvatar != null
-                ? AssetImage(userAvatar!)
-                : const AssetImage('assets/images/default_user.png'),
+          GestureDetector(
+            onTap: onUserTap, // <-- handle user tap
+            child: CircleAvatar(
+              radius: 25,
+              backgroundImage: userAvatar != null
+                  ? NetworkImage(userAvatar!)
+                  : const AssetImage('assets/images/default_user.png')
+                        as ImageProvider,
+            ),
           ),
         ],
       ),

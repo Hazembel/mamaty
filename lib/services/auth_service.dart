@@ -1,182 +1,154 @@
-import '../data/test_login_data.dart';
-import 'dart:math';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/login_data.dart';
-import '../models/user_data.dart';
+import '../models/user.dart';
+import '../api/api_helper.dart';
 import 'package:flutter/material.dart';
 
 class AuthService {
+
   //********* LOGIN *********//
-
-  Future<LoginData?> login({
-    required String phone,
-    required String password,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    for (final user in testUsers) {
-      if (user.phone == phone && user.password == password) {
-        // ✅ Simulate token
-        final token =
-            'token_${user.phone}_${DateTime.now().millisecondsSinceEpoch}';
-
-        // ✅ Create login data
-        final loginData = LoginData(
-          phone: phone,
-          password: password,
-          token: token,
-        );
-
-        await _saveLoginData(loginData);
-
-        // ✅ Fetch user data (simulate /me)
-        final userData = await fetchUser(phone);
-        if (userData != null) {
-          userData.token = token;
-          await saveUserData(userData);
-          debugPrint('✅ Logged in user: ${userData.name}');
-        }
-
-        return loginData;
-      }
-    }
-    return null;
-  }
-
-  //********* FETCH USER *********//
-  Future<UserData?> fetchUser(String phone) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-
+  Future<User?> login({required String phone, required String password}) async {
     try {
-      final user = testUsers.firstWhere((u) => u.phone == phone);
+      final response = await ApiHelper.post('/users/login', {
+        'phone': phone,
+        'password': password,
+      });
 
-      return UserData(
-        name: user.name,
-        lastname: user.lastname,
-        phone: user.phone,
-        email: user.email,
-        avatar: user.avatar,
-        gender: user.gender,
-        birthday: user.birthday,
-        babies: user.babies,
-      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final user = User.fromJson(data['user']);
+        final token = user.token; // token from backend
+
+        // Save token + user locally using SharedPreferences
+        await saveToken(token ?? '');
+        await saveUser(user);
+
+        debugPrint('✅ Logged in: ${user.name}');
+        return user;
+      } else {
+        debugPrint('❌ Login failed: ${response.body}');
+        return null;
+      }
     } catch (e) {
-      debugPrint('❌ User not found for phone: $phone');
+      debugPrint('❌ Login exception: $e');
       return null;
     }
-  }
-
-  //********* SAVE / LOAD USER *********//
-  Future<void> saveUserData(UserData user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_data', jsonEncode(user.toJson()));
-  }
-
-  Future<UserData?> loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('user_data');
-    if (jsonString == null) return null;
-    return UserData.fromJson(jsonDecode(jsonString));
-  }
-
-  //********* SAVE / LOAD LOGIN *********//
-  Future<void> _saveLoginData(LoginData data) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('login_phone', data.phone ?? '');
-    await prefs.setString('login_token', data.token ?? '');
-  }
-
-  Future<LoginData?> loadLoginData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final phone = prefs.getString('login_phone');
-    final token = prefs.getString('login_token');
-    if (phone != null &&
-        phone.isNotEmpty &&
-        token != null &&
-        token.isNotEmpty) {
-      return LoginData(phone: phone, token: token);
-    }
-    return null;
   }
 
   //********* LOGOUT *********//
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('login_phone');
-    await prefs.remove('login_token');
-    await prefs.remove('user_data');
+    await prefs.remove('token');
+    await prefs.remove('user');
     debugPrint('🚪 User logged out');
   }
 
-  //********* FORGET PASSWORD *********//
-  Future<String?> forgetPassVerifyPhoneSendCode(String phone) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final exists = testUsers.any((user) => user.phone == phone);
-    if (!exists) return null;
-
-    final random = Random();
-    final code = testCodes[random.nextInt(testCodes.length)];
-    debugPrint('📱 Sending login code $code to $phone');
-    return code;
+  //********* SAVE / LOAD USER *********//
+  Future<void> saveUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user', jsonEncode(user.toJson()));
   }
 
-  Future<bool> forgetPassCreatePassword({
-    required String phone,
-    required String password,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 700));
+  Future<User?> loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString('user');
+    if (jsonString == null) return null;
+    return User.fromJson(jsonDecode(jsonString));
+  }
 
-    final userIndex = testUsers.indexWhere((user) => user.phone == phone);
-    if (userIndex == -1) return false;
+  //********* SAVE / LOAD TOKEN *********//
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+  }
 
-    testUsers[userIndex] = testUsers[userIndex].copyWith(password: password);
-    debugPrint('🔐 Password updated for $phone');
-    return true;
+  Future<String?> loadToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
+  //********* FORGET PASSWORD *********//
+  Future<bool> forgetPassword(String phone, String newPassword) async {
+    try {
+      final response = await ApiHelper.post('/users/reset-password', {
+        'phone': phone,
+        'newPassword': newPassword,
+      });
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ Forget password exception: $e');
+      return false;
+    }
   }
 
   //********* SIGN UP *********//
-  Future<String?> signupVerifyPhoneSendCode(String phone) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final exists = testUsers.any((user) => user.phone == phone);
-    if (exists) return null;
+Future<User?> signup({
+  required String name,
+  required String lastname,
+  required String email,
+  required String phone,
+  required String password,
+ required String? avatar,
+ required String? gender,
+ required String? birthday,
+}) async {
+  try {
+    final response = await ApiHelper.post('/users/register', {
+      'name': name,
+      'lastname': lastname,
+      'email': email,
+      'phone': phone,
+      'password': password,
+      'avatar': avatar,
+      'gender': gender,
+      'birthday': birthday,
+    });
 
-    final random = Random();
-    final code = testCodes[random.nextInt(testCodes.length)];
-    debugPrint('📱 Sending signup code $code to $phone');
-    return code;
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      final user = User.fromJson(data['user']);
+      await saveUser(user);
+      debugPrint('✅ Signup successful: ${user.phone}');
+      return user;
+    }
+    return null;
+  } catch (e) {
+    debugPrint('❌ Signup exception: $e');
+    return null;
+  }
+}
+
+  //********* REQUEST OTP *********//
+  Future<bool> requestOtp(String phone) async {
+    try {
+      final response = await ApiHelper.post('/users/request-otp', {'phone': phone});
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ Request OTP exception: $e');
+      return false;
+    }
+  }
+  //********* REQUEST OTP for signup *********//
+  Future<bool> requestOtpSignup(String phone) async {
+    try {
+      final response = await ApiHelper.post('/users/request-otp-signup', {'phone': phone});
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ Request OTP exception: $e');
+      return false;
+    }
   }
 
-  Future<bool> createUser({
-    required String name,
-    required String lastname,
-    required String email,
-    required String phone,
-    required String password,
-    String? avatar,
-    String? gender,
-    String? birthday,
-    String? otpCode,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 700));
 
-    final exists = testUsers.any((user) => user.phone == phone);
-    if (exists) return false;
 
-    final newUser = TestUser(
-      name: name,
-      lastname: lastname,
-      email: email,
-      phone: phone,
-      password: password,
-      avatar: avatar,
-      gender: gender,
-      birthday: birthday,
-      otpCode: otpCode,
-    );
-
-    testUsers.add(newUser);
-    debugPrint('✅ User created: $phone');
-    return true;
+  //********* VERIFY OTP *********//
+  Future<bool> verifyOtp(String phone, String otp) async {
+    try {
+      final response = await ApiHelper.post('/users/verify-otp', {'phone': phone, 'otp': otp});
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('❌ Verify OTP exception: $e');
+      return false;
+    }
   }
 }

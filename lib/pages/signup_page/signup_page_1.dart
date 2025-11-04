@@ -56,6 +56,7 @@ class _SignupPage1State extends State<SignupPage1> {
 
     // Pre-fill gender
     selectedGender = widget.signupData.gender ?? 'male';
+widget.signupData.gender = selectedGender;
 
     // Pre-fill avatars list based on gender
     currentAvatars = selectedGender == 'male' ? fatherAvatars : motherAvatars;

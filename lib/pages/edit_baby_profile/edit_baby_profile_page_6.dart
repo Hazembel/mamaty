@@ -3,12 +3,12 @@ import '../../widgets/app_top_bar.dart';
 import '../../theme/colors.dart';
 import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
-import '../../models/baby_profile_data.dart';
+import '../../models/baby.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_custom_checkbox.dart'; // ✅ your reusable checkbox
 
 class EditBabyProfilePage6 extends StatefulWidget {
-  final BabyProfileData babyProfileData;
+  final Baby babyProfileData;
   final VoidCallback onNext;
   final VoidCallback onBack;
 

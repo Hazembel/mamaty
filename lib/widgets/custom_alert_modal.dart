@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../icons/app_icons.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
-import '../../widgets/app_button.dart'; // ✅ import your button
+import '../../widgets/app_button.dart';
 
-class CustomAlertModal extends StatelessWidget {
+class CustomAlertModal extends StatefulWidget {
   final String title;
   final String message;
   final String? primaryText;
   final String? secondaryText;
-  final VoidCallback? onPrimary;
+  final Future<void> Function()? onPrimary;
   final VoidCallback? onSecondary;
   final bool showDangerIcon;
 
@@ -18,7 +18,7 @@ class CustomAlertModal extends StatelessWidget {
     required this.title,
     required this.message,
     this.primaryText = 'Consulter',
-    this.secondaryText = 'Modifier L\'maladie',
+    this.secondaryText = 'Modifier',
     this.onPrimary,
     this.onSecondary,
     this.showDangerIcon = true,
@@ -30,7 +30,7 @@ class CustomAlertModal extends StatelessWidget {
     required String message,
     String? primaryText,
     String? secondaryText,
-    VoidCallback? onPrimary,
+    Future<void> Function()? onPrimary,
     VoidCallback? onSecondary,
     bool showDangerIcon = true,
     bool isDismissible = true,
@@ -39,7 +39,7 @@ class CustomAlertModal extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3), //TODO : withOpacity
+      barrierColor: Colors.black.withOpacity(0.3),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -59,6 +59,13 @@ class CustomAlertModal extends StatelessWidget {
   }
 
   @override
+  State<CustomAlertModal> createState() => _CustomAlertModalState();
+}
+
+class _CustomAlertModalState extends State<CustomAlertModal> {
+  bool _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(color: Colors.transparent),
@@ -75,14 +82,12 @@ class CustomAlertModal extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 8),
-
-              if (showDangerIcon) ...[
+              if (widget.showDangerIcon) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                
                   ),
                   child: SizedBox(
                     width: 56,
@@ -94,62 +99,57 @@ class CustomAlertModal extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
               ],
-
               Text(
-                title,
+                widget.title,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.inter16SemiBold.copyWith(
                   fontSize: 16,
                   color: AppColors.black,
                 ),
               ),
-
               const SizedBox(height: 8),
-
               Text(
-                message,
+                widget.message,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.inter14Med.copyWith(
-                  color:  AppColors.black,
-                ),
+                style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
               ),
-
               const SizedBox(height: 20),
-
-              // ✅ Buttons section
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                
-                     AppButton(
-                      title: secondaryText ?? '',
-                      size: ButtonSize.md,
-                             fullWidth: false,
+                  Expanded(
+                    child: AppButton(
+                      title: widget.secondaryText ?? '',
                       backgroundColor: AppColors.lightPremier,
                       textColor: AppColors.white,
                       onPressed: () {
                         Navigator.of(context).pop();
-                        if (onSecondary != null) onSecondary!();
+                        if (widget.onSecondary != null) widget.onSecondary!();
                       },
                     ),
-                  
+                  ),
                   const SizedBox(width: 12),
-                 
-                   AppButton(
-                      title: primaryText ?? '',
-                      fullWidth: false,
-                      size: ButtonSize.md,
+                  Expanded(
+                    child: AppButton(
+                      title: widget.primaryText ?? '',
                       backgroundColor: AppColors.premier,
                       textColor: Colors.white,
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        if (onPrimary != null) onPrimary!();
+                      loading: _isLoading,
+                      onPressed: () async {
+                        if (widget.onPrimary == null) return;
+                        setState(() => _isLoading = true);
+                        try {
+                          await widget.onPrimary!();
+                          if (mounted) Navigator.of(context).pop();
+                        } catch (e) {
+                          debugPrint('❌ Modal primary action failed: $e');
+                        } finally {
+                          if (mounted) setState(() => _isLoading = false);
+                        }
                       },
                     ),
-                  
+                  ),
                 ],
               ),
-
               const SizedBox(height: 8),
             ],
           ),

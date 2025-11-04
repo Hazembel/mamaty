@@ -45,7 +45,7 @@ Future<void> _login() async {
   });
 
   if (loginData != null) {
-    final userData = await auth.loadUserData(); // get saved user
+    final userData = await auth.loadUser(); // get saved user
     if (userData != null) {
       userProvider.setUser(userData); // ✅ set in provider
     }
