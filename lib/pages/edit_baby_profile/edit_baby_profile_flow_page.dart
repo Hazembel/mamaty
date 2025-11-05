@@ -131,13 +131,13 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
    EditBabyProfilePage4(
             babyProfileData: babyData,
             onNext: nextPage,
-            onBack: prevPage,
+            onBack: () => Navigator.pop(context),
           ),
 
           EditBabyProfilePage2(
             babyProfileData: babyData,
             onNext: nextPage,
-            onBack: () => Navigator.pop(context),
+            onBack: prevPage,
           ),
           EditBabyProfilePage3(
             babyProfileData: babyData,

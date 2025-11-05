@@ -8,7 +8,7 @@ import '../widgets/app_location_button.dart';
 import '../theme/colors.dart';
 import '../theme/dimensions.dart';
 import '../theme/text_styles.dart';
-import '../models/doctor_data.dart';
+import '../models/doctor.dart';
 
 class DoctorDetailsPage extends StatelessWidget {
   final Doctor doctor;

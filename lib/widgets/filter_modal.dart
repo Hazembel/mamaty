@@ -6,12 +6,12 @@ import '../widgets/filter_chip_box.dart'; // ✅ new reusable chip widget
 
 class FilterModalResult {
   final List<String> city;
-  final double minRating;
+  final double rating;
   final List<String> specialties;
 
   FilterModalResult({
     required this.city,
-    required this.minRating,
+    required this.rating,
     required this.specialties,
   });
 }
@@ -194,7 +194,7 @@ class _FilterModalState extends State<FilterModal> {
                     Navigator.of(context).pop(
                       FilterModalResult(
                         city: selectedcity,
-                        minRating: selectedRating,
+                        rating: selectedRating,
                         specialties: selectedSpecialties,
                       ),
                     );

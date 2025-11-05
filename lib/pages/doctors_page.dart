@@ -6,7 +6,7 @@ import '../theme/colors.dart';
 import '../theme/dimensions.dart';
 import '../services/doctor_service.dart';
 import '../pages/doctor_details_page.dart';
-import '../models/doctor_data.dart';
+import '../models/doctor.dart';
 import '../widgets/filter_modal.dart';
 
 class DoctorsPage extends StatefulWidget {
@@ -26,10 +26,8 @@ class DoctorsPage extends StatefulWidget {
 }
 
 class _DoctorsPageState extends State<DoctorsPage> {
-  final DoctorService _doctorService = DoctorService();
-  List<Map<String, dynamic>> _allDoctors = [];
-  List<Map<String, dynamic>> _filteredDoctors = [];
-
+  List<Doctor> _allDoctors = [];
+  List<Doctor> _filteredDoctors = [];
   bool _isLoading = true;
 
   @override
@@ -38,38 +36,37 @@ class _DoctorsPageState extends State<DoctorsPage> {
     _loadDoctors();
   }
 
-  Future<void> _loadDoctors() async {
-    final doctors = await _doctorService.fetchDoctors();
-    setState(() {
-      _allDoctors = doctors;
-      _filteredDoctors = doctors;
-      _isLoading = false;
-    });
+  Future<void> _loadDoctors({String? city, String? specialty, double? rating}) async {
+    setState(() => _isLoading = true);
+
+    try {
+      final doctors = await DoctorService.getDoctors(
+        city: city,
+        specialty: specialty,
+        rating: rating,
+      );
+
+      setState(() {
+        _allDoctors = doctors;
+        _filteredDoctors = doctors;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('❌ Error loading doctors: $e');
+      setState(() => _isLoading = false);
+    }
   }
 
   void _filterDoctors(String query) {
     setState(() {
       _filteredDoctors = _allDoctors
           .where((doctor) =>
-              doctor['name'].toLowerCase().contains(query.toLowerCase()))
+              doctor.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
 
-  /// 🩺 Navigate to doctor details page
-  void _openDoctorDetails(Map<String, dynamic> doctorData) {
-    final doctor = Doctor(
-      name: doctorData['name'],
-      specialty: doctorData['specialty'],
-      rating: doctorData['rating'],
-      city: doctorData['city'],
-      imageUrl: doctorData['imageUrl'],
-      description: doctorData['description'],
-      workTime: doctorData['workTime'],
-      phone: doctorData['phone'],
-      address: doctorData['address'],
-    );
-
+  void _openDoctorDetails(Doctor doctor) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -78,65 +75,37 @@ class _DoctorsPageState extends State<DoctorsPage> {
     );
   }
 
-  /// 🧩 Show filter modal
-  Future<void> _openFilterModal() async {
+  /// 🧩 Open filter modal and fetch filtered data from API
+Future<void> _openFilterModal() async {
+  try {
+    final filters = await DoctorService.getFilters();
+
     final result = await FilterModal.show(
       context,
-        allcity: [
-      'Tunis',
-      'Ariana',
-      'Ben Arous',
-      'Manouba',
-      'Nabeul',
-      'Zaghouan',
-      'Bizerte',
-      'Béja',
-      'Jendouba',
-      'Kef',
-      'Siliana',
-      'Sousse',
-      'Monastir',
-      'Mahdia',
-      'Sfax',
-      'Kairouan',
-      'Kasserine',
-      'Sidi Bouzid',
-      'Gabès',
-      'Medenine',
-      'Tataouine',
-      'Tozeur',
-      'Kebili',
-      'Gafsa',
-    ], 
-      allSpecialties: [
-        'Cardiologue',
-        'Dentiste',
-        'Dermatologue',
-        'Pédiatre',
-        'Chirurgien'
-      ],
+      allcity: filters['cities'] ?? [],
+      allSpecialties: filters['specialties'] ?? [],
     );
 
-if (result != null) {
-  debugPrint("🩺 Filter applied:");
-  debugPrint("City: ${result.city}");
-  debugPrint("Min rating: ${result.minRating}");
-  debugPrint("Specialties: ${result.specialties}");
+    if (result != null) {
+      debugPrint("🩺 Filter applied:");
+      debugPrint("City: ${result.city}");
+      debugPrint("Rating: ${result.rating}");
+      debugPrint("Specialties: ${result.specialties}");
 
-  setState(() {
-    _filteredDoctors = _allDoctors.where((doctor) {
-      final matchesCity =
-          result.city.isEmpty || result.city.contains(doctor['city']);
-      final matchesSpecialty =
-          result.specialties.isEmpty || result.specialties.contains(doctor['specialty']);
-      final matchesRating =
-          result.minRating == 0.0 || doctor['rating'] >= result.minRating;
-
-      return matchesCity && matchesSpecialty && matchesRating;
-    }).toList();
-  });
-}
+      await _loadDoctors(
+        city: result.city.isNotEmpty ? result.city.first : null,
+        specialty: result.specialties.isNotEmpty ? result.specialties.first : null,
+        rating: result.rating > 0 ? result.rating : null,
+      );
+    }
+  } catch (e) {
+    debugPrint('❌ Failed to load filters: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur de chargement des filtres')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -152,9 +121,7 @@ if (result != null) {
                 title: widget.title,
                 onBack: widget.onBack ??
                     () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                      }
+                      if (Navigator.canPop(context)) Navigator.pop(context);
                     },
               ),
               const SizedBox(height: 15),
@@ -163,7 +130,7 @@ if (result != null) {
               AppSearchInput(
                 searchText: widget.searchPlaceholder,
                 onChanged: _filterDoctors,
-                onFilterTap: _openFilterModal, // ✅ opens the filter modal
+                onFilterTap: _openFilterModal,
               ),
 
               const SizedBox(height: 15),
@@ -173,7 +140,7 @@ if (result != null) {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : GridView.builder(
-                        clipBehavior: Clip.none, // ✅ allow shadow
+                        clipBehavior: Clip.none,
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
@@ -187,11 +154,11 @@ if (result != null) {
                           return GestureDetector(
                             onTap: () => _openDoctorDetails(doctor),
                             child: DoctorCard(
-                              doctorName: doctor['name'],
-                              specialty: doctor['specialty'],
-                              rating: doctor['rating'],
-                              city: doctor['city'],
-                              imageUrl: doctor['imageUrl'],
+                              doctorName: doctor.name,
+                              specialty: doctor.specialty,
+                              rating: doctor.rating,
+                              city: doctor.city,
+                              imageUrl: doctor.imageUrl,
                             ),
                           );
                         },
