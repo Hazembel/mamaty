@@ -1,18 +1,19 @@
-// lib/models/doctor.dart
 class Doctor {
+  final String id;
   final String name;
   final String specialty;
   final double rating;
-  final String city; // was 'distance', now represents city or location
+  final String city;
   final String imageUrl;
+  final String description;
+  final String workTime;
+  final String phone;
+  final String address;
 
-  // 🆕 Added fields for the details page
-  final String description; // bio / about section
-  final String workTime; // e.g. "Mon–Fri: 9am–6pm"
-  final String phone; // contact number
-  final String address; // clinic address
+  bool? isFavorite; // <-- added to track favorite state
 
   Doctor({
+    required this.id,
     required this.name,
     required this.specialty,
     required this.rating,
@@ -22,11 +23,12 @@ class Doctor {
     required this.workTime,
     required this.phone,
     required this.address,
+    this.isFavorite,
   });
 
-  // ✅ Helper: create from Map (for JSON or mock data)
   factory Doctor.fromMap(Map<String, dynamic> map) {
     return Doctor(
+      id: map['_id'] ?? '',
       name: map['name'] ?? '',
       specialty: map['specialty'] ?? '',
       rating: (map['rating'] ?? 0).toDouble(),
@@ -36,12 +38,13 @@ class Doctor {
       workTime: map['workTime'] ?? '',
       phone: map['phone'] ?? '',
       address: map['address'] ?? '',
+      isFavorite: map['isFavorite'] ?? false,
     );
   }
 
-  // ✅ Helper: convert to Map (for storage or API)
   Map<String, dynamic> toMap() {
     return {
+      '_id': id,
       'name': name,
       'specialty': specialty,
       'rating': rating,
@@ -51,6 +54,7 @@ class Doctor {
       'workTime': workTime,
       'phone': phone,
       'address': address,
+      'isFavorite': isFavorite ?? false,
     };
   }
 }

@@ -1,14 +1,15 @@
 class User {
-   String id;
-   String name;
-   String lastname;
-   String email;
-   String phone;
-   String avatar;
-   String gender;
-   String birthday;
-   List<String> babies; // IDs or you can switch to Baby objects later
-  String? token; // <-- add token here
+  String id;
+  String name;
+  String lastname;
+  String email;
+  String phone;
+  String avatar;
+  String gender;
+  String birthday;
+  List<String> babies;   // IDs
+  List<String> doctors;  // ✅ Added for favorite doctors
+  String? token;
 
   User({
     required this.id,
@@ -20,6 +21,7 @@ class User {
     required this.gender,
     required this.birthday,
     required this.babies,
+    required this.doctors, // ✅ add in constructor
     this.token,
   });
 
@@ -34,7 +36,8 @@ class User {
       gender: json['gender'],
       birthday: json['birthday'],
       babies: List<String>.from(json['babies'] ?? []),
-      token: json['token'], // <-- read token if present
+      doctors: List<String>.from(json['doctors'] ?? []), // ✅ parse doctors
+      token: json['token'],
     );
   }
 
@@ -49,7 +52,8 @@ class User {
       'gender': gender,
       'birthday': birthday,
       'babies': babies,
-      'token': token, // <-- include token when saving
+      'doctors': doctors, // ✅ include doctors
+      'token': token,
     };
   }
 }

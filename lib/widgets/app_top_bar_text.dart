@@ -9,25 +9,29 @@ class AppTopBarText extends StatelessWidget {
   final String? title;
   final VoidCallback? onBack;
   final VoidCallback? onShare;
-  final VoidCallback? onSave;
-  final double topMargin;
-
   final bool showBack;
   final bool showShare;
   final bool showSave;
   final bool showTitle;
+  
+  // ✅ New: state for save button
+  final bool? isSaved;
+  final VoidCallback? onToggleSave;
+
+  final double topMargin;
 
   const AppTopBarText({
     super.key,
     this.title,
     this.onBack,
     this.onShare,
-    this.onSave,
-    this.topMargin = 30,
     this.showBack = true,
     this.showShare = false,
     this.showSave = false,
-    this.showTitle = true, // 👈 NEW: controls visibility of text
+    this.showTitle = true,
+    this.topMargin = 30,
+    this.isSaved,
+    this.onToggleSave,
   });
 
   @override
@@ -57,7 +61,7 @@ class AppTopBarText extends StatelessWidget {
               ),
             )
           else
-            const Spacer(), // keep layout balanced if no title
+            const Spacer(),
 
           // 📤 Share + 💾 Save buttons (right)
           Row(
@@ -68,10 +72,13 @@ class AppTopBarText extends StatelessWidget {
                   padding: const EdgeInsets.only(right: 10),
                   child: AppShareButton(onTap: onShare),
                 ),
-              if (showSave)
-                AppSaveButton(onSave: onSave),
+              if (showSave && isSaved != null && onToggleSave != null)
+                AppSaveButton(
+                  isSaved: isSaved!,
+                  onToggle: onToggleSave!,
+                ),
               if (!showShare && !showSave)
-                const SizedBox(width: 40), // keep symmetry
+                const SizedBox(width: 40),
             ],
           ),
         ],

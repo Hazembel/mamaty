@@ -32,6 +32,28 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Toggle a doctor as favorite
+  Future<void> toggleFavoriteDoctor(String doctorId) async {
+    if (_user == null) return;
+
+    final isFavorite = _user!.doctors.contains(doctorId);
+
+    if (isFavorite) {
+      _user!.doctors.remove(doctorId);
+    } else {
+      _user!.doctors.add(doctorId);
+    }
+
+    notifyListeners();
+
+    try {
+      await AuthService().saveUser(_user!); // persist changes
+      debugPrint('💾 Updated favorite doctors: ${_user!.doctors}');
+    } catch (e) {
+      debugPrint('❌ Failed to save user after toggling favorite: $e');
+    }
+  }
+
   /// Add a baby ID to user and persist the updated user locally
   Future<void> addBabyToUser(String babyId) async {
     if (_user != null && babyId.isNotEmpty && !_user!.babies.contains(babyId)) {
@@ -39,7 +61,6 @@ class UserProvider extends ChangeNotifier {
       notifyListeners();
 
       try {
-        // Persist updated user so splash/loadUser sees the new baby without re-login
         await AuthService().saveUser(_user!);
         debugPrint('💾 Persisted user with new baby id: $babyId');
       } catch (e) {

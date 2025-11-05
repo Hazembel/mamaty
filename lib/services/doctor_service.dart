@@ -89,4 +89,22 @@ static Future<Map<String, List<String>>> getFilters() async {
       throw Exception('Failed to delete doctor');
     }
   }
+
+
+ /// ✅ favorite doctor for the current user
+// doctor_service.dart
+static Future<bool> toggleFavoriteDoctor(String doctorId) async {
+  final response = await ApiHelper.post('/users/favorite-doctor/$doctorId', {});
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    return data['isFavorite']; // <-- backend returns the new state
+  } else {
+    throw Exception('Failed to toggle favorite doctor');
+  }
+}
+
+
+
+
+
 }
