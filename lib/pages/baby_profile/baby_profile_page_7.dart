@@ -24,7 +24,7 @@ class BabyProfilePage7 extends StatefulWidget {
 }
 
 class _BabyProfilePage7State extends State<BabyProfilePage7> {
-  late double _headSize;
+  late double _headSize = 5;
 
   @override
   void initState() {
@@ -43,7 +43,7 @@ class _BabyProfilePage7State extends State<BabyProfilePage7> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top bar with step
-            AppTopBar(currentStep: 4, totalSteps: 7, onBack: widget.onBack),
+            AppTopBar(currentStep: 4, totalSteps: 6, onBack: widget.onBack),
 
             const SizedBox(height: 30),
 
@@ -62,7 +62,7 @@ class _BabyProfilePage7State extends State<BabyProfilePage7> {
             // Head Size Ruler
             Center(
               child: VerticalMeasurementRuler(
-                minValue: 5, // minimum head circumference in cm
+                minValue: 0.5, // minimum head circumference in cm
                 maxValue: 60, // maximum head circumference
                 initialValue: _headSize,
                 onChanged: (value) {
@@ -80,6 +80,8 @@ class _BabyProfilePage7State extends State<BabyProfilePage7> {
             AppButton(
               title: 'Continuer',
               onPressed: () {
+
+                 widget.babyProfileData.headSize ??= _headSize;
                 widget.onNext();
               },
               size: ButtonSize.lg,

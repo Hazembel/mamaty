@@ -7,11 +7,13 @@ typedef OnCreateCallback = void Function();
 class AppCreateBebe extends StatelessWidget {
   final OnCreateCallback? onTap;
   final double size;
+  final double? iconSize;
 
   const AppCreateBebe({
     super.key,
     this.onTap,
-    this.size = 120,
+    required this.size,
+    this.iconSize,
   });
 
   @override
@@ -29,7 +31,9 @@ class AppCreateBebe extends StatelessWidget {
         alignment: Alignment.center, // centers the icon directly
         child: AppIcons.svg(
           AppIcons.union,
-          size: 40,
+          size:
+              iconSize ??
+              (size * 0.3), // Make icon size relative to container size
           color: AppColors.premier,
         ),
       ),

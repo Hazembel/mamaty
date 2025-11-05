@@ -3,10 +3,11 @@ import '../../widgets/app_top_bar.dart';
 import '../../theme/colors.dart';
 import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
-import '../../widgets/app_weight_ruler.dart'; // ✅ import the weight ruler
+import '../../widgets/app_weight_ruler.dart';
 import '../../widgets/app_button.dart';
 import '../../models/baby.dart';
- 
+import '../../controllers/weight_controllers.dart';
+import '../../widgets/custom_alert_modal.dart';
 
 class EditBabyProfilePage3 extends StatefulWidget {
   final VoidCallback onNext;
@@ -27,11 +28,95 @@ class EditBabyProfilePage3 extends StatefulWidget {
 class _EditBabyProfilePage3State extends State<EditBabyProfilePage3> {
   late double _weight;
 
+//************ */ Calculate age in days 
+int _calculateAgeInDays(String? birthday) {
+  if (birthday == null || birthday.isEmpty) return 0;
+
+  DateTime? birthDate;
+
+  // Try ISO first (yyyy-MM-dd)
+  birthDate = DateTime.tryParse(birthday);
+
+  // Try dd/MM/yyyy manually if needed
+  if (birthDate == null && birthday.contains('/')) {
+    try {
+      final parts = birthday.split('/');
+      if (parts.length == 3) {
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        birthDate = DateTime(year, month, day);
+      }
+    } catch (e) {
+      debugPrint('⚠️ Failed to parse birthday: $e');
+      return 0;
+    }
+  }
+
+  if (birthDate == null) return 0;
+
+  final ageInDays = DateTime.now().difference(birthDate).inDays;
+  return ageInDays < 0 ? 0 : ageInDays;
+}
+
+
   @override
-  void initState() {
-    super.initState();
-    // ✅ Load previous weight if available, fallback to 5
-    _weight = widget.babyProfileData.weight ?? 5;
+void initState() {
+  super.initState();
+
+  _weight = widget.babyProfileData.weight ?? 5;
+
+  // 🧮 Calculate age in days
+  final ageInDays = _calculateAgeInDays(widget.babyProfileData.birthday);
+
+  // 🪵 Debug log to confirm which baby and what age
+  debugPrint(
+    '🍼 Editing baby: ${widget.babyProfileData.name ?? 'Unknown'} | '
+    'Birthday: ${widget.babyProfileData.birthday ?? 'N/A'} | '
+    'Age in days: $ageInDays',
+  );
+}
+
+
+  Future<void> _onContinue() async {
+    final baby = widget.babyProfileData;
+    baby.weight ??= _weight;
+
+    // ✅ Validate using controller
+    final ageInDays = _calculateAgeInDays(baby.birthday);
+    final error = WeightController.validateWeight(
+      weight: baby.weight!,
+      ageInDays: ageInDays,
+      gender: baby.gender ?? 'male',
+    );
+
+    if (error != null) {
+      // 🚨 Show alert if invalid
+    await CustomAlertModal.show(
+      context,
+      title: 'Attention médicale requise',
+      message:
+          'Le poids actuel de votre bébé semble en dehors de la plage normale pour son âge. Il est conseillé de consulter un professionnel de santé afin de vérifier son état de croissance et d’assurer un suivi adapté',
+      primaryText: 'Consulter',
+      secondaryText: 'Continuer',
+      onPrimary: () async {
+        // Navigate to DoctorsPage
+        await Navigator.of(context).pushNamed('/doctors');
+        // You can optionally continue after returning from DoctorsPage
+      },
+      onSecondary: () {
+        widget.babyProfileData.weight = _weight;
+        widget.onNext();
+       
+      },
+    );
+   
+      return; // stop here
+    }
+
+    // ✅ All good → continue
+    widget.babyProfileData.weight = _weight;
+    widget.onNext();
   }
 
   @override
@@ -43,15 +128,12 @@ class _EditBabyProfilePage3State extends State<EditBabyProfilePage3> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar with step
             AppTopBar(
               currentStep: 3,
               totalSteps: 6,
               onBack: widget.onBack,
             ),
-
             const SizedBox(height: 30),
-
             Center(
               child: Text(
                 'Quel est son poids actuel ?',
@@ -61,10 +143,7 @@ class _EditBabyProfilePage3State extends State<EditBabyProfilePage3> {
                 ),
               ),
             ),
-
             const SizedBox(height: 30),
-
-            // Weight Ruler
             Center(
               child: WeightRuler(
                 minValue: 0,
@@ -73,20 +152,15 @@ class _EditBabyProfilePage3State extends State<EditBabyProfilePage3> {
                 onChanged: (value) {
                   setState(() {
                     _weight = value;
-                    // ✅ Save back to babyProfileData so it persists
                     widget.babyProfileData.weight = value;
                   });
                 },
               ),
             ),
-
             const SizedBox(height: 117),
-
             AppButton(
               title: 'Continuer',
-              onPressed: () {
-                widget.onNext();
-              },
+              onPressed: _onContinue,
               size: ButtonSize.lg,
             ),
           ],

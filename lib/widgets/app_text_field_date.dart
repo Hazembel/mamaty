@@ -32,7 +32,7 @@ class _AppTextFieldDateState extends State<AppTextFieldDate> {
           onTap: () async {
             DateTime? pickedDate = await showDatePicker(
               context: context,
-              initialDate: DateTime(2000),
+              initialDate: DateTime(2025),
               firstDate: DateTime(1900),
               lastDate: DateTime.now(),
             );

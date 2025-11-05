@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/baby.dart'; 
+import '../../models/baby.dart';
 import '../../services/baby_service.dart';
 
 import 'edit_baby_profile_page_2.dart';
@@ -10,6 +10,7 @@ import 'edit_baby_profile_page_5.dart';
 import 'edit_baby_profile_page_6.dart';
 import 'edit_baby_profile_page_7.dart';
 import '../../providers/baby_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../theme/colors.dart';
 
 class EditBabyProfileFlow extends StatefulWidget {
@@ -18,11 +19,9 @@ class EditBabyProfileFlow extends StatefulWidget {
   const EditBabyProfileFlow({super.key, required this.baby});
 
   static void start(BuildContext context, Baby baby) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => EditBabyProfileFlow(baby: baby),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => EditBabyProfileFlow(baby: baby)));
   }
 
   @override
@@ -54,57 +53,73 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
     );
   }
 
-Future<void> finishBebe() async {
-  // Autorisation logic
-  final hasCondition = (babyData.disease != null &&
-          babyData.disease!.trim().toLowerCase() != 'aucune') ||
-      (babyData.allergy != null &&
-          babyData.allergy!.trim().toLowerCase() != 'aucune');
+  Future<void> finishBebe() async {
+    // Autorisation logic
+    final hasCondition =
+        (babyData.disease != null &&
+            babyData.disease!.trim().toLowerCase() != 'aucune') ||
+        (babyData.allergy != null &&
+            babyData.allergy!.trim().toLowerCase() != 'aucune');
 
-  babyData.autorisation = !hasCondition;
+    babyData.autorisation = !hasCondition;
 
-  debugPrint(hasCondition
-      ? '🚫 Autorisation set to FALSE due to condition.'
-      : '✅ Autorisation TRUE.');
+    debugPrint(
+      hasCondition
+          ? '🚫 Autorisation set to FALSE due to condition.'
+          : '✅ Autorisation TRUE.',
+    );
 
-  try {
-    final babyProvider = context.read<BabyProvider>(); // ✅ use read instead of watch
+    try {
+      final babyProvider = context
+          .read<BabyProvider>(); // ✅ use read instead of watch
 
-    if (babyData.id == null || babyData.id!.isEmpty) {
-      // Create new baby
-      final savedBaby = await BabyService.addBaby(babyData);
-      babyProvider.addBaby(savedBaby); // Add to provider
+      if (babyData.id == null || babyData.id!.isEmpty) {
+        // Create new baby
+        final savedBaby = await BabyService.addBaby(babyData);
+        babyProvider.addBaby(savedBaby); // Add to provider
 
-      debugPrint('🍼 Baby created successfully: ${savedBaby.id}');
-    } else {
-      // Update existing baby
-      final updatedBaby =
-          await BabyService.updateBaby(babyData.id!, babyData.toJson());
-      babyProvider.updateBaby(updatedBaby); // Update provider
+        // Also add baby id to user and persist user so it survives reloads
+        try {
+          final userProvider = context.read<UserProvider>();
+          if (savedBaby.id != null) {
+            await userProvider.addBabyToUser(savedBaby.id!);
+          }
+        } catch (e) {
+          debugPrint('❌ Failed to persist baby id to user: $e');
+        }
 
-      debugPrint('💾 Baby updated successfully: ${updatedBaby.name}');
+        debugPrint('🍼 Baby created successfully: ${savedBaby.id}');
+      } else {
+        // Update existing baby
+        final updatedBaby = await BabyService.updateBaby(
+          babyData.id!,
+          babyData.toJson(),
+        );
+        babyProvider.updateBaby(updatedBaby); // Update provider
+
+        debugPrint('💾 Baby updated successfully: ${updatedBaby.name}');
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bébé enregistré avec succès'),
+            backgroundColor: AppColors.premier,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to save or update baby: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')),
+        );
+      }
     }
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Bébé enregistré avec succès'),
-          backgroundColor: AppColors.premier,
-        ),
-      );
-    }
-  } catch (e) {
-    debugPrint('❌ Failed to save or update baby: $e');
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')),
-      );
-    }
+    if (!mounted) return;
+    Navigator.of(context).pop(babyData); // Return updated or created baby
   }
-
-  if (!mounted) return;
-  Navigator.of(context).pop(babyData); // Return updated or created baby
-}
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +128,12 @@ Future<void> finishBebe() async {
         controller: _pageController,
         physics: const NeverScrollableScrollPhysics(),
         children: [
+   EditBabyProfilePage4(
+            babyProfileData: babyData,
+            onNext: nextPage,
+            onBack: prevPage,
+          ),
+
           EditBabyProfilePage2(
             babyProfileData: babyData,
             onNext: nextPage,
@@ -128,11 +149,7 @@ Future<void> finishBebe() async {
             onNext: nextPage,
             onBack: prevPage,
           ),
-          EditBabyProfilePage4(
-            babyProfileData: babyData,
-            onNext: nextPage,
-            onBack: prevPage,
-          ),
+       
           EditBabyProfilePage5(
             babyProfileData: babyData,
             onNext: nextPage,

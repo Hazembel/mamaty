@@ -9,6 +9,7 @@ import '../../theme/dimensions.dart';
 
 import 'package:provider/provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/baby_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,45 +25,48 @@ class _LoginPageState extends State<LoginPage> {
   String? _passwordError;
   bool _isLoading = false;
 
-//login service and token manager
-Future<void> _login() async {
-  setState(() {
-    _isLoading = true;
-  });
+  //login service and token manager
+  Future<void> _login() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  final auth = AuthService();
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final auth = AuthService();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-  final loginData = await auth.login(
-    phone: _phoneController.text.trim(),
-    password: _passwordController.text,
-  );
-
-
-
-  setState(() {
-    _isLoading = false;
-  });
-
-  if (loginData != null) {
-    final userData = await auth.loadUser(); // get saved user
-    if (userData != null) {
-      userProvider.setUser(userData); // ✅ set in provider
-    }
-  if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Bienvenue 👋')),
+    final loginData = await auth.login(
+      phone: _phoneController.text.trim(),
+      password: _passwordController.text,
     );
 
-    Navigator.pushReplacementNamed(context, '/babyprofile');
-  } else {
     setState(() {
-      _passwordError = 'Numéro ou mot de passe incorrect';
+      _isLoading = false;
     });
-  }
-}
 
-// forgot password button
+    if (loginData != null) {
+      final userData = await auth.loadUser(); // get saved user
+      if (userData != null) {
+        userProvider.setUser(userData); // ✅ set in provider
+
+        // Load babies after setting user
+        final babyProvider = Provider.of<BabyProvider>(context, listen: false);
+        debugPrint('🧾 user babyIds on login: ${userData.babies}');
+        await babyProvider.loadBabies(userData.babies);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Bienvenue 👋')));
+
+      Navigator.pushReplacementNamed(context, '/babyprofile');
+    } else {
+      setState(() {
+        _passwordError = 'Numéro ou mot de passe incorrect';
+      });
+    }
+  }
+
+  // forgot password button
   bool _isPressed = false;
   void _onTapDown(_) => setState(() => _isPressed = true);
   void _onTapUp(_) {
@@ -73,12 +77,12 @@ Future<void> _login() async {
 
   void _onTapCancel() => setState(() => _isPressed = false);
 
-// signup button
+  // signup button
   bool _isPressedsignup = false;
   void _onTapDownsignup(_) => setState(() => _isPressedsignup = true);
   void _onTapUpsignup(_) {
-/// Called when the signup button is tapped up.
-/// Navigates to the signup page after tap.
+    /// Called when the signup button is tapped up.
+    /// Navigates to the signup page after tap.
     setState(() => _isPressedsignup = false);
     // Navigate after tap
     Navigator.pushNamed(context, '/signup');

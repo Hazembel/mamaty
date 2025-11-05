@@ -35,7 +35,9 @@ class BabyService {
   }
 
   static Future<Baby> getBaby(String babyId) async {
-    final response = await ApiHelper.get('/babies/$babyId');
+    // Ensure ID is safely encoded for URL paths (avoid slashes or spaces breaking the route)
+    final encodedId = Uri.encodeComponent(babyId);
+    final response = await ApiHelper.get('/babies/$encodedId');
 
     debugPrint('Response body: ${response.body}');
 
@@ -43,6 +45,9 @@ class BabyService {
       final baby = Baby.fromJson(jsonDecode(response.body));
       debugPrint('✅ Baby fetched: ${baby.id} | ${baby.name}');
       return baby;
+    } else if (response.statusCode == 404) {
+      // Provide a clearer error for missing babies
+      throw Exception('Baby not found (404) for id: $babyId');
     } else {
       throw Exception('Failed to fetch baby: ${response.statusCode}');
     }

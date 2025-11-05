@@ -28,43 +28,12 @@ class BabyProfilePage1 extends StatefulWidget {
 }
 
 class _BabyProfilePage1State extends State<BabyProfilePage1> {
-  List<Baby> _babyObjects = [];
-  bool _isLoading = true;
   bool _isEditMode = false; // toggles edit/delete icons
 
   @override
   void initState() {
     super.initState();
-    _loadBabies();
-  }
-
-  Future<void> _loadBabies() async {
-    final userProvider = context.read<UserProvider>();
-    final babyProvider = context.read<BabyProvider>();
-    final babyIds = userProvider.user?.babies.toSet().toList() ?? [];
-
-    debugPrint('🍼 Loading babies... $babyIds');
-
-    if (babyIds.isEmpty) {
-      setState(() {
-        _babyObjects = [];
-        _isLoading = false;
-      });
-      return;
-    }
-
-    try {
-      await babyProvider.loadBabies(babyIds);
-      if (!mounted) return;
-      setState(() {
-        _babyObjects = babyProvider.babies;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('❌ Failed to load babies: $e');
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-    }
+    // Initial load is now handled by UserProvider when user logs in
   }
 
   void _handleBabyTap(BuildContext context, Baby baby) {
@@ -102,9 +71,10 @@ class _BabyProfilePage1State extends State<BabyProfilePage1> {
     final userProvider = context.watch<UserProvider>();
     final babyProvider = context.watch<BabyProvider>();
     final babies = babyProvider.babies;
+
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: _isLoading
+      body: babyProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: AppDimensions.pagePadding,
@@ -136,91 +106,102 @@ class _BabyProfilePage1State extends State<BabyProfilePage1> {
                   const SizedBox(height: 60),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: babies.length + 1,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 16,
-                            mainAxisSpacing: 16,
-                            childAspectRatio: 1,
-                          ),
-                      itemBuilder: (context, index) {
-                        if (index < babies.length) {
-                          final baby = babies[index];
-                          return AvatarTile(
-                            imagePath: baby.avatar ?? '',
-                            size: 150,
-                            showEditButtons: _isEditMode,
-                            onTap: () => _handleBabyTap(context, baby),
-                            onEdit: () =>
-                                EditBabyProfileFlow.start(context, baby),
-                            onDelete: () {
-                              CustomAlertModal.show(
-                                context,
-                                title: 'Supprimer bébé',
-                                message:
-                                    'Voulez-vous vraiment supprimer ${baby.name} ?',
-                                primaryText: 'Oui',
-                                secondaryText: 'Non',
-                                onPrimary: () async {
-                                  final babyProvider = context
-                                      .read<BabyProvider>();
-                                  final userProvider = context
-                                      .read<UserProvider>();
-                                  try {
-                                    // Call API to delete baby
-                                    await BabyService.deleteBaby(baby.id!);
-
-                                    // Remove baby locally
-                                    babyProvider.removeBaby(baby.id!);
-                                    userProvider.user?.babies.remove(baby.id!);
-
-                                    // Update the local _babyObjects list and refresh UI
-                                    setState(() {
-                                      _babyObjects = babyProvider.babies;
-                                    });
-
-                                    // Show success message
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final itemSize = (constraints.maxWidth - 16) / 2;
+                        return GridView.count(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          children: [
+                            ...babies
+                                .map(
+                                  (baby) => SizedBox(
+                                    width: itemSize,
+                                    height: itemSize,
+                                    child: AvatarTile(
+                                      imagePath: baby.avatar ?? '',
+                                      size: itemSize,
+                                      showEditButtons: _isEditMode,
+                                      onTap: () =>
+                                          _handleBabyTap(context, baby),
+                                      onEdit: () => EditBabyProfileFlow.start(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            '${baby.name} a été supprimé avec succès',
-                                          ),
-                                          backgroundColor: AppColors.premier,
-                                        ),
-                                      );
-                                    }
-                                  } catch (e) {
-                                    debugPrint('❌ Failed to delete baby: $e');
-
-                                    // Show error message
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            'Impossible de supprimer ${baby.name}',
-                                          ),
-                                          backgroundColor: Colors.redAccent,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                },
-                                onSecondary: () {},
-                              );
-                            },
-                          );
-                        } else {
-                          return AppCreateBebe(onTap: widget.onNext);
-                        }
+                                        baby,
+                                      ),
+                                      onDelete: () {
+                                        CustomAlertModal.show(
+                                          context,
+                                          title: 'Supprimer bébé',
+                                          message:
+                                              'Voulez-vous vraiment supprimer ${baby.name} ?',
+                                          primaryText: 'Oui',
+                                          secondaryText: 'Non',
+                                          onPrimary: () async {
+                                            final babyProvider = context
+                                                .read<BabyProvider>();
+                                            final userProvider = context
+                                                .read<UserProvider>();
+                                            try {
+                                              await BabyService.deleteBaby(
+                                                baby.id!,
+                                              );
+                                              babyProvider.removeBaby(baby.id!);
+                                              // Remove baby id from persisted user as well
+                                              await userProvider
+                                                  .removeBabyFromUser(baby.id!);
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      '${baby.name} a été supprimé avec succès',
+                                                    ),
+                                                    backgroundColor:
+                                                        AppColors.premier,
+                                                  ),
+                                                );
+                                              }
+                                            } catch (e) {
+                                              debugPrint(
+                                                '❌ Failed to delete baby: $e',
+                                              );
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      'Impossible de supprimer ${baby.name}',
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.redAccent,
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+                                          onSecondary: () async {},
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            // Add create button
+                            SizedBox(
+                              width: itemSize,
+                              height: itemSize,
+                              child: AppCreateBebe(
+                                onTap: widget.onNext,
+                                size: itemSize,
+                              ),
+                            ),
+                          ],
+                        );
                       },
                     ),
                   ),

@@ -1,12 +1,25 @@
-import 'package:flutter/foundation.dart';
+class WeightController {
+  /// Validates baby's weight according to age and gender.
+  /// Returns a string error message if invalid, or `null` if OK.
+  static String? validateWeight({
+    required double weight,
+    required int ageInDays,
+    required String gender,
+  }) {
+    final g = gender.toLowerCase();
 
-class WeightControllers {
-  double current = 0.0;
-
-  void update(double value) {
-    current = value;
-    if (kDebugMode) {
-      print('Current weight: $value');
+    // Check only for babies < 30 days
+    if (ageInDays < 30) {
+      if (g == 'male' && (weight < 2.4 || weight > 4.4)) {
+        return "Le poids du garçon est en dehors de la plage normale (2.4 – 4.4 kg).";
+      }
+      if (g == 'female' && (weight < 2.3 || weight > 4.2)) {
+        return "Le poids de la fille est en dehors de la plage normale (2.3 – 4.2 kg).";
+      }
     }
+
+    // ✅ If everything is OK
+    return null;
   }
 }
+// TODO add controller weight  validation 

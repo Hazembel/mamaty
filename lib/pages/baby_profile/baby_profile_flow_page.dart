@@ -59,16 +59,18 @@ class _BabyProfileFlowPageState extends State<BabyProfileFlowPage> {
       babyData.userId = userId;
 
       // ✅ Autorisation based on disease/allergy
- final disease = (babyData.disease ?? '').trim().toLowerCase();
-final allergy = (babyData.allergy ?? '').trim().toLowerCase();
+      final disease = (babyData.disease ?? '').trim().toLowerCase();
+      final allergy = (babyData.allergy ?? '').trim().toLowerCase();
 
-final hasCondition = disease.isNotEmpty && disease != 'aucune' ||
-                     allergy.isNotEmpty && allergy != 'aucune';
+      final hasCondition =
+          disease.isNotEmpty && disease != 'aucune' ||
+          allergy.isNotEmpty && allergy != 'aucune';
 
-babyData.autorisation = !hasCondition;
+      babyData.autorisation = !hasCondition;
 
-debugPrint('Baby ID: "$disease", Allergy: "$allergy", Autorisation: ${babyData.autorisation}');
-
+      debugPrint(
+        'Baby ID: "$disease", Allergy: "$allergy", Autorisation: ${babyData.autorisation}',
+      );
 
       if (hasCondition) {
         debugPrint('🚫 Autorisation set to FALSE due to medical condition.');
@@ -79,20 +81,19 @@ debugPrint('Baby ID: "$disease", Allergy: "$allergy", Autorisation: ${babyData.a
       // ✅ Call backend
       final savedBaby = await BabyService.addBaby(babyData);
       debugPrint('✅ Baby added successfully: ${savedBaby.toJson()}');
- 
-// ✅ Add the new baby to BabyProvider
-if (!mounted) return;
-final babyProvider = Provider.of<BabyProvider>(context, listen: false);
-babyProvider.addBaby(savedBaby);
 
-// ✅ Add the baby's ID to UserProvider
-if (savedBaby.id != null) {
-  userProvider.addBabyToUser(savedBaby.id!);
-}
+      // ✅ Add the new baby to BabyProvider
+      if (!mounted) return;
+      final babyProvider = Provider.of<BabyProvider>(context, listen: false);
+      babyProvider.addBaby(savedBaby);
 
+      // ✅ Add the baby's ID to UserProvider
+      if (savedBaby.id != null) {
+        await userProvider.addBabyToUser(savedBaby.id!);
+      }
 
-// ✅ Navigate to baby profile
-Navigator.of(context).pushReplacementNamed('/babyprofile');
+      // ✅ Navigate to baby profile
+      Navigator.of(context).pushReplacementNamed('/babyprofile');
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/babyprofile');
     } catch (e) {
@@ -117,11 +118,18 @@ Navigator.of(context).pushReplacementNamed('/babyprofile');
             physics: const NeverScrollableScrollPhysics(),
             children: [
               BabyProfilePage1(onNext: nextPage, babyProfileData: babyData),
+                BabyProfilePage4(
+                babyProfileData: babyData,
+                onNext: nextPage,
+                onBack: prevPage,
+              ),
+             
               BabyProfilePage2(
                 babyProfileData: babyData,
                 onNext: nextPage,
                 onBack: prevPage,
               ),
+            
               BabyProfilePage3(
                 babyProfileData: babyData,
                 onNext: nextPage,
@@ -132,11 +140,7 @@ Navigator.of(context).pushReplacementNamed('/babyprofile');
                 onNext: nextPage,
                 onBack: prevPage,
               ),
-              BabyProfilePage4(
-                babyProfileData: babyData,
-                onNext: nextPage,
-                onBack: prevPage,
-              ),
+             
               BabyProfilePage5(
                 babyProfileData: babyData,
                 onNext: nextPage,

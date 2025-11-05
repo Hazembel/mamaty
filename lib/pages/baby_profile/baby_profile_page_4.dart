@@ -135,7 +135,7 @@ void _validateForm() {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTopBar(
-              currentStep: 5,
+              currentStep: 1,
               totalSteps: 7,
               onBack: widget.onBack,
             ),

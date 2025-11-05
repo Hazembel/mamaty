@@ -34,7 +34,7 @@ class _EditBabyProfilePage7State extends State<EditBabyProfilePage7> {
   void initState() {
     super.initState();
 
-    _oldHeadSize = widget.babyProfileData.headSize ?? 5;
+    _oldHeadSize = widget.babyProfileData.headSize ?? 10;
     _headSize = _oldHeadSize;
 
     final lastUpdate = widget.babyProfileData.lastheadsizeUpdate;
@@ -53,7 +53,7 @@ class _EditBabyProfilePage7State extends State<EditBabyProfilePage7> {
 Future<void> _onContinue() async {
   if (_headSize < _oldHeadSize) {
     debugPrint('⚠️ New head size ($_headSize) < previous ($_oldHeadSize)');
-
+widget.babyProfileData.headSize ??= _headSize;
     await CustomAlertModal.show(
       context,
       title: 'Attention médicale requise',
@@ -67,14 +67,13 @@ Future<void> _onContinue() async {
         // You can optionally continue after returning from DoctorsPage
       },
       onSecondary: () {
-        // Just close the modal and continue
-        Navigator.of(context).pop();
+        widget.babyProfileData.headSize = _headSize;
+    widget.onNext();
+       
       },
     );
 
-    // Save head size and continue
-    widget.babyProfileData.headSize = _headSize;
-    widget.onNext();
+ 
     return;
   }
 
@@ -93,7 +92,7 @@ Future<void> _onContinue() async {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppTopBar(currentStep: 4, totalSteps: 7, onBack: widget.onBack),
+            AppTopBar(currentStep: 4, totalSteps: 6, onBack: widget.onBack),
             const SizedBox(height: 30),
             Center(
               child: Text(

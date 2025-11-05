@@ -13,32 +13,65 @@ class BabyProvider extends ChangeNotifier {
 
   /// Load babies by IDs (handles duplicates)
   Future<void> loadBabies(List<String> babyIds) async {
-    if (_isLoading) return; // prevent multiple concurrent calls
+    if (_isLoading) {
+      debugPrint('🔄 Already loading babies, skipping...');
+      return;
+    }
+
+    if (babyIds.isEmpty) {
+      debugPrint('ℹ️ No baby IDs to load');
+      _babies.clear();
+      _selectedBaby = null;
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
 
-    _babies.clear();
-    final uniqueIds = babyIds.toSet();
+    try {
+      // Get unique IDs only
+      final uniqueIds = babyIds.toSet();
+      debugPrint('🍼 Loading ${uniqueIds.length} unique babies...');
 
-    for (var id in uniqueIds) {
-      try {
-        final baby = await BabyService.getBaby(id);
-        if (!_babies.any((b) => b.id == baby.id)) {
-          _babies.add(baby);
-        }
-      } catch (e) {
-        debugPrint('❌ Failed to fetch baby $id: $e');
+      // Filter out IDs we already have loaded
+      final idsToLoad = uniqueIds
+          .where((id) => !_babies.any((b) => b.id == id))
+          .toList();
+
+      if (idsToLoad.isEmpty) {
+        debugPrint('✅ All babies already loaded');
+        return;
       }
-    }
 
-    if (_babies.isNotEmpty) {
-      _selectedBaby = _babies.first;
-    } else {
-      _selectedBaby = null;
-    }
+      // Load babies one-by-one and tolerate not-found errors so a single missing
+      // baby doesn't abort the whole load. This also gives clearer logging.
+      int loadedCount = 0;
+      for (final id in idsToLoad) {
+        try {
+          final baby = await BabyService.getBaby(id);
+          if (!_babies.any((b) => b.id == baby.id)) {
+            _babies.add(baby);
+            loadedCount++;
+          }
+        } catch (e) {
+          debugPrint('⚠️ Skipping baby id=$id due to error: $e');
+          // continue to next id
+        }
+      }
 
-    _isLoading = false;
-    notifyListeners();
+      debugPrint('✅ Loaded $loadedCount new babies');
+
+      // Update selected baby if needed
+      if (_selectedBaby == null && _babies.isNotEmpty) {
+        _selectedBaby = _babies.first;
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to load babies: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   /// Select a baby

@@ -134,8 +134,8 @@ class _EditBabyProfilePage4State extends State<EditBabyProfilePage4> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTopBar(
-              currentStep: 5,
-              totalSteps: 7,
+              currentStep: 1,
+              totalSteps: 6,
               onBack: widget.onBack,
             ),
 

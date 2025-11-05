@@ -4,7 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiHelper {
-  static const String baseUrl = "http://localhost:5000"; // change for your backend
+  static const String baseUrl =
+      "http://localhost:5000"; // change for your backend
 
   /// Read token from SharedPreferences
   static Future<String?> getToken() async {
@@ -21,7 +22,7 @@ class ApiHelper {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
-    
+
     return headers;
   }
 
@@ -29,30 +30,47 @@ class ApiHelper {
   static Future<http.Response> get(String path) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
-   
+
+    debugPrint('🔗 GET $url');
+    debugPrint('🔐 Headers: $headers');
+
     final response = await http.get(Uri.parse(url), headers: headers);
     debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
   /// POST request
-  static Future<http.Response> post(String path, Map<String, dynamic> body) async {
+  static Future<http.Response> post(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
     debugPrint('🔗 POST $url');
     debugPrint('📦 Body: $body');
-    final response = await http.post(Uri.parse(url), headers: headers, body: jsonEncode(body));
+    final response = await http.post(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body),
+    );
     debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
   /// PUT request
-  static Future<http.Response> put(String path, Map<String, dynamic> body) async {
+  static Future<http.Response> put(
+    String path,
+    Map<String, dynamic> body,
+  ) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
     debugPrint('🔗 PUT $url');
     debugPrint('📦 Body: $body');
-    final response = await http.put(Uri.parse(url), headers: headers, body: jsonEncode(body));
+    final response = await http.put(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body),
+    );
     debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }

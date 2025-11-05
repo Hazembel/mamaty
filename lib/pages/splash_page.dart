@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../services/auth_service.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/baby_provider.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -21,39 +22,42 @@ class _SplashPageState extends State<SplashPage> {
     _checkLogin();
   }
 
-  Future<void> _checkLogin() async {
-    try {
-      // 1) Load persisted login data
-      final loginData = await _authService.loadUser();
+Future<void> _checkLogin() async {
+  try {
+    final loginData = await _authService.loadUser();
+    if (!mounted) return;
+    final userProvider = context.read<UserProvider>();
+    await userProvider.loadUser();
 
-      // 2) Load persisted user data into the provider (reactive)
-         if (!mounted) return;
-      final userProvider = context.read<UserProvider>();
-      await userProvider.loadUser();
+    if (loginData != null &&
+        loginData.token != null &&
+        loginData.token!.isNotEmpty &&
+        userProvider.user != null) {
+      // ✅ Load babies before navigating
+      final babyProvider = context.read<BabyProvider>();
+      final babyIds = userProvider.user?.babies ?? [];
+      debugPrint('🧾 user babyIds on splash: $babyIds');
 
-      // debug prints for visibility
-      if (userProvider.user != null) {
-        debugPrint('Persisted user data on splash: ${userProvider.user}');
+      if (babyIds.isNotEmpty) {
+        await babyProvider.loadBabies(babyIds);
+        debugPrint('✅ Babies loaded on splash: ${babyProvider.babies.length}');
       } else {
-        debugPrint('No persisted user data found');
+        debugPrint('No baby IDs found for user');
       }
 
-      // 3) Decide route: require both loginData and loaded user to consider logged in
       if (!mounted) return;
-      if (loginData != null &&
-          loginData.token != null &&
-          loginData.token!.isNotEmpty &&
-          userProvider.user != null) {
-        Navigator.pushReplacementNamed(context, '/babyprofile');
-      } else {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e, st) {
-      debugPrint('Splash init error: $e\n$st');
+      Navigator.pushReplacementNamed(context, '/babyprofile');
+    } else {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/login');
     }
+  } catch (e, st) {
+    debugPrint('Splash init error: $e\n$st');
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, '/login');
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

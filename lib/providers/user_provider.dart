@@ -32,11 +32,34 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Add a baby ID to user
-  void addBabyToUser(String babyId) {
+  /// Add a baby ID to user and persist the updated user locally
+  Future<void> addBabyToUser(String babyId) async {
     if (_user != null && babyId.isNotEmpty && !_user!.babies.contains(babyId)) {
       _user!.babies.add(babyId);
       notifyListeners();
+
+      try {
+        // Persist updated user so splash/loadUser sees the new baby without re-login
+        await AuthService().saveUser(_user!);
+        debugPrint('💾 Persisted user with new baby id: $babyId');
+      } catch (e) {
+        debugPrint('❌ Failed to persist user after adding baby: $e');
+      }
+    }
+  }
+
+  /// Remove a baby ID from the user and persist changes
+  Future<void> removeBabyFromUser(String babyId) async {
+    if (_user != null && babyId.isNotEmpty && _user!.babies.contains(babyId)) {
+      _user!.babies.remove(babyId);
+      notifyListeners();
+
+      try {
+        await AuthService().saveUser(_user!);
+        debugPrint('💾 Persisted user after removing baby id: $babyId');
+      } catch (e) {
+        debugPrint('❌ Failed to persist user after removing baby: $e');
+      }
     }
   }
 

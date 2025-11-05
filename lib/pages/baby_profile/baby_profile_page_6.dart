@@ -64,7 +64,7 @@ class _BabyProfilePage6State extends State<BabyProfilePage6> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppTopBar(currentStep: 7, totalSteps: 7, onBack: widget.onBack),
+            AppTopBar(currentStep: 6, totalSteps:6, onBack: widget.onBack),
 
             const SizedBox(height: 30),
  
