@@ -34,6 +34,7 @@ Future<void> _checkLogin() async {
         loginData.token!.isNotEmpty &&
         userProvider.user != null) {
       // ✅ Load babies before navigating
+       if (!mounted) return;
       final babyProvider = context.read<BabyProvider>();
       final babyIds = userProvider.user?.babies ?? [];
       debugPrint('🧾 user babyIds on splash: $babyIds');

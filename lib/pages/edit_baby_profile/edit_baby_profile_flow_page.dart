@@ -79,6 +79,7 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
         babyProvider.addBaby(savedBaby); // Add to provider
 
         // Also add baby id to user and persist user so it survives reloads
+         if (!mounted) return;
         try {
           final userProvider = context.read<UserProvider>();
           if (savedBaby.id != null) {

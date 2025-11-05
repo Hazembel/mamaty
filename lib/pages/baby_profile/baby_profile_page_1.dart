@@ -116,81 +116,77 @@ class _BabyProfilePage1State extends State<BabyProfilePage1> {
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
                           children: [
-                            ...babies
-                                .map(
-                                  (baby) => SizedBox(
-                                    width: itemSize,
-                                    height: itemSize,
-                                    child: AvatarTile(
-                                      imagePath: baby.avatar ?? '',
-                                      size: itemSize,
-                                      showEditButtons: _isEditMode,
-                                      onTap: () =>
-                                          _handleBabyTap(context, baby),
-                                      onEdit: () => EditBabyProfileFlow.start(
-                                        context,
-                                        baby,
-                                      ),
-                                      onDelete: () {
-                                        CustomAlertModal.show(
-                                          context,
-                                          title: 'Supprimer bébé',
-                                          message:
-                                              'Voulez-vous vraiment supprimer ${baby.name} ?',
-                                          primaryText: 'Oui',
-                                          secondaryText: 'Non',
-                                          onPrimary: () async {
-                                            final babyProvider = context
-                                                .read<BabyProvider>();
-                                            final userProvider = context
-                                                .read<UserProvider>();
-                                            try {
-                                              await BabyService.deleteBaby(
-                                                baby.id!,
-                                              );
-                                              babyProvider.removeBaby(baby.id!);
-                                              // Remove baby id from persisted user as well
-                                              await userProvider
-                                                  .removeBabyFromUser(baby.id!);
-                                              if (context.mounted) {
-                                                ScaffoldMessenger.of(
-                                                  context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      '${baby.name} a été supprimé avec succès',
-                                                    ),
-                                                    backgroundColor:
-                                                        AppColors.premier,
-                                                  ),
-                                                );
-                                              }
-                                            } catch (e) {
-                                              debugPrint(
-                                                '❌ Failed to delete baby: $e',
-                                              );
-                                              if (context.mounted) {
-                                                ScaffoldMessenger.of(
-                                                  context,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      'Impossible de supprimer ${baby.name}',
-                                                    ),
-                                                    backgroundColor:
-                                                        Colors.redAccent,
-                                                  ),
-                                                );
-                                              }
-                                            }
-                                          },
-                                          onSecondary: () async {},
-                                        );
+                            ...babies.map(
+                              (baby) => SizedBox(
+                                width: itemSize,
+                                height: itemSize,
+                                child: AvatarTile(
+                                  imagePath: baby.avatar ?? '',
+                                  size: itemSize,
+                                  showEditButtons: _isEditMode,
+                                  onTap: () => _handleBabyTap(context, baby),
+                                  onEdit: () =>
+                                      EditBabyProfileFlow.start(context, baby),
+                                  onDelete: () {
+                                    CustomAlertModal.show(
+                                      context,
+                                      title: 'Supprimer bébé',
+                                      message:
+                                          'Voulez-vous vraiment supprimer ${baby.name} ?',
+                                      primaryText: 'Oui',
+                                      secondaryText: 'Non',
+                                      onPrimary: () async {
+                                        final babyProvider = context
+                                            .read<BabyProvider>();
+                                        final userProvider = context
+                                            .read<UserProvider>();
+                                        try {
+                                          await BabyService.deleteBaby(
+                                            baby.id!,
+                                          );
+                                          babyProvider.removeBaby(baby.id!);
+                                          // Remove baby id from persisted user as well
+                                          await userProvider.removeBabyFromUser(
+                                            baby.id!,
+                                          );
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  '${baby.name} a été supprimé avec succès',
+                                                ),
+                                                backgroundColor:
+                                                    AppColors.premier,
+                                              ),
+                                            );
+                                          }
+                                        } catch (e) {
+                                          debugPrint(
+                                            '❌ Failed to delete baby: $e',
+                                          );
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  'Impossible de supprimer ${baby.name}',
+                                                ),
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                              ),
+                                            );
+                                          }
+                                        }
                                       },
-                                    ),
-                                  ),
-                                )
-                                .toList(),
+                                      onSecondary: () async {},
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
                             // Add create button
                             SizedBox(
                               width: itemSize,

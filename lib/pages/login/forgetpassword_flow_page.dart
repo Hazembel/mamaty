@@ -35,8 +35,7 @@ class _ForgetPasswordFlowPageState extends State<ForgetPasswordFlowPage> {
     debugPrint('Phone: ${forgetData.phone}');
     debugPrint('OTP Code: ${forgetData.otpCode}');
     debugPrint('New Password: ${forgetData.password}'); 
-
-    // TODO: Navigate to login page
+ 
     Navigator.of(context).pushReplacementNamed('/login');
   }
 

@@ -80,6 +80,7 @@ Future<void> _openFilterModal() async {
   try {
     final filters = await DoctorService.getFilters();
 
+    if (!mounted) return;
     final result = await FilterModal.show(
       context,
       allcity: filters['cities'] ?? [],
@@ -99,6 +100,7 @@ Future<void> _openFilterModal() async {
       );
     }
   } catch (e) {
+     if (!mounted) return;
     debugPrint('❌ Failed to load filters: $e');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Erreur de chargement des filtres')),

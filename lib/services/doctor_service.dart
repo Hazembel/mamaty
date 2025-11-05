@@ -17,9 +17,9 @@ class DoctorService {
     if (rating != null && rating > 0) queryParams['rating'] = rating.toString();
 
     // Build full query string
-    final queryString = queryParams.isEmpty
-        ? ''
-        : '?' + Uri(queryParameters: queryParams).query;
+   final queryString = queryParams.isEmpty
+    ? ''
+    : '?${Uri(queryParameters: queryParams).query}';
 
     // Fetch from API
     final response = await ApiHelper.get('/doctors$queryString');

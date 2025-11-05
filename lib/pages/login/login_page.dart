@@ -47,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
       final userData = await auth.loadUser(); // get saved user
       if (userData != null) {
         userProvider.setUser(userData); // ✅ set in provider
-
+ if (!mounted) return;
         // Load babies after setting user
         final babyProvider = Provider.of<BabyProvider>(context, listen: false);
         debugPrint('🧾 user babyIds on login: ${userData.babies}');

@@ -93,7 +93,7 @@ class _BabyProfileFlowPageState extends State<BabyProfileFlowPage> {
       }
 
       // ✅ Navigate to baby profile
-      Navigator.of(context).pushReplacementNamed('/babyprofile');
+ 
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/babyprofile');
     } catch (e) {

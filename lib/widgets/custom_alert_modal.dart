@@ -39,7 +39,7 @@ class CustomAlertModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withOpacity(0.3),
+      barrierColor: Colors.black.withValues(alpha: 0.3), 
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -137,9 +137,11 @@ class _CustomAlertModalState extends State<CustomAlertModal> {
                       onPressed: () async {
                         if (widget.onPrimary == null) return;
                         setState(() => _isLoading = true);
+                          final navigator = Navigator.of(context);
                         try {
                           await widget.onPrimary!();
-                          if (mounted) Navigator.of(context).pop();
+                          
+                          if (mounted) navigator.pop();
                         } catch (e) {
                           debugPrint('❌ Modal primary action failed: $e');
                         } finally {
