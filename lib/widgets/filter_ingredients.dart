@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import '../theme/text_styles.dart';
 import '../widgets/app_button.dart';
 import '../widgets/filter_chip_box.dart';
-import '../widgets/app_search_bar.dart'; // ✅ use your search bar
+import '../widgets/app_search_bar.dart';
 
 class IngredientFilterModalResult {
-  final String ingredient;
+  final List<String> ingredients; // ✅ multiple ingredients
 
-  IngredientFilterModalResult({required this.ingredient});
+  IngredientFilterModalResult({required this.ingredients});
 }
 
 class IngredientFilterModal extends StatefulWidget {
@@ -24,7 +24,7 @@ class IngredientFilterModal extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha:0.3),
+      barrierColor: Colors.black.withOpacity(0.3),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -42,7 +42,7 @@ class IngredientFilterModal extends StatefulWidget {
 }
 
 class _IngredientFilterModalState extends State<IngredientFilterModal> {
-  String? selectedIngredient;
+  List<String> selectedIngredients = []; // ✅ support multiple
   String searchQuery = '';
 
   @override
@@ -66,13 +66,13 @@ class _IngredientFilterModalState extends State<IngredientFilterModal> {
             const SizedBox(height: 6),
             Center(
               child: Text(
-                'Filtrer par ingrédient',
+                'Filtrer par ingrédients',
                 style: AppTextStyles.inter16SemiBold.copyWith(fontSize: 16),
               ),
             ),
             const SizedBox(height: 16),
 
-            // 🔍 Use your AppSearchBar
+            // 🔍 Search bar
             AppSearchBar(
               hintText: 'Rechercher un ingrédient ...',
               onChanged: (value) => setState(() => searchQuery = value),
@@ -87,13 +87,16 @@ class _IngredientFilterModalState extends State<IngredientFilterModal> {
                   spacing: 5,
                   runSpacing: 5,
                   children: filteredIngredients.map((ingredient) {
-                    final isSelected = selectedIngredient == ingredient;
-                    // Optional: add emoji mapping
-                  final emojiMap = {
-  
-};
+                    final isSelected = selectedIngredients.contains(ingredient);
 
-
+                    // Optional: emoji mapping
+                    final emojiMap = {
+                      'Tomate': '🍅',
+                      'Fromage': '🧀',
+                      'Poulet': '🍗',
+                      'Carotte': '🥕',
+                      // add more as needed
+                    };
                     final displayLabel = '${emojiMap[ingredient] ?? ''} $ingredient';
 
                     return FilterChipBox(
@@ -102,9 +105,9 @@ class _IngredientFilterModalState extends State<IngredientFilterModal> {
                       onTap: () {
                         setState(() {
                           if (isSelected) {
-                            selectedIngredient = null;
+                            selectedIngredients.remove(ingredient);
                           } else {
-                            selectedIngredient = ingredient;
+                            selectedIngredients.add(ingredient);
                           }
                         });
                       },
@@ -116,20 +119,20 @@ class _IngredientFilterModalState extends State<IngredientFilterModal> {
 
             const SizedBox(height: 18),
 
-      Center(
-  child: AppButton(
-    title: 'Filtrer',
-    fullWidth: false,
-    size: ButtonSize.md,
-    onPressed: () {
-      Navigator.of(context).pop(
-        IngredientFilterModalResult(
-          ingredient: selectedIngredient ?? '', // empty = no filter
-        ),
-      );
-    },
-  ),
-),
+            Center(
+              child: AppButton(
+                title: 'Filtrer',
+                fullWidth: false,
+                size: ButtonSize.md,
+                onPressed: () {
+                  Navigator.of(context).pop(
+                    IngredientFilterModalResult(
+                      ingredients: selectedIngredients, // ✅ multiple
+                    ),
+                  );
+                },
+              ),
+            ),
 
             const SizedBox(height: 8),
           ],

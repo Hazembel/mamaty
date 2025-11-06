@@ -145,13 +145,18 @@ Future<void> _openIngredientFilter() async {
   );
 
   setState(() {
-    if (result == null || result.ingredient.isEmpty) {
+    if (result == null || result.ingredients.isEmpty) {
       // No ingredient selected → show all recipes
       _filteredRecipes = _allRecipes;
     } else {
-      _filteredRecipes = _allRecipes
-          .where((r) => r.ingredients.any((i) => i.name == result.ingredient))
-          .toList();
+      // Keep recipes that contain ALL selected ingredients
+      _filteredRecipes = _allRecipes.where((recipe) {
+        final recipeIngredientNames =
+            recipe.ingredients.map((i) => i.name).toList();
+        return result.ingredients.every(
+          (selected) => recipeIngredientNames.contains(selected),
+        );
+      }).toList();
     }
   });
 }
