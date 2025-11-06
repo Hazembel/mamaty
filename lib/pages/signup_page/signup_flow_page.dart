@@ -64,9 +64,7 @@ void finishSignup() async {
 
   if (newUser == null) {
       if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Signup failed. Please try again.')),
-    );
+    debugPrint('❌ Signup failed');
     return;
   }
 
@@ -85,9 +83,7 @@ void finishSignup() async {
     Navigator.of(context).pushReplacementNamed('/babyprofile');
   } else {
       if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Login failed after signup')),
-    );
+    debugPrint('❌ Auto-login failed');
   }
 }
 

@@ -98,9 +98,7 @@ widget.signupData.gender = selectedGender;
     } else {
       // ❌ Form invalid
       debugPrint('❌ Form has errors');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez corriger les erreurs ❗')),
-      );
+      
     }
   }
 

@@ -13,7 +13,7 @@ import '../theme/text_styles.dart';
 import '../models/doctor.dart';
 import '../providers/user_provider.dart';
 import '../services/doctor_service.dart';
-
+import '../widgets/app_snak_bar.dart';
 class DoctorDetailsPage extends StatefulWidget {
   final Doctor doctor;
 
@@ -49,34 +49,45 @@ class _DoctorDetailsPageState extends State<DoctorDetailsPage> {
     }
   }
 
-  Future<void> _toggleFavorite(UserProvider userProvider) async {
-    setState(() => _isSaving = true);
-    try {
-      await DoctorService.toggleFavoriteDoctor(widget.doctor.id);
-      userProvider.toggleFavoriteDoctor(widget.doctor.id);
+Future<void> _toggleFavorite(UserProvider userProvider) async {
+  setState(() => _isSaving = true);
 
-      if (!mounted) return;
+  try {
+    // Call backend
+    await DoctorService.toggleFavoriteDoctor(widget.doctor.id);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Favorite toggled successfully!'),
-          backgroundColor: AppColors.premier,
-        ),
-      );
-    } catch (e) {
-      debugPrint('❌ Failed to toggle favorite: $e');
-      if (!mounted) return;
+    // Update provider
+    await userProvider.toggleFavoriteDoctor(widget.doctor.id);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Failed to toggle favorite.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
+    // Check if doctor is now a favorite
+    final isFavorite = userProvider.user?.doctors.contains(widget.doctor.id) ?? false;
+
+    if (!mounted) return;
+
+    // Show success message
+    AppSnackBar.show(
+      context,
+      message: isFavorite
+          ? "Le médecin a été ajouté aux favoris ❤️"
+          : "Le médecin a été retiré des favoris 💔",
+    );
+  } catch (e) {
+    debugPrint('❌ Failed to toggle favorite: $e');
+
+    if (!mounted) return;
+
+    // Show error message
+    AppSnackBar.show(
+      context,
+      message: "Impossible de modifier les favoris.",
+      backgroundColor: Colors.redAccent,
+    );
+  } finally {
+    if (mounted) setState(() => _isSaving = false);
   }
+}
+
+
 
   @override
   Widget build(BuildContext context) {

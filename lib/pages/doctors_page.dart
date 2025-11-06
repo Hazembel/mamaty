@@ -9,7 +9,7 @@ import '../services/doctor_service.dart';
 import '../pages/doctor_details_page.dart';
 import '../models/doctor.dart';
 import '../widgets/filter_modal.dart';
-
+ 
 class DoctorsPage extends StatefulWidget {
   final String title;
   final String searchPlaceholder;
@@ -97,9 +97,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
     } catch (e) {
       if (!mounted) return;
       debugPrint('❌ Failed to load filters: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erreur de chargement des filtres')),
-      );
+      
     }
   }
 
@@ -110,35 +108,66 @@ class _DoctorsPageState extends State<DoctorsPage> {
       body: SafeArea(
         child: Padding(
           padding: AppDimensions.pagePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppTopBarText(
-                title: widget.title,
-                onBack: widget.onBack ??
-                    () {
-                      if (Navigator.canPop(context)) Navigator.pop(context);
-                    },
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppTopBarText(
+                      title: widget.title,
+                      onBack: widget.onBack ??
+                          () {
+                            if (Navigator.canPop(context)) Navigator.pop(context);
+                          },
+                    ),
+                    const SizedBox(height: 15),
+                    AppSearchInput(
+                      searchText: widget.searchPlaceholder,
+                      onChanged: _filterDoctors,
+                      onFilterTap: _openFilterModal,
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                ),
               ),
-              const SizedBox(height: 15),
 
-              /// 🔍 Search input with filter button
-              AppSearchInput(
-                searchText: widget.searchPlaceholder,
-                onChanged: _filterDoctors,
-                onFilterTap: _openFilterModal,
-              ),
-
-              const SizedBox(height: 15),
-
-              /// 🧠 Doctors grid
-              Expanded(
-                child: _isLoading
-                    ? _buildDoctorsShimmer()
-                    : _filteredDoctors.isEmpty
-                        ? const Center(child: Text('Aucun médecin trouvé.'))
-                        : GridView.builder(
-                            clipBehavior: Clip.none,
+              // 🔹 Doctors Grid or shimmer
+              _isLoading
+                  ? SliverPadding(
+                      padding: const EdgeInsets.only(top: 10),
+                      sliver: SliverGrid.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 160 / 180,
+                        ),
+                        itemCount: 6,
+                        itemBuilder: (_, __) {
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey.shade300,
+                            highlightColor: Colors.grey.shade100,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : _filteredDoctors.isEmpty
+                      ? SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: const Center(
+                            child: Text('Aucun médecin trouvé.'),
+                          ),
+                        )
+                      : SliverPadding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          sliver: SliverGrid.builder(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               crossAxisSpacing: 15,
@@ -160,87 +189,10 @@ class _DoctorsPageState extends State<DoctorsPage> {
                               );
                             },
                           ),
-              ),
+                        ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// 💫 Shimmer skeleton for doctor cards grid
-  Widget _buildDoctorsShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: GridView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(top: 10),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 10,
-          childAspectRatio: 160 / 180,
-        ),
-        itemCount: 6,
-        itemBuilder: (_, __) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Image placeholder
-                Container(
-                  height: 100,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Text placeholders
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 14,
-                        width: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Container(
-                        height: 12,
-                        width: 100,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        height: 10,
-                        width: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
       ),
     );
   }

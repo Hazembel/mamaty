@@ -8,6 +8,7 @@ import 'providers/user_provider.dart';
 import 'providers/advice_provider.dart';
 import 'providers/baby_provider.dart';
 import 'providers/doctor_provider.dart';
+import 'providers/recipe_provider.dart';
 
 void main() {
   runApp(
@@ -17,6 +18,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => AdviceProvider()),  
         ChangeNotifierProvider(create: (_) => BabyProvider()),  
          ChangeNotifierProvider(create: (_) => DoctorProvider()),
+        ChangeNotifierProvider(create: (_) => RecipeProvider()),
+
       ],
       child: const MyApp(),
     ),

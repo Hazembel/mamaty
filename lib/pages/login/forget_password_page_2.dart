@@ -7,7 +7,7 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../models/forgetpassword_data.dart';
 import '../../services/auth_service.dart';
-
+import '../../widgets/app_snak_bar.dart';
 class ForgetPasswordPage2 extends StatefulWidget {
   final ForgetpasswordData forgetData; // ✅ shared data
   final VoidCallback onNext; // go next
@@ -56,19 +56,24 @@ class _ForgetPasswordPage2State extends State<ForgetPasswordPage2> {
         widget.forgetData.otpCode = code;
         debugPrint('✅ OTP verified successfully');
         widget.onNext();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('❌ Code OTP invalide')),
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ OTP verification error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('⚠️ Échec de la vérification')),
-        );
-      }
-    } finally {
+     } else {
+  AppSnackBar.show(
+    context,
+    message: '❌ Code OTP invalide',
+  
+  );
+}
+} catch (e) {
+  debugPrint('❌ OTP verification error: $e');
+  if (mounted) {
+    AppSnackBar.show(
+      context,
+      message: '⚠️ Échec de la vérification',
+     
+    );
+  }
+}
+finally {
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -92,21 +97,28 @@ class _ForgetPasswordPage2State extends State<ForgetPasswordPage2> {
       final success = await _authService.requestOtp(phone);
       if (!mounted) return;
 
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Nouveau code envoyé à $phone')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('❌ Impossible de renvoyer le code')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : $e')),
-        );
-      }
+if (success) {
+  AppSnackBar.show(
+    context,
+    message: '✅ Nouveau code envoyé à $phone',
+  );
+} else {
+  AppSnackBar.show(
+    context,
+    message: '❌ Impossible de renvoyer le code',
+   
+  );
+}
+} catch (e) {
+  if (mounted) {
+    AppSnackBar.show(
+      context,
+      message: 'Erreur : $e',
+   
+    );
+  }
+ 
+
     } finally {
       if (mounted) {
         setState(() {

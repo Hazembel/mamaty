@@ -3,12 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/advice_provider.dart';
+import '../../providers/recipe_provider.dart';
 import '../../widgets/home_header_card.dart';
 import '../widgets/app_advise_picker.dart';
+import '../widgets/app_doctor_row.dart';
+import '../widgets/app_recipe_row.dart';
 import '../../theme/dimensions.dart';
 import '../../providers/baby_provider.dart';
 import '../pages/baby_profile/baby_profile_page_1.dart';
-import '../widgets/app_doctor_row.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,6 +27,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateBabyAgeAndAdvices();
+      _loadRecipesIfEligible();
     });
   }
 
@@ -41,6 +44,19 @@ class _HomePageState extends State<HomePage> {
       );
     } else {
       _babyAgeInDays = null;
+    }
+  }
+
+  void _loadRecipesIfEligible() {
+    final babyProvider = context.read<BabyProvider>();
+    final recipeProvider = context.read<RecipeProvider>();
+    final baby = babyProvider.selectedBaby;
+
+    if (baby != null && baby.birthday != null && baby.birthday!.isNotEmpty) {
+      final ageInDays = _calculateBabyAgeInDays(baby.birthday!);
+      if (ageInDays >= 271 && ageInDays <= 720) {
+        recipeProvider.loadRecipes(rating: 4.0); // Load top recipes
+      }
     }
   }
 
@@ -74,12 +90,14 @@ class _HomePageState extends State<HomePage> {
     final userProvider = context.watch<UserProvider>();
     final babyProvider = context.watch<BabyProvider>();
     final adviceProvider = context.watch<AdviceProvider>();
+  
 
     final user = userProvider.user;
     final userName = user?.name ?? 'Utilisateur';
     final userAvatar = user?.avatar;
     final babyProfileData = babyProvider.selectedBaby;
     final advices = adviceProvider.advices;
+     
 
     return Scaffold(
       body: user == null
@@ -126,6 +144,14 @@ class _HomePageState extends State<HomePage> {
                                   babyAgeInDays: _babyAgeInDays!,
                                 )
                               : _buildAdvicesSkeleton(),
+
+                  const SizedBox(height: 20),
+
+                  // 🍲 Recipes Section (only if baby age 271–720 days)
+                  if (_babyAgeInDays != null &&
+                      _babyAgeInDays! >= 271 &&
+                      _babyAgeInDays! <= 720)
+                    RecipeRow(),
 
                   const SizedBox(height: 20),
 

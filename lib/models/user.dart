@@ -8,7 +8,8 @@ class User {
   String gender;
   String birthday;
   List<String> babies;   // IDs
-  List<String> doctors;  // ✅ Added for favorite doctors
+  List<String> doctors;  // favorite doctors
+  List<String> recipes;  // ✅ favorite recipes
   String? token;
 
   User({
@@ -21,7 +22,8 @@ class User {
     required this.gender,
     required this.birthday,
     required this.babies,
-    required this.doctors, // ✅ add in constructor
+    required this.doctors,
+    required this.recipes, // ✅ add here
     this.token,
   });
 
@@ -36,7 +38,8 @@ class User {
       gender: json['gender'],
       birthday: json['birthday'],
       babies: List<String>.from(json['babies'] ?? []),
-      doctors: List<String>.from(json['doctors'] ?? []), // ✅ parse doctors
+      doctors: List<String>.from(json['doctors'] ?? []),
+      recipes: List<String>.from(json['recipes'] ?? []), // ✅ parse recipes
       token: json['token'],
     );
   }
@@ -52,7 +55,8 @@ class User {
       'gender': gender,
       'birthday': birthday,
       'babies': babies,
-      'doctors': doctors, // ✅ include doctors
+      'doctors': doctors,
+      'recipes': recipes, // ✅ include recipes
       'token': token,
     };
   }

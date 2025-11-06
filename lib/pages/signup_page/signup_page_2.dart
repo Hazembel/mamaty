@@ -10,7 +10,8 @@ import '../../controllers/form_controllers.dart';
 import '../../widgets/app_text_field_phone.dart';
 import '../../widgets/app_text_field.dart';
 import '../../services/auth_service.dart';
-
+import '../../widgets/app_snak_bar.dart';
+ 
 class SignupPage2 extends StatefulWidget {
   final SignupData signupData; // shared data
   final VoidCallback onNext; // go next
@@ -69,22 +70,21 @@ class _SignupPage2State extends State<SignupPage2> {
       if (!mounted) return;
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ Code envoyé à $phone')),
-        );
+        AppSnackBar.show(
+  context,
+  message: '✅ Code envoyé à $phone',
+);
+
         widget.onNext(); // Go to OTP screen (SignupPage3)
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('❌ Ce numéro est déjà utilisé ou invalide')),
+        AppSnackBar.show(
+          context,
+          message: '❌ Impossible de renvoyer le code',
         );
       }
     } catch (e) {
       debugPrint('❌ OTP request error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : $e')),
-        );
-      }
+      
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

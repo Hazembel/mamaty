@@ -11,7 +11,8 @@ import 'edit_baby_profile_page_6.dart';
 import 'edit_baby_profile_page_7.dart';
 import '../../providers/baby_provider.dart';
 import '../../providers/user_provider.dart';
-import '../../theme/colors.dart';
+ 
+import '../../widgets/app_snak_bar.dart';
 
 class EditBabyProfileFlow extends StatefulWidget {
   final Baby baby;
@@ -101,22 +102,23 @@ class _EditBabyProfileFlowState extends State<EditBabyProfileFlow> {
         debugPrint('💾 Baby updated successfully: ${updatedBaby.name}');
       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Bébé enregistré avec succès'),
-            backgroundColor: AppColors.premier,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Failed to save or update baby: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de l\'enregistrement : $e')),
-        );
-      }
-    }
+   if (mounted) {
+  AppSnackBar.show(
+    context,
+    message: 'Bébé enregistré avec succès',
+  );
+}
+} catch (e) {
+  debugPrint('❌ Failed to save or update baby: $e');
+  if (mounted) {
+    AppSnackBar.show(
+      context,
+      message: 'Erreur lors de l\'enregistrement : $e',
+       
+    );
+  }
+}
+
 
     if (!mounted) return;
     Navigator.of(context).pop(babyData); // Return updated or created baby

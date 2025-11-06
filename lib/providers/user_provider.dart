@@ -54,6 +54,33 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+/// Toggle a recipe as favorite
+Future<void> toggleFavoriteRecipe(String recipeId) async {
+  if (_user == null || recipeId.isEmpty) return;
+
+  // Ensure the recipes list is initialized
+  _user!.recipes = _user!.recipes  ;
+
+  final isFavorite = _user!.recipes.contains(recipeId);
+
+  if (isFavorite) {
+    _user!.recipes.remove(recipeId);
+  } else {
+    _user!.recipes.add(recipeId);
+  }
+
+  notifyListeners();
+
+  try {
+    await AuthService().saveUser(_user!); // persist changes locally
+    debugPrint('💾 Updated favorite recipes: ${_user!.recipes}');
+  } catch (e) {
+    debugPrint('❌ Failed to save user after toggling favorite recipe: $e');
+  }
+}
+
+
+
   /// Add a baby ID to user and persist the updated user locally
   Future<void> addBabyToUser(String babyId) async {
     if (_user != null && babyId.isNotEmpty && !_user!.babies.contains(babyId)) {
@@ -90,4 +117,9 @@ class UserProvider extends ChangeNotifier {
     await AuthService().logout();
     notifyListeners();
   }
+
+
+
+
 }
+

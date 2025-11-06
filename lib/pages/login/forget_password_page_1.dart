@@ -8,6 +8,7 @@ import '../../controllers/form_controllers.dart';
 import '../../services/auth_service.dart';
 import '../../theme/dimensions.dart';
 import '../../models/forgetpassword_data.dart';
+import '../../widgets/app_snak_bar.dart';
  
 
 class ForgetPasswordPage1 extends StatefulWidget {
@@ -48,21 +49,23 @@ class _ForgetPasswordPage1State extends State<ForgetPasswordPage1> {
 
     if (!mounted) return;
 
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('✅ Code envoyé sur $phone')),
-      );
-      widget.onNext(); // Go to OTP input screen
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('⚠️ Ce numéro n\'existe pas')),
-      );
-    }
+if (success) {
+  AppSnackBar.show(
+    context,
+    message: '✅ Code envoyé sur $phone',
+  );
+  widget.onNext(); // Go to OTP input screen
+} else {
+  AppSnackBar.show(
+    context,
+    message: '⚠️ Ce numéro n\'existe pas',
+   
+  );
+}
+
   } catch (e) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur : $e')),
-      );
+      debugPrint('❌ OTP request error: $e');
     }
   } finally {
     if (mounted) setState(() => isLoading = false);

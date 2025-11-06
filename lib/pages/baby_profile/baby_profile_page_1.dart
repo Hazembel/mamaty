@@ -12,7 +12,7 @@ import '../../widgets/custom_alert_modal.dart';
 import '../../pages/edit_baby_profile/edit_baby_profile_flow_page.dart';
 import '../../providers/baby_provider.dart';
 import '../../services/baby_service.dart';
-
+import '../../widgets/app_snak_bar.dart';
 class BabyProfilePage1 extends StatefulWidget {
   final VoidCallback onNext;
   final Baby babyProfileData;
@@ -150,33 +150,21 @@ class _BabyProfilePage1State extends State<BabyProfilePage1> {
                                             baby.id!,
                                           );
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  '${baby.name} a été supprimé avec succès',
-                                                ),
-                                                backgroundColor:
-                                                    AppColors.premier,
-                                              ),
-                                            );
+                                        AppSnackBar.show(
+  context,
+  message: '${baby.name} a été supprimé avec succès',
+);
+
                                           }
                                         } catch (e) {
                                           debugPrint(
                                             '❌ Failed to delete baby: $e',
                                           );
                                           if (context.mounted) {
-                                            ScaffoldMessenger.of(
+                                            AppSnackBar.show(
                                               context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  'Impossible de supprimer ${baby.name}',
-                                                ),
-                                                backgroundColor:
-                                                    Colors.redAccent,
-                                              ),
+                                              message:
+                                                  'Une erreur est survenue lors de la suppression de ${baby.name}.',
                                             );
                                           }
                                         }

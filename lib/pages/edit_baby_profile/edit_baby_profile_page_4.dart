@@ -118,9 +118,7 @@ class _EditBabyProfilePage4State extends State<EditBabyProfilePage4> {
 
       widget.onNext();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez corriger les erreurs ❗')),
-      );
+      debugPrint('❌ Error validating form');
     }
   }
 

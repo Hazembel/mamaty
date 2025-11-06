@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import '../theme/colors.dart';
-import '../theme/dimensions.dart';
+
+import '../widgets/app_recipe_box.dart';
 import '../widgets/app_top_bar_text.dart';
 import '../widgets/app_top_bar_search.dart';
-import '../widgets/app_recipe_box.dart';
-
+import '../widgets/filter_modal.dart';
+import '../theme/colors.dart';
+import '../theme/dimensions.dart';
+import '../providers/recipe_provider.dart';
+import '../models/recipe.dart';
+import '../widgets/filter_ingredients.dart';
+import '../pages/recipe_detail_page.dart'; 
+ 
 class RecipesPage extends StatefulWidget {
   final String title;
   final String searchPlaceholder;
@@ -13,7 +20,7 @@ class RecipesPage extends StatefulWidget {
 
   const RecipesPage({
     super.key,
-    this.title = 'Meilleures recettes',
+    this.title = 'Recettes',
     this.searchPlaceholder = 'Rechercher une recette',
     this.onBack,
   });
@@ -23,70 +30,134 @@ class RecipesPage extends StatefulWidget {
 }
 
 class _RecipesPageState extends State<RecipesPage> {
-  List<Map<String, dynamic>> _allRecipes = [];
-  List<Map<String, dynamic>> _filteredRecipes = [];
+  List<Recipe> _allRecipes = [];
+  List<Recipe> _filteredRecipes = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadRecipes();
-  }
-
-  Future<void> _loadRecipes() async {
-    setState(() => _isLoading = true);
-
-    // simulate a delay like API call
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    final dummyRecipes = [
-      {
-        'title': 'Purée de carottes',
-        'image':
-            'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=800&q=60',
-        'rating': 4.8
-      },
-      {
-        'title': 'Compote de pommes maison',
-        'image':
-            'https://images.unsplash.com/photo-1604328698692-f76ea9498e76?auto=format&fit=crop&w=800&q=60',
-        'rating': 4.6
-      },
-      {
-        'title': 'Soupe de potiron doux',
-        'image':
-            'https://images.unsplash.com/photo-1604908177339-3e56f1d1b45a?auto=format&fit=crop&w=800&q=60',
-        'rating': 4.9
-      },
-      {
-        'title': 'Purée de patate douce',
-        'image':
-            'https://images.unsplash.com/photo-1601050690597-0dbceabef7c8?auto=format&fit=crop&w=800&q=60',
-        'rating': 4.7
-      },
-      {
-        'title': 'Purée de petits pois',
-        'image':
-            'https://images.unsplash.com/photo-1601050690149-9c02f30d6b23?auto=format&fit=crop&w=800&q=60',
-        'rating': 4.5
-      },
-    ];
-
-    setState(() {
-      _allRecipes = dummyRecipes;
-      _filteredRecipes = dummyRecipes;
-      _isLoading = false;
+    // Load recipes after first frame to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadRecipes();
     });
+  }
+  // ✅ Open detail page
+  void _openRecipeDetails(Recipe recipe) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RecipeDetailPage(recipe: recipe),
+      ),
+    );
+  }
+  Future<void> _loadRecipes({
+    String? city,
+    String? category,
+    String? ingredient,
+    double? minRating,
+  }) async {
+    setState(() => _isLoading = true);
+    try {
+      final provider = context.read<RecipeProvider>();
+      await provider.loadRecipes(
+        city: city,
+        category: category,
+        ingredient: ingredient,
+        rating: minRating,
+      );
+
+      setState(() {
+        _allRecipes = provider.recipes;
+        _filteredRecipes = provider.recipes;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('❌ Error loading recipes: $e');
+      setState(() => _isLoading = false);
+    }
   }
 
   void _filterRecipes(String query) {
     setState(() {
       _filteredRecipes = _allRecipes
           .where((recipe) =>
-              recipe['title'].toLowerCase().contains(query.toLowerCase()))
+              recipe.title.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
+
+  /// 🔧 Filter modal for city/category/rating
+  Future<void> _openFilterModal() async {
+    try {
+      final allCities = _allRecipes
+          .map((r) => r.city)
+          .whereType<String>()
+          .toSet()
+          .toList();
+      final allCategories = _allRecipes
+          .map((r) => r.category)
+          .whereType<String>()
+          .toSet()
+          .toList();
+
+      final result = await FilterModal.show(
+        context,
+        allcity: allCities,
+        allSpecialties: allCategories,
+      );
+
+      if (result != null) {
+        List<Recipe> filtered = _allRecipes;
+
+        if (result.city.isNotEmpty) {
+          filtered =
+              filtered.where((r) => r.city == result.city.first).toList();
+        }
+        if (result.specialties.isNotEmpty) {
+          filtered =
+              filtered.where((r) => r.category == result.specialties.first).toList();
+        }
+        if (result.rating > 0) {
+          filtered =
+              filtered.where((r) => r.rating >= result.rating).toList();
+        }
+
+        setState(() => _filteredRecipes = filtered);
+      }
+    } catch (e) {
+      debugPrint('❌ Failed to open filters: $e');
+      if (!mounted) return;
+     
+    }
+  }
+
+  /// 🔧 Ingredient filter modal
+Future<void> _openIngredientFilter() async {
+  final allIngredients = _allRecipes
+      .expand((r) => r.ingredients.map((i) => i.name))
+      .toSet()
+      .toList();
+
+  final result = await IngredientFilterModal.show(
+    context,
+    allIngredients: allIngredients,
+  );
+
+  setState(() {
+    if (result == null || result.ingredient.isEmpty) {
+      // No ingredient selected → show all recipes
+      _filteredRecipes = _allRecipes;
+    } else {
+      _filteredRecipes = _allRecipes
+          .where((r) => r.ingredients.any((i) => i.name == result.ingredient))
+          .toList();
+    }
+  });
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -95,35 +166,68 @@ class _RecipesPageState extends State<RecipesPage> {
       body: SafeArea(
         child: Padding(
           padding: AppDimensions.pagePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppTopBarText(
-                title: widget.title,
-                onBack: widget.onBack ??
-                    () {
-                      if (Navigator.canPop(context)) Navigator.pop(context);
-                    },
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppTopBarText(
+                      title: widget.title,
+                      onBack: widget.onBack ??
+                          () {
+                            if (Navigator.canPop(context)) Navigator.pop(context);
+                          },
+                    ),
+                    const SizedBox(height: 15),
+                    AppSearchInput(
+                      searchText: widget.searchPlaceholder,
+                      onChanged: _filterRecipes,
+                      onFilterTap: _openFilterModal,
+                      onIngredientTap: _openIngredientFilter, // ingredient filter
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                ),
               ),
-              const SizedBox(height: 15),
 
-              // 🔍 Search bar
-              AppSearchInput(
-                searchText: widget.searchPlaceholder,
-                onChanged: _filterRecipes,
-              ),
-
-              const SizedBox(height: 15),
-
-              // 🍲 Recipes grid
-              Expanded(
-                child: _isLoading
-                    ? _buildRecipeShimmer()
-                    : _filteredRecipes.isEmpty
-                        ? const Center(child: Text('Aucune recette trouvée.'))
-                        : GridView.builder(
-                            padding: EdgeInsets.zero,
-                            clipBehavior: Clip.none,
+              // 🔹 Recipes Grid or shimmer
+              _isLoading
+                  ? SliverPadding(
+                      padding: const EdgeInsets.only(top: 10),
+                      sliver: SliverGrid.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 150 / 170,
+                        ),
+                        itemCount: 6,
+                        itemBuilder: (_, __) {
+                          return Shimmer.fromColors(
+                            baseColor: Colors.grey.shade300,
+                            highlightColor: Colors.grey.shade100,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : _filteredRecipes.isEmpty
+                      ? SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: const Center(
+                            child: Text('Aucune recette trouvée.'),
+                          ),
+                        )
+                      : SliverPadding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          sliver: SliverGrid.builder(
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
@@ -135,50 +239,17 @@ class _RecipesPageState extends State<RecipesPage> {
                             itemBuilder: (context, index) {
                               final recipe = _filteredRecipes[index];
                               return AppRecipeBox(
-                                title: recipe['title'],
-                                imageUrl: recipe['image'],
-                                rating: recipe['rating'],
-                                onTap: () {
-                                  // later you can open RecipeDetailsPage
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            'Ouvrir: ${recipe['title']}')),
-                                  );
-                                },
+                                title: recipe.title,
+                                imageUrl: recipe.imageUrl,
+                                rating: recipe.rating,
+                               onTap: () => _openRecipeDetails(recipe),
                               );
                             },
                           ),
-              ),
+                        ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  /// 💫 Shimmer for recipes
-  Widget _buildRecipeShimmer() {
-    return Shimmer.fromColors(
-      baseColor: Colors.grey.shade300,
-      highlightColor: Colors.grey.shade100,
-      child: GridView.builder(
-        padding: EdgeInsets.zero,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 15,
-          mainAxisSpacing: 10,
-          childAspectRatio: 150 / 150,
-        ),
-        itemCount: 6,
-        itemBuilder: (_, __) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-          );
-        },
       ),
     );
   }

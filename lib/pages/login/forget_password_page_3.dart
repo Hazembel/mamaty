@@ -8,6 +8,7 @@ import '../../theme/dimensions.dart';
 import '../../controllers/form_controllers.dart';
 import '../../services/auth_service.dart';
 import '../../models/forgetpassword_data.dart';
+import '../../widgets/app_snak_bar.dart';
 
 class ForgetPasswordPage3 extends StatefulWidget {
   final ForgetpasswordData forgetData; // shared data
@@ -55,9 +56,7 @@ class _ForgetPasswordPage3State extends State<ForgetPasswordPage3> {
 
     if (phone == null || phone.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erreur : numéro de téléphone manquant')),
-        );
+     debugPrint('❌ Phone number is null or empty'); // Add this lin
       }
       return;
     }
@@ -77,19 +76,24 @@ class _ForgetPasswordPage3State extends State<ForgetPasswordPage3> {
 
         debugPrint('✅ Mot de passe mis à jour avec succès pour $phone');
         widget.onFinish();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('❌ Échec : utilisateur non trouvé ou erreur serveur')),
-        );
-      }
-    } catch (e) {
-      debugPrint('❌ Exception lors de la réinitialisation du mot de passe: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : ${e.toString()}')),
-        );
-      }
-    } finally {
+   } else {
+  AppSnackBar.show(
+    context,
+    message: '❌ Échec : utilisateur non trouvé ou erreur serveur',
+   
+  );
+}
+} catch (e) {
+  debugPrint('❌ Exception lors de la réinitialisation du mot de passe: $e');
+  if (mounted) {
+    AppSnackBar.show(
+      context,
+      message: 'Erreur : ${e.toString()}',
+    
+    );
+  }
+}
+ finally {
       if (mounted) {
         setState(() => _isLoading = false);
       }

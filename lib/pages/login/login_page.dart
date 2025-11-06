@@ -54,9 +54,7 @@ class _LoginPageState extends State<LoginPage> {
         await babyProvider.loadBabies(userData.babies);
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Bienvenue 👋')));
+    
 
       Navigator.pushReplacementNamed(context, '/babyprofile');
     } else {

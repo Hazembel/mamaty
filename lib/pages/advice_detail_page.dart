@@ -8,7 +8,7 @@ import '../../theme/colors.dart';
 import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../services/advice_service.dart'; // your voteAdvice function
-
+import '../widgets/app_snak_bar.dart';
 class AdviceDetailPage extends StatefulWidget {
   final Advice advice;
 
@@ -38,14 +38,30 @@ Future<void> _vote(String type, String userId) async {
       _advice.likes = updatedAdvice.likes;
       _advice.dislikes = updatedAdvice.dislikes;
     });
+
+    if (!mounted) return;
+
+    // Show success message using AppSnackBar
+    final message = type == 'like'
+        ? "Vous avez aimé ce conseil 👍"
+        : "Vous n'avez pas aimé ce conseil 👎";
+
+    AppSnackBar.show(context, message: message);
   } catch (e) {
     debugPrint('❌ Failed to vote: $e');
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Impossible de voter pour le moment')),
+    if (!mounted) return;
+
+    // Show error message using AppSnackBar
+    AppSnackBar.show(
+      context,
+      message: "Impossible de voter pour le moment",
+      backgroundColor: Colors.redAccent,
     );
   }
 }
+
+
 
 
   @override

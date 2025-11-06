@@ -11,7 +11,7 @@ import 'baby_profile_page_4.dart';
 import 'baby_profile_page_5.dart';
 import 'baby_profile_page_6.dart';
 import 'baby_profile_page_7.dart';
-
+ 
 class BabyProfileFlowPage extends StatefulWidget {
   const BabyProfileFlowPage({super.key});
 
@@ -99,9 +99,7 @@ class _BabyProfileFlowPageState extends State<BabyProfileFlowPage> {
     } catch (e) {
       debugPrint('❌ Failed to save baby: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de l\'ajout du bébé : $e')),
-        );
+      
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

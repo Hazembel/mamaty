@@ -118,9 +118,7 @@ void _validateForm() {
 
     widget.onNext();
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Veuillez corriger les erreurs ❗')),
-    );
+    debugPrint('❌ Error validating form');
   }
 }
 
