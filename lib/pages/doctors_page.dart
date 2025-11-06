@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import '../widgets/app_top_bar_text.dart';
 import '../widgets/app_top_bar_search.dart';
 import '../widgets/app_doctor_card.dart';
@@ -60,8 +61,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
   void _filterDoctors(String query) {
     setState(() {
       _filteredDoctors = _allDoctors
-          .where((doctor) =>
-              doctor.name.toLowerCase().contains(query.toLowerCase()))
+          .where((doctor) => doctor.name.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
@@ -76,38 +76,32 @@ class _DoctorsPageState extends State<DoctorsPage> {
   }
 
   /// 🧩 Open filter modal and fetch filtered data from API
-Future<void> _openFilterModal() async {
-  try {
-    final filters = await DoctorService.getFilters();
+  Future<void> _openFilterModal() async {
+    try {
+      final filters = await DoctorService.getFilters();
 
-    if (!mounted) return;
-    final result = await FilterModal.show(
-      context,
-      allcity: filters['cities'] ?? [],
-      allSpecialties: filters['specialties'] ?? [],
-    );
+      if (!mounted) return;
+      final result = await FilterModal.show(
+        context,
+        allcity: filters['cities'] ?? [],
+        allSpecialties: filters['specialties'] ?? [],
+      );
 
-    if (result != null) {
-      debugPrint("🩺 Filter applied:");
-      debugPrint("City: ${result.city}");
-      debugPrint("Rating: ${result.rating}");
-      debugPrint("Specialties: ${result.specialties}");
-
-      await _loadDoctors(
-        city: result.city.isNotEmpty ? result.city.first : null,
-        specialty: result.specialties.isNotEmpty ? result.specialties.first : null,
-        rating: result.rating > 0 ? result.rating : null,
+      if (result != null) {
+        await _loadDoctors(
+          city: result.city.isNotEmpty ? result.city.first : null,
+          specialty: result.specialties.isNotEmpty ? result.specialties.first : null,
+          rating: result.rating > 0 ? result.rating : null,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint('❌ Failed to load filters: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur de chargement des filtres')),
       );
     }
-  } catch (e) {
-     if (!mounted) return;
-    debugPrint('❌ Failed to load filters: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erreur de chargement des filtres')),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -140,35 +134,113 @@ Future<void> _openFilterModal() async {
               /// 🧠 Doctors grid
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : GridView.builder(
-                        clipBehavior: Clip.none,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 15,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 160 / 180,
-                        ),
-                        itemCount: _filteredDoctors.length,
-                        itemBuilder: (context, index) {
-                          final doctor = _filteredDoctors[index];
-                          return GestureDetector(
-                            onTap: () => _openDoctorDetails(doctor),
-                            child: DoctorCard(
-                              doctorName: doctor.name,
-                              specialty: doctor.specialty,
-                              rating: doctor.rating,
-                              city: doctor.city,
-                              imageUrl: doctor.imageUrl,
+                    ? _buildDoctorsShimmer()
+                    : _filteredDoctors.isEmpty
+                        ? const Center(child: Text('Aucun médecin trouvé.'))
+                        : GridView.builder(
+                            clipBehavior: Clip.none,
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              crossAxisSpacing: 15,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: 160 / 180,
                             ),
-                          );
-                        },
-                      ),
+                            itemCount: _filteredDoctors.length,
+                            itemBuilder: (context, index) {
+                              final doctor = _filteredDoctors[index];
+                              return GestureDetector(
+                                onTap: () => _openDoctorDetails(doctor),
+                                child: DoctorCard(
+                                  doctorName: doctor.name,
+                                  specialty: doctor.specialty,
+                                  rating: doctor.rating,
+                                  city: doctor.city,
+                                  imageUrl: doctor.imageUrl,
+                                ),
+                              );
+                            },
+                          ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  /// 💫 Shimmer skeleton for doctor cards grid
+  Widget _buildDoctorsShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: GridView.builder(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(top: 10),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 15,
+          mainAxisSpacing: 10,
+          childAspectRatio: 160 / 180,
+        ),
+        itemCount: 6,
+        itemBuilder: (_, __) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Image placeholder
+                Container(
+                  height: 100,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Text placeholders
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 14,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        height: 12,
+                        width: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        height: 10,
+                        width: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

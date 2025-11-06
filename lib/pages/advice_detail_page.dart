@@ -162,6 +162,7 @@ Future<void> _vote(String type, String userId) async {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: AppDimensions.pagePadding.horizontal),
                 child: AppRowLikeDislike(
+                  titletext: 'Cet conseil est-il utile ?',
                   isLiked: _advice.isLikedBy(currentUserId),
                   isDisliked: _advice.isDislikedBy(currentUserId),
                   onLike: () => _vote('like', currentUserId),

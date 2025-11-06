@@ -6,6 +6,7 @@ import '../icons/app_icons.dart';
 import '../../theme/text_styles.dart';
 
 class AppRowLikeDislike extends StatefulWidget {
+  final String titletext;
   final bool isLiked;
   final bool isDisliked;
   final VoidCallback onLike;
@@ -13,6 +14,7 @@ class AppRowLikeDislike extends StatefulWidget {
 
   const AppRowLikeDislike({
     super.key,
+    this.titletext ='', 
     this.isLiked = false,
     this.isDisliked = false,
     required this.onLike,
@@ -35,7 +37,7 @@ class _AppRowLikeDislikeState extends State<AppRowLikeDislike>
         // Left text
         Expanded(
           child: Text(
-            'Cet conseil est-il utile ?',
+            widget.titletext,
             style: AppTextStyles.inter16medium.copyWith(color: AppColors.premier),
           ),
         ),
