@@ -17,7 +17,7 @@ class AdviceService {
         final List data = jsonDecode(response.body);
         final advices = data.map((json) => Advice.fromJson(json)).toList();
 
-        debugPrint('✅ Fetched ${advices.length} advices for baby $babyId');
+       // debugPrint('✅ Fetched ${advices.length} advices for baby $babyId');
         return advices;
       } else {
         throw Exception('Failed to load advices: ${response.statusCode}');
@@ -33,7 +33,7 @@ class AdviceService {
     final response = await ApiHelper.post('/advices', advice.toJson());
     if (response.statusCode == 201) {
       final createdAdvice = Advice.fromJson(jsonDecode(response.body));
-      debugPrint('✅ Created advice: ${createdAdvice.id}');
+//debugPrint('✅ Created advice: ${createdAdvice.id}');
       return createdAdvice;
     } else {
       throw Exception('Failed to create advice: ${response.statusCode}');
@@ -48,7 +48,7 @@ class AdviceService {
     final response = await ApiHelper.put('/advices/$adviceId', updates);
     if (response.statusCode == 200) {
       final updatedAdvice = Advice.fromJson(jsonDecode(response.body));
-      debugPrint('✅ Updated advices: ${updatedAdvice.id}');
+//debugPrint('✅ Updated advices: ${updatedAdvice.id}');
       return updatedAdvice;
     } else {
       throw Exception('Failed to update advice: ${response.statusCode}');
@@ -61,7 +61,7 @@ class AdviceService {
     if (response.statusCode != 200) {
       throw Exception('Failed to delete advice: ${response.statusCode}');
     }
-    debugPrint('🗑️ Deleted advice $adviceId');
+//debugPrint('🗑️ Deleted advice $adviceId');
   }
 
   /// ✅ Vote (like/dislike) an advice

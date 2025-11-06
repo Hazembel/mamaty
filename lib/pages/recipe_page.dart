@@ -187,6 +187,7 @@ Future<void> _openIngredientFilter() async {
                     const SizedBox(height: 15),
                     AppSearchInput(
                       searchText: widget.searchPlaceholder,
+                      showIngredientButton: true,
                       onChanged: _filterRecipes,
                       onFilterTap: _openFilterModal,
                       onIngredientTap: _openIngredientFilter, // ingredient filter

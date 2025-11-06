@@ -8,6 +8,7 @@ import '../../widgets/home_header_card.dart';
 import '../widgets/app_advise_picker.dart';
 import '../widgets/app_doctor_row.dart';
 import '../widgets/app_recipe_row.dart';
+import '../widgets/app_article_row.dart';
 import '../../theme/dimensions.dart';
 import '../../providers/baby_provider.dart';
 import '../pages/baby_profile/baby_profile_page_1.dart';
@@ -157,6 +158,13 @@ class _HomePageState extends State<HomePage> {
 
                   // 🩺 Doctors Section
                   const DoctorRow(),
+
+
+   const SizedBox(height: 20),
+
+                  // 🩺 Doctors Section
+                  const ArticleRow(),
+
                 ],
               ),
             ),

@@ -79,6 +79,30 @@ Future<void> toggleFavoriteRecipe(String recipeId) async {
   }
 }
 
+/// Toggle an article as favorite
+Future<void> toggleFavoriteArticle(String articleId) async {
+  if (_user == null || articleId.isEmpty) return;
+
+  // Ensure the articles list is initialized
+  _user!.articles = _user!.articles;
+
+  final isFavorite = _user!.articles.contains(articleId);
+
+  if (isFavorite) {
+    _user!.articles.remove(articleId);
+  } else {
+    _user!.articles.add(articleId);
+  }
+
+  notifyListeners();
+
+  try {
+    await AuthService().saveUser(_user!); // persist changes locally
+    debugPrint('💾 Updated favorite articles: ${_user!.articles}');
+  } catch (e) {
+    debugPrint('❌ Failed to save user after toggling favorite article: $e');
+  }
+}
 
 
   /// Add a baby ID to user and persist the updated user locally

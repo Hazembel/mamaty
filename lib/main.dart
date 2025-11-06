@@ -9,6 +9,7 @@ import 'providers/advice_provider.dart';
 import 'providers/baby_provider.dart';
 import 'providers/doctor_provider.dart';
 import 'providers/recipe_provider.dart';
+import 'providers/article_provider.dart';
 
 void main() {
   runApp(
@@ -19,6 +20,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => BabyProvider()),  
          ChangeNotifierProvider(create: (_) => DoctorProvider()),
         ChangeNotifierProvider(create: (_) => RecipeProvider()),
+        ChangeNotifierProvider(create: (_) => ArticleProvider()),
 
       ],
       child: const MyApp(),
@@ -44,6 +46,7 @@ class MyApp extends StatelessWidget {
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
+
       ],
       supportedLocales: AppLocalizations.supportedLocales,
 

@@ -31,11 +31,11 @@ class ApiHelper {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
 
-    debugPrint('🔗 GET $url');
-    debugPrint('🔐 Headers: $headers');
+    //debugPrint('🔗 GET $url');
+    //debugPrint('🔐 Headers: $headers');
 
     final response = await http.get(Uri.parse(url), headers: headers);
-    debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+   // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -46,8 +46,8 @@ class ApiHelper {
   ) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
-    debugPrint('🔗 POST $url');
-    debugPrint('📦 Body: $body');
+ //   debugPrint('🔗 POST $url');
+  //  debugPrint('📦 Body: $body');
     final response = await http.post(
       Uri.parse(url),
       headers: headers,
@@ -64,8 +64,8 @@ class ApiHelper {
   ) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
-    debugPrint('🔗 PUT $url');
-    debugPrint('📦 Body: $body');
+  //  debugPrint('🔗 PUT $url');
+//debugPrint('📦 Body: $body');
     final response = await http.put(
       Uri.parse(url),
       headers: headers,
@@ -79,9 +79,9 @@ class ApiHelper {
   static Future<http.Response> delete(String path) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
-    debugPrint('🔗 DELETE $url');
+  //  debugPrint('🔗 DELETE $url');
     final response = await http.delete(Uri.parse(url), headers: headers);
-    debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+ //   debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -89,13 +89,13 @@ class ApiHelper {
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
-    debugPrint('💾 Token saved');
+ //   debugPrint('💾 Token saved');
   }
 
   /// Remove token (logout)
   static Future<void> removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
-    debugPrint('🗑️ Token removed');
+ //   debugPrint('🗑️ Token removed');
   }
 }

@@ -7,9 +7,10 @@ class User {
   String avatar;
   String gender;
   String birthday;
-  List<String> babies;   // IDs
-  List<String> doctors;  // favorite doctors
-  List<String> recipes;  // ✅ favorite recipes
+  List<String> babies;    // IDs
+  List<String> doctors;   // favorite doctors
+  List<String> recipes;   // favorite recipes
+  List<String> articles;  // favorite articles ✅
   String? token;
 
   User({
@@ -23,7 +24,8 @@ class User {
     required this.birthday,
     required this.babies,
     required this.doctors,
-    required this.recipes, // ✅ add here
+    required this.recipes,
+    required this.articles, // ✅ initialize articles
     this.token,
   });
 
@@ -39,7 +41,8 @@ class User {
       birthday: json['birthday'],
       babies: List<String>.from(json['babies'] ?? []),
       doctors: List<String>.from(json['doctors'] ?? []),
-      recipes: List<String>.from(json['recipes'] ?? []), // ✅ parse recipes
+      recipes: List<String>.from(json['recipes'] ?? []),
+      articles: List<String>.from(json['articles'] ?? []), // ✅ parse articles
       token: json['token'],
     );
   }
@@ -56,7 +59,8 @@ class User {
       'birthday': birthday,
       'babies': babies,
       'doctors': doctors,
-      'recipes': recipes, // ✅ include recipes
+      'recipes': recipes,
+      'articles': articles, // ✅ include articles
       'token': token,
     };
   }

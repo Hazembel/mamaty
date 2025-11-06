@@ -23,7 +23,7 @@ class BabyService {
             .values
             .toList();
 
-        debugPrint('✅ Fetched ${uniqueBabies.length} unique babies');
+//debugPrint('✅ Fetched ${uniqueBabies.length} unique babies');
         return uniqueBabies;
       } else {
         throw Exception('Failed to load babies: ${response.statusCode}');
@@ -39,11 +39,11 @@ class BabyService {
     final encodedId = Uri.encodeComponent(babyId);
     final response = await ApiHelper.get('/babies/$encodedId');
 
-    debugPrint('Response body: ${response.body}');
+    //debugPrint('Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final baby = Baby.fromJson(jsonDecode(response.body));
-      debugPrint('✅ Baby fetched: ${baby.id} | ${baby.name}');
+    //  debugPrint('✅ Baby fetched: ${baby.id} | ${baby.name}');
       return baby;
     } else if (response.statusCode == 404) {
       // Provide a clearer error for missing babies

@@ -6,7 +6,7 @@ import '../providers/recipe_provider.dart';
 import '../widgets/app_recipe_box.dart';
 import '../pages/recipe_page.dart';
 import '../pages/recipe_detail_page.dart'; 
-
+import '../widgets/row_see_more.dart';
 class RecipeRow extends StatefulWidget {
   const RecipeRow({super.key});
 
@@ -82,17 +82,16 @@ builder: (_) => RecipeDetailPage(recipe: recipe),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// Title + see more
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Meilleures recettes',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              TextButton(
-                onPressed: _openAllRecipes,
-                child: const Text('Tout voir'),
-              ),
+         
+  /// 🔹 Title + "Tout voir"
+          AppRowSeeMore(
+            title: 'Meilleures recettes',
+            onSeeMore: _openAllRecipes,
+          ),
+  
             ],
           ),
           const SizedBox(height: 10),

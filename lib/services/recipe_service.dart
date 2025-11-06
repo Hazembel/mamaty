@@ -28,7 +28,7 @@ class RecipeService {
         final List data = jsonDecode(response.body);
         final recipes = data.map((json) => Recipe.fromJson(json)).toList();
 
-        debugPrint('✅ Fetched ${recipes.length} recipes');
+//debugPrint('✅ Fetched ${recipes.length} recipes');
         return recipes;
       } else {
         throw Exception('Failed to load recipes: ${response.statusCode}');
