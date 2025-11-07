@@ -8,10 +8,12 @@ import '../../widgets/home_header_card.dart';
 import '../widgets/app_advise_picker.dart';
 import '../widgets/app_doctor_row.dart';
 import '../widgets/app_recipe_row.dart';
-import '../widgets/app_article_row.dart';
+import '../widgets/app_article_column.dart';
 import '../../theme/dimensions.dart';
 import '../../providers/baby_provider.dart';
 import '../pages/baby_profile/baby_profile_page_1.dart';
+import '../providers/article_provider.dart';
+import '../providers/doctor_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -61,6 +63,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  
+
+
+
   int _calculateBabyAgeInDays(String? birthday) {
     if (birthday == null || birthday.isEmpty) return 0;
 
@@ -103,7 +109,9 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: user == null
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+           : RefreshIndicator(
+            onRefresh: _refreshHomePage,
+          child: SingleChildScrollView(
               padding: AppDimensions.pagePadding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -168,8 +176,37 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+    )
     );
+
+
+
+    
   }
+/// 🔹 Pull-to-refresh logic
+Future<void> _refreshHomePage() async {
+  // Reload baby age & advices
+  _updateBabyAgeAndAdvices();
+
+  // Reload recipes if eligible
+  _loadRecipesIfEligible();
+
+  // Run article and doctor loads at the same time
+final baby = context.read<BabyProvider>().selectedBaby;
+final babyId = baby?.id;
+final ageInDays = _babyAgeInDays ?? 0;
+
+await Future.wait([
+  context.read<ArticleProvider>().loadArticles(
+    ageInDays: ageInDays,
+    babyId: babyId,
+  ),
+  context.read<DoctorProvider>().loadDoctors(),
+]);
+
+  // Force rebuild
+  setState(() {});
+}
 
   /// 💫 Shimmer skeleton matching HomeHeaderCard shape
   Widget _buildHomeHeaderSkeleton() {

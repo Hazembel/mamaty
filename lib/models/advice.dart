@@ -8,8 +8,7 @@ class Advice {
   List<String> dislikes;  // user IDs
   String category;
   int? day;
-  int? minDay;
-  int? maxDay;
+  
 
   Advice({
     this.id,
@@ -21,8 +20,7 @@ class Advice {
     List<String>? dislikes,
     required this.category,
     this.day,
-    this.minDay,
-    this.maxDay,
+    
   })  : likes = likes ?? [],
         dislikes = dislikes ?? [];
 
@@ -37,8 +35,7 @@ class Advice {
       dislikes: List<String>.from(json['dislikes'] ?? []),
       category: json['category'] ?? '',
       day: json['day'],
-      minDay: json['minDay'],
-      maxDay: json['maxDay'],
+    
     );
   }
 
@@ -52,8 +49,7 @@ class Advice {
         'dislikes': dislikes,
         'category': category,
         'day': day,
-        'minDay': minDay,
-        'maxDay': maxDay,
+    
       };
 
   int get likeCount => likes.length;

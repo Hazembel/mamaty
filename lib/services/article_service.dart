@@ -5,18 +5,34 @@ import 'package:flutter/foundation.dart';
 
 class ArticleService {
   /// ✅ Get all articles (optionally filter by category)
-static Future<List<Article>> getArticles() async {
-  final response = await ApiHelper.get('/articles');
-  debugPrint('🔹 Articles API response: ${response.body}');
+static Future<List<Article>> getArticles({
+  int? ageInDays,
+  String? babyId,
+}) async {
+  final queryParams = <String, dynamic>{};
+  if (ageInDays != null) queryParams['ageInDays'] = ageInDays.toString();
+  if (babyId != null) queryParams['babyId'] = babyId;
+
+  // Build query string dynamically
+  final queryString = queryParams.entries
+      .map((e) => '${e.key}=${Uri.encodeComponent(e.value.toString())}')
+      .join('&');
+
+  final endpoint = queryString.isEmpty ? '/articles' : '/articles?$queryString';
+
+  final response = await ApiHelper.get(endpoint);
+  //debugPrint('🔹 Articles API response: ${response.body}');
+
   if (response.statusCode == 200) {
     final List data = jsonDecode(response.body);
-    debugPrint('🔹 Parsed articles length: ${data.length}');
+   // debugPrint('🔹 Parsed articles length: ${data.length}');
     return data.map((json) => Article.fromJson(json)).toList();
   } else {
-    debugPrint('❌ Failed to load articles, status: ${response.statusCode}');
+  //  debugPrint('❌ Failed to load articles, status: ${response.statusCode}');
     return [];
   }
 }
+
 
 
   /// ✅ Create new article (admin/protected)

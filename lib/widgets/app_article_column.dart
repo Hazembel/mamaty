@@ -6,6 +6,8 @@ import '../providers/article_provider.dart';
 import '../widgets/app_article_box.dart';
 import '../pages/articles_page.dart';
 import '../widgets/row_see_more.dart';
+import '../utils/date_utils.dart';
+import '../providers/baby_provider.dart';
 
 class ArticleRow extends StatefulWidget {
   const ArticleRow({super.key});
@@ -15,24 +17,48 @@ class ArticleRow extends StatefulWidget {
 }
 
 class _ArticleRowState extends State<ArticleRow> {
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
     _loadArticles();
   }
 
-  Future<void> _loadArticles() async {
-    setState(() => _isLoading = true);
-    try {
-      final provider = context.read<ArticleProvider>();
-      await provider.loadArticles(); // Load all articles
-    } catch (e) {
-      debugPrint('❌ Error loading articles: $e');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+Future<void> _loadArticles() async {
+  try {
+    // 🔹 Get selected baby from BabyProvider
+    final babyProvider = context.read<BabyProvider>();
+    final selectedBaby = babyProvider.selectedBaby;
+
+    int? ageInDays;
+    String? babyId;
+
+    if (selectedBaby != null) {
+      ageInDays = DateUtilsHelper.calculateAgeInDays(selectedBaby.birthday);
+      babyId = selectedBaby.id;
+      //debugPrint('🔹 Loading articles for baby ${selectedBaby.name}, age: $ageInDays days');
+    } else {
+     // debugPrint('ℹ️ No selected baby, loading all articles');
     }
+
+    // 🔹 Load articles via ArticleProvider
+    final provider = context.read<ArticleProvider>();
+    await provider.loadArticles(ageInDays: ageInDays, babyId: babyId);
+
+  } catch (e) {
+    debugPrint('❌ Error loading articles: $e');
+  }
+}
+
+
+  String formatTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inSeconds < 60) return 'Il y a quelques secondes';
+    if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes} minutes';
+    if (diff.inHours < 24) return 'Il y a ${diff.inHours} heures';
+    if (diff.inDays < 7) return 'Il y a ${diff.inDays} jours';
+    if (diff.inDays < 30) return 'Il y a ${diff.inDays ~/ 7} semaines';
+    if (diff.inDays < 365) return 'Il y a ${diff.inDays ~/ 30} mois';
+    return 'Il y a ${diff.inDays ~/ 365} ans';
   }
 
   void _openAllArticles() {
@@ -56,11 +82,10 @@ class _ArticleRowState extends State<ArticleRow> {
     );
   }
 
-  /// Shimmer skeleton for loading
   Widget _buildSkeletonLoader() {
     return Column(
       children: List.generate(
-        3, // Show 3 skeletons vertically
+        3,
         (index) => Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Shimmer.fromColors(
@@ -83,22 +108,21 @@ class _ArticleRowState extends State<ArticleRow> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ArticleProvider>();
-    final articles = provider.articles.take(3).toList(); // show top 3 only
+    final articles = provider.articles.take(3).toList();
+    final isLoading = provider.isLoading;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 🔹 Title + See More
           AppRowSeeMore(
             title: 'Meilleurs articles',
             onSeeMore: _openAllArticles,
           ),
           const SizedBox(height: 10),
 
-          // 🔹 Article list
-          if (_isLoading)
+          if (isLoading)
             _buildSkeletonLoader()
           else if (articles.isEmpty)
             const Padding(
@@ -112,9 +136,11 @@ class _ArticleRowState extends State<ArticleRow> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: AppArticleBox(
                     title: article.title,
-                    imageUrl: article.imageUrl.isNotEmpty ? article.imageUrl.first : '',
+                    imageUrl: article.imageUrl.isNotEmpty
+                        ? article.imageUrl.first
+                        : '',
                     category: article.category,
-                    timeAgo:  'Il y a 3 heures',
+                    timeAgo: formatTimeAgo(article.createdAt),
                     onTap: () => _openArticleDetails(article),
                   ),
                 );

@@ -3,7 +3,7 @@ import '../models/doctor.dart';
 import '../services/doctor_service.dart';
 
 class DoctorProvider extends ChangeNotifier {
-  List<Doctor> _doctors = [];
+  final List<Doctor> _doctors = [];
   bool _isLoading = false;
   String? _error;
 
@@ -11,23 +11,31 @@ class DoctorProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  /// ✅ Load doctors (with optional filters)
-  Future<void> fetchDoctors({
+  /// ✅ Load all doctors (optionally filtered)
+  Future<void> loadDoctors({
     String? city,
     String? specialty,
     double? rating,
   }) async {
+    if (_isLoading) return; // avoid duplicate fetch
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final data = await DoctorService.getDoctors(
+      final fetchedDoctors = await DoctorService.getDoctors(
         city: city,
         specialty: specialty,
         rating: rating,
       );
-      _doctors = data;
+
+      debugPrint('🔹 Fetched ${fetchedDoctors.length} doctors from API');
+
+      _doctors
+        ..clear()
+        ..addAll(fetchedDoctors);
+
+      debugPrint('✅ Doctors loaded into provider: ${_doctors.length}');
     } catch (e) {
       _error = e.toString();
       debugPrint('❌ Error fetching doctors: $e');
@@ -37,7 +45,14 @@ class DoctorProvider extends ChangeNotifier {
     }
   }
 
-  /// ✅ Get a specific doctor (by ID)
+  /// ✅ Refresh doctors manually (e.g. pull-to-refresh)
+  Future<void> refreshDoctors() async {
+    debugPrint('🔁 Refreshing doctors...');
+    _doctors.clear();
+    await loadDoctors();
+  }
+
+  /// ✅ Get doctor by ID
   Future<Doctor?> getDoctorById(String id) async {
     try {
       return await DoctorService.getDoctorById(id);
@@ -51,7 +66,7 @@ class DoctorProvider extends ChangeNotifier {
   Future<void> addDoctor(Doctor doctor) async {
     try {
       final newDoctor = await DoctorService.createDoctor(doctor);
-      _doctors.add(newDoctor);
+      _doctors.insert(0, newDoctor); // newest first
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error adding doctor: $e');
@@ -61,10 +76,10 @@ class DoctorProvider extends ChangeNotifier {
   /// ✅ Update doctor
   Future<void> updateDoctor(String doctorId, Map<String, dynamic> updates) async {
     try {
-      final updated = await DoctorService.updateDoctor(doctorId, updates);
-      final index = _doctors.indexWhere((d) => d.name == updated.name);
+      final updatedDoctor = await DoctorService.updateDoctor(doctorId, updates);
+      final index = _doctors.indexWhere((d) => d.id == updatedDoctor.id);
       if (index != -1) {
-        _doctors[index] = updated;
+        _doctors[index] = updatedDoctor;
         notifyListeners();
       }
     } catch (e) {
@@ -76,14 +91,14 @@ class DoctorProvider extends ChangeNotifier {
   Future<void> deleteDoctor(String doctorId) async {
     try {
       await DoctorService.deleteDoctor(doctorId);
-      _doctors.removeWhere((d) => d.name == doctorId);
+      _doctors.removeWhere((d) => d.id == doctorId);
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Error deleting doctor: $e');
     }
   }
 
-  /// ✅ Clear doctors (optional for logout or refresh)
+  /// ✅ Clear doctors (optional for logout or reset)
   void clear() {
     _doctors.clear();
     notifyListeners();

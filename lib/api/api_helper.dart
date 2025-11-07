@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
+//import 'package:flutter/foundation.dart';
 
 class ApiHelper {
   static const String baseUrl =
@@ -53,7 +53,7 @@ class ApiHelper {
       headers: headers,
       body: jsonEncode(body),
     );
-    debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+   // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -71,7 +71,7 @@ class ApiHelper {
       headers: headers,
       body: jsonEncode(body),
     );
-    debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+   // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 

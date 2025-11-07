@@ -9,20 +9,18 @@ class ArticleProvider extends ChangeNotifier {
   List<Article> get articles => _articles;
   bool get isLoading => _isLoading;
 
-  /// Load articles (optionally filtered by category)
- Future<void> loadArticles() async {
+  /// 🔹 Load all articles (with refresh every time)
+  Future<void> loadArticles({int? ageInDays, String? babyId}) async {
   _isLoading = true;
   notifyListeners();
 
   try {
-    final fetchedArticles = await ArticleService.getArticles();
-    debugPrint('🔹 Fetched articles from service: ${fetchedArticles.length}'); // <-- add this
+    final fetchedArticles =
+        await ArticleService.getArticles(ageInDays: ageInDays, babyId: babyId);
 
     _articles
       ..clear()
       ..addAll(fetchedArticles);
-
-    debugPrint('🔹 Articles after adding to provider: ${_articles.length}');
   } catch (e) {
     debugPrint('❌ Failed to load articles: $e');
   } finally {
@@ -32,15 +30,15 @@ class ArticleProvider extends ChangeNotifier {
 }
 
 
-  /// Add new article (admin)
+  /// 🔹 Add a new article
   void addArticle(Article article) {
     if (!_articles.any((a) => a.id == article.id)) {
-      _articles.add(article);
+      _articles.insert(0, article); // newest first
       notifyListeners();
     }
   }
 
-  /// Update existing article
+  /// 🔹 Update an existing article
   void updateArticle(Article updatedArticle) {
     final index = _articles.indexWhere((a) => a.id == updatedArticle.id);
     if (index != -1) {
@@ -49,13 +47,13 @@ class ArticleProvider extends ChangeNotifier {
     }
   }
 
-  /// Remove article
+  /// 🔹 Remove article
   void removeArticle(String articleId) {
     _articles.removeWhere((a) => a.id == articleId);
     notifyListeners();
   }
 
-  /// Vote (like or dislike) an article for a specific user
+  /// 🔹 Like / Dislike an article
   Future<void> voteArticle(Article article, String userId, String type) async {
     try {
       final updatedArticle = await ArticleService.voteArticle(
@@ -64,12 +62,22 @@ class ArticleProvider extends ChangeNotifier {
         type: type,
       );
 
-      // Update local article
-      article.likes = updatedArticle.likes;
-      article.dislikes = updatedArticle.dislikes;
+      // Update local version
+      final index = _articles.indexWhere((a) => a.id == article.id);
+      if (index != -1) {
+        _articles[index] = updatedArticle;
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Failed to vote article: $e');
     }
+  }
+
+  /// 🔹 Force manual refresh (e.g. pull-to-refresh)
+  Future<void> refreshArticles() async {
+    debugPrint('🔁 Refreshing articles...');
+    _articles.clear();
+    await loadArticles();
   }
 }

@@ -23,16 +23,22 @@ class _BabyDayPickerState extends State<BabyDayPicker> {
   int selectedIndex = 3; // middle = today
 
   // Whenever babyAgeInDays changes, recalc visible advices
-  List<Advice> get visibleAdvices {
-    
-    final filtered = widget.advices
-        .where((advice) =>
-            widget.babyAgeInDays >= (advice.minDay ?? 0) &&
-            widget.babyAgeInDays <= (advice.maxDay ?? 9999))
-        .toList();
-  
-    return filtered;
-  }
+List<Advice> get visibleAdvices {
+  // 7-day offsets around today
+  final dayOffsets = List.generate(7, (i) => i - 3);
+  final today = widget.babyAgeInDays;
+
+  return widget.advices.where((advice) {
+    if (advice.day != null) {
+      // Include only if the advice day is within the 7-day window
+      return dayOffsets.any((offset) => advice.day == today + offset);
+    } else {
+      // Occasional advice: include always
+      return true;
+    }
+  }).toList();
+}
+
 
   // 7-day offsets around today
   List<int> get dayOffsets => List.generate(7, (i) => i - 3);

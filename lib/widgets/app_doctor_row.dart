@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
+
 import '../models/doctor.dart';
 import '../services/doctor_service.dart';
+import '../providers/doctor_provider.dart';
 import '../widgets/app_doctor_card.dart';
 import '../widgets/row_see_more.dart';
+import '../widgets/app_category_chip.dart';
 import '../pages/doctor_details_page.dart';
 import '../pages/doctors_page.dart';
-import '../widgets/app_category_chip.dart';
 
 class DoctorRow extends StatefulWidget {
   const DoctorRow({super.key});
@@ -16,10 +19,8 @@ class DoctorRow extends StatefulWidget {
 }
 
 class _DoctorRowState extends State<DoctorRow> {
-  List<Doctor> _doctors = [];
   List<String> _specialties = [];
   String? _selectedSpecialty;
-  bool _isLoading = true;
   bool _isLoadingFilters = true;
 
   @override
@@ -31,23 +32,14 @@ class _DoctorRowState extends State<DoctorRow> {
 
   /// 🩺 Load doctors (best or by specialty)
   Future<void> _loadDoctors({String? specialty}) async {
-    setState(() => _isLoading = true);
-    try {
-      final doctors = await DoctorService.getDoctors(
-        specialty: specialty,
-        rating: specialty == null ? 4.0 : null, // ✅ only filter by rating when no specialty
-      );
-      setState(() {
-        _doctors = doctors.take(10).toList();
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint('❌ Error loading doctors: $e');
-      setState(() => _isLoading = false);
-    }
+    final provider = context.read<DoctorProvider>();
+    await provider.loadDoctors(
+      specialty: specialty,
+      rating: specialty == null ? 4.0 : null,
+    );
   }
 
-  /// 🧠 Load specialties from filters
+  /// 🧠 Load specialties for filter chips
   Future<void> _loadFilters() async {
     try {
       final filters = await DoctorService.getFilters();
@@ -77,7 +69,7 @@ class _DoctorRowState extends State<DoctorRow> {
     );
   }
 
-  /// 💫 Shimmer skeleton for category chips
+  /// 💫 Skeleton loader for chips
   Widget _buildChipSkeleton() {
     return SizedBox(
       height: 38,
@@ -101,7 +93,7 @@ class _DoctorRowState extends State<DoctorRow> {
     );
   }
 
-  /// 💫 Shimmer skeleton for doctor cards
+  /// 💫 Skeleton loader for doctor cards
   Widget _buildSkeletonLoader() {
     return SizedBox(
       height: 200,
@@ -109,7 +101,7 @@ class _DoctorRowState extends State<DoctorRow> {
         scrollDirection: Axis.horizontal,
         itemCount: 4,
         separatorBuilder: (_, __) => const SizedBox(width: 15),
-        itemBuilder: (context, index) => Shimmer.fromColors(
+        itemBuilder: (_, __) => Shimmer.fromColors(
           baseColor: Colors.grey.shade300,
           highlightColor: Colors.grey.shade100,
           child: Container(
@@ -122,7 +114,6 @@ class _DoctorRowState extends State<DoctorRow> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image placeholder
                 Container(
                   height: 100,
                   decoration: BoxDecoration(
@@ -156,98 +147,106 @@ class _DoctorRowState extends State<DoctorRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// 🔹 Title + "Tout voir"
-          AppRowSeeMore(
-            title: 'Meilleurs médecins',
-            onSeeMore: _openAllDoctors,
-          ),
-          const SizedBox(height: 10),
+    return Consumer<DoctorProvider>(
+      builder: (context, provider, child) {
+        final doctors = provider.doctors;
+        final isLoading = provider.isLoading;
 
-          /// 🔹 Chips + doctor shimmer combined while loading
-          if (_isLoadingFilters)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildChipSkeleton(),
-                const SizedBox(height: 15),
-                _buildSkeletonLoader(),
-              ],
-            )
-          else
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 38,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemCount: _specialties.length,
-                    itemBuilder: (context, index) {
-                      final specialty = _specialties[index];
-                      return AppCategoryChip(
-                        label: specialty,
-                        isSelected: _selectedSpecialty == specialty,
-                        onTap: () {
-                          setState(() {
-                            if (_selectedSpecialty == specialty) {
-                              _selectedSpecialty = null;
-                              _loadDoctors(); // Show best doctors again
-                            } else {
-                              _selectedSpecialty = specialty;
-                              _loadDoctors(specialty: specialty);
-                            }
-                          });
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// 🔹 Title + "Tout voir"
+              AppRowSeeMore(
+                title: 'Meilleurs médecins',
+                onSeeMore: _openAllDoctors,
+              ),
+              const SizedBox(height: 10),
+
+              /// 🔹 Chips + shimmer while loading filters
+              if (_isLoadingFilters)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildChipSkeleton(),
+                    const SizedBox(height: 15),
+                    _buildSkeletonLoader(),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: 38,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemCount: _specialties.length,
+                        itemBuilder: (context, index) {
+                          final specialty = _specialties[index];
+                          return AppCategoryChip(
+                            label: specialty,
+                            isSelected: _selectedSpecialty == specialty,
+                            onTap: () async {
+                              setState(() {
+                                if (_selectedSpecialty == specialty) {
+                                  _selectedSpecialty = null;
+                                } else {
+                                  _selectedSpecialty = specialty;
+                                }
+                              });
+                              await _loadDoctors(
+                                specialty: _selectedSpecialty,
+                              );
+                            },
+                          );
                         },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 15),
-
-                /// 🔹 Horizontal doctor cards
-                if (_isLoading)
-                  _buildSkeletonLoader()
-                else if (_doctors.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('Aucun médecin trouvé.'),
-                  )
-                else
-                  SizedBox(
-                    height: 200,
-                    child: ListView.separated(
-                      clipBehavior: Clip.none,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _doctors.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 15),
-                      itemBuilder: (context, index) {
-                        final doctor = _doctors[index];
-                        return GestureDetector(
-                          onTap: () => _openDoctorDetails(doctor),
-                          child: SizedBox(
-                            width: 160,
-                            child: DoctorCard(
-                              doctorName: doctor.name,
-                              specialty: doctor.specialty,
-                              rating: doctor.rating,
-                              city: doctor.city,
-                              imageUrl: doctor.imageUrl,
-                            ),
-                          ),
-                        );
-                      },
+                      ),
                     ),
-                  ),
-              ],
-            ),
-        ],
-      ),
+                    const SizedBox(height: 15),
+
+                    /// 🔹 Doctor list or shimmer
+                    if (isLoading)
+                      _buildSkeletonLoader()
+                    else if (doctors.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Text('Aucun médecin trouvé.'),
+                      )
+                    else
+                      SizedBox(
+                        height: 200,
+                        child: ListView.separated(
+                          clipBehavior: Clip.none,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: doctors.length,
+                          separatorBuilder: (_, __) => const SizedBox(width: 15),
+                          itemBuilder: (context, index) {
+                            final doctor = doctors[index];
+                            return GestureDetector(
+                              onTap: () => _openDoctorDetails(doctor),
+                              child: SizedBox(
+                                width: 160,
+                                child: DoctorCard(
+                                  doctorName: doctor.name,
+                                  specialty: doctor.specialty,
+                                  rating: doctor.rating,
+                                  city: doctor.city,
+                                  imageUrl: doctor.imageUrl,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
