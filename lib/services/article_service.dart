@@ -88,4 +88,15 @@ static Future<List<Article>> getArticles({
       throw Exception('Failed to vote article: ${response.statusCode}');
     }
   }
+
+  static Future<bool> toggleFavoriteArticle(String articleId) async {
+    final response = await ApiHelper.post('/users/favorite-article/$articleId', {});
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['isFavorite']; // <-- backend returns the new favorite state
+    } else {
+      throw Exception('Failed to toggle favorite article');
+    }
+  }
 }

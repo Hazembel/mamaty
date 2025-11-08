@@ -4,7 +4,7 @@ import '../widgets/app_top_bar_text.dart';
 import '../widgets/app_top_bar_search.dart';
 import '../widgets/app_doctor_card.dart';
 import '../theme/colors.dart';
-import '../theme/dimensions.dart';
+ 
 import '../services/doctor_service.dart';
 import '../pages/doctor_details_page.dart';
 import '../models/doctor.dart';
@@ -107,7 +107,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: AppDimensions.pagePadding,
+          padding:EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(

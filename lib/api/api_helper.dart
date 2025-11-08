@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiHelper {
   static const String baseUrl =
-      "http://localhost:5000"; // change for your backend
+      "http://192.168.1.17:5000"; // change for your backend
 
   /// Read token from SharedPreferences
   static Future<String?> getToken() async {

@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import '../models/article.dart';
- 
 import '../widgets/app_article_box.dart';
 import '../providers/article_provider.dart';
 import '../providers/baby_provider.dart';
 import '../widgets/app_trending_article.dart';
+import 'article_detail_page.dart';
 import '../widgets/app_top_bar_text.dart';
 import '../widgets/app_top_bar_search.dart';
 import '../theme/colors.dart';
-import '../theme/dimensions.dart';
+ 
 import '../theme/text_styles.dart';
 import 'package:provider/provider.dart';
 import '../utils/date_utils.dart';
@@ -30,8 +31,8 @@ class ArticlesPage extends StatefulWidget {
 }
 
 class _ArticlesPageState extends State<ArticlesPage> {
-  String _searchQuery = '';
-  List<Article> _articles = [];
+  List<Article> _allArticles = [];
+  List<Article> _filteredArticles = [];
   Article? _trendingArticle;
   bool _isLoading = true;
 
@@ -41,160 +42,161 @@ class _ArticlesPageState extends State<ArticlesPage> {
     _loadArticles();
   }
 
+  Future<void> _loadArticles() async {
+    setState(() => _isLoading = true);
 
+    try {
+      final babyProvider = context.read<BabyProvider>();
+      final selectedBaby = babyProvider.selectedBaby;
 
-Future<void> _loadArticles() async {
-  setState(() => _isLoading = true);
+      int? ageInDays;
+      String? babyId;
 
-  try {
-    // 🔹 Get selected baby from BabyProvider
-    final babyProvider = context.read<BabyProvider>();
-    final selectedBaby = babyProvider.selectedBaby;
+      if (selectedBaby != null) {
+        ageInDays = DateUtilsHelper.calculateAgeInDays(selectedBaby.birthday);
+        babyId = selectedBaby.id;
+      }
 
-    int? ageInDays;
-    String? babyId;
+      final articleProvider = context.read<ArticleProvider>();
+      await articleProvider.loadArticles(ageInDays: ageInDays, babyId: babyId);
 
-    if (selectedBaby != null) {
-      
-      ageInDays =  DateUtilsHelper.calculateAgeInDays(selectedBaby.birthday); 
-     
-      babyId = selectedBaby.id;
-      //debugPrint('🔹 Loading articles for baby ${selectedBaby.name}, age: $ageInDays days');
-    } else {
-    //  debugPrint('ℹ️ No selected baby, loading all articles');
+      setState(() {
+        _allArticles = articleProvider.articles;
+        _filteredArticles = _allArticles;
+        _trendingArticle = _allArticles.isNotEmpty ? _allArticles[0] : null;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint('❌ Failed to load articles: $e');
+      setState(() => _isLoading = false);
     }
-
-    // 🔹 Load articles via ArticleProvider or directly from service
-    final articleProvider = context.read<ArticleProvider>();
-    await articleProvider.loadArticles(ageInDays: ageInDays, babyId: babyId);
-
-    setState(() {
-      _articles = articleProvider.articles;
-      _trendingArticle = _articles.isNotEmpty ? _articles[0] : null;
-      _isLoading = false;
-    });
-  } catch (e) {
-    debugPrint('❌ Failed to load articles: $e');
-    setState(() => _isLoading = false);
   }
-}
-
-
 
   void _onSearchChanged(String query) {
-    setState(() => _searchQuery = query);
-    // Filter articles based on search query
-    _filterArticles();
+    setState(() {
+      _filteredArticles = _allArticles
+          .where((a) => a.title.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
-  void _filterArticles() {
-    // Implement filtering logic here
-  }
-
-  void _onFilterTap() {
-    // Implement filter modal here
-    debugPrint('Filter button tapped');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: AppDimensions.pagePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top bar with back button and title
-              AppTopBarText(
-                title: widget.title,
-                onBack:
-                    widget.onBack ??
-                    () {
-                      if (Navigator.canPop(context)) Navigator.pop(context);
-                    },
-              ),
-              const SizedBox(height: 15),
-
-              // Search bar
-              AppSearchInput(
-                searchText: widget.searchPlaceholder,
-                onChanged: _onSearchChanged,
-                onFilterTap: _onFilterTap,
-              ),
-              const SizedBox(height: 15),
-              Text(
-                'Trending article',
-                style: AppTextStyles.inter16SemiBold.copyWith(
-                  color: AppColors.black,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-              const SizedBox(height: 15),
-
-              // Content
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : RefreshIndicator(
-                        onRefresh: _loadArticles,
-                        child: ListView(
-                          children: [
-                            // Trending article
-                            if (_trendingArticle != null) ...[
-                              AppTrendingArticle(
-                                title: _trendingArticle!.title,
-                                imageUrl: _trendingArticle!.imageUrl.first,
-                                tags: [_trendingArticle!.category],
-                                onTap: () {
-                                  // Navigate to article detail
-                                },
-                                onReadTap: () {
-                                  // Navigate to article detail with animation
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'Derniers articles',
-                                style: AppTextStyles.inter16SemiBold.copyWith(
-                                  color: AppColors.black,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 15),
-                            ],
-
-                            // Recent articles list
-                            ..._articles
-                                .skip(1)
-                                .map(
-                                  (article) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 15),
-                                    child: AppArticleBox(
-                                      title: article.title,
-                                      imageUrl: article.imageUrl.first,
-                                      category: article.category,
-                                      timeAgo: _getTimeAgo(article.createdAt),
-                                      onTap: () {
-                                        // Navigate to article detail
-                                      },
-                                    ),
-                                  ),
-                                ),
-                          ],
-                        ),
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
+  void _openArticleDetail(Article article) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ArticleDetailPage(article: article)),
     );
   }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: AppColors.background,
+    body: SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        child: CustomScrollView(
+          clipBehavior: Clip.none, // ✅ Added here
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppTopBarText(
+                    title: widget.title,
+                    onBack:
+                        widget.onBack ??
+                        () {
+                          if (Navigator.canPop(context)) Navigator.pop(context);
+                        },
+                  ),
+                  const SizedBox(height: 15),
+                  AppSearchInput(
+                    showFilterButton: false,
+                    searchText: widget.searchPlaceholder,
+                    onChanged: _onSearchChanged,
+                  ),
+                  const SizedBox(height: 15),
+                  if (_trendingArticle != null) ...[
+                    Text(
+                      'Trending article',
+                      style: AppTextStyles.inter16SemiBold.copyWith(
+                        color: AppColors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    AppTrendingArticle(
+                      title: _trendingArticle!.title,
+                      imageUrl: _trendingArticle!.imageUrl.first,
+                      tags: [_trendingArticle!.category],
+                      onTap: () => _openArticleDetail(_trendingArticle!),
+                      onReadTap: () => _openArticleDetail(_trendingArticle!),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Derniers articles',
+                      style: AppTextStyles.inter16SemiBold.copyWith(
+                        color: AppColors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                  ],
+                ],
+              ),
+            ),
+            // 🔹 Loading shimmer
+            if (_isLoading)
+              SliverPadding(
+                padding: const EdgeInsets.only(top: 10),
+                sliver: SliverList.builder(
+                  itemCount: 6,
+                  itemBuilder: (_, __) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: Shimmer.fromColors(
+                        baseColor: Colors.grey.shade300,
+                        highlightColor: Colors.grey.shade100,
+                        child: Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+            else if (_filteredArticles.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: const Center(child: Text('Aucun article trouvé.')),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.only(bottom: 20),
+                sliver: SliverList.builder(
+                  itemCount: _filteredArticles.skip(1).length,
+                  itemBuilder: (context, index) {
+                    final article = _filteredArticles.skip(1).toList()[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: AppArticleBox(
+                        title: article.title,
+                        imageUrl: article.imageUrl.first,
+                        category: article.category,
+                        timeAgo: _getTimeAgo(article.createdAt),
+                        onTap: () => _openArticleDetail(article),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 
   String _getTimeAgo(DateTime dateTime) {
     final now = DateTime.now();

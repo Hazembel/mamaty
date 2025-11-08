@@ -1,7 +1,7 @@
-import 'package:flutter/foundation.dart';
+ 
 import '../models/doctor.dart';
 import '../services/doctor_service.dart';
-
+import 'package:flutter/widgets.dart';
 class DoctorProvider extends ChangeNotifier {
   final List<Doctor> _doctors = [];
   bool _isLoading = false;
@@ -12,38 +12,44 @@ class DoctorProvider extends ChangeNotifier {
   String? get error => _error;
 
   /// ✅ Load all doctors (optionally filtered)
-  Future<void> loadDoctors({
-    String? city,
-    String? specialty,
-    double? rating,
-  }) async {
-    if (_isLoading) return; // avoid duplicate fetch
-    _isLoading = true;
-    _error = null;
+ Future<void> loadDoctors({
+  String? city,
+  String? specialty,
+  double? rating,
+}) async {
+  if (_isLoading) return; // avoid duplicate fetch
+  _isLoading = true;
+  _error = null;
+
+  // ❌ Avoid calling notifyListeners synchronously during build
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     notifyListeners();
+  });
 
-    try {
-      final fetchedDoctors = await DoctorService.getDoctors(
-        city: city,
-        specialty: specialty,
-        rating: rating,
-      );
+  try {
+    final fetchedDoctors = await DoctorService.getDoctors(
+      city: city,
+      specialty: specialty,
+      rating: rating,
+    );
 
-      debugPrint('🔹 Fetched ${fetchedDoctors.length} doctors from API');
+    debugPrint('🔹 Fetched ${fetchedDoctors.length} doctors from API');
 
-      _doctors
-        ..clear()
-        ..addAll(fetchedDoctors);
+    _doctors
+      ..clear()
+      ..addAll(fetchedDoctors);
 
-      debugPrint('✅ Doctors loaded into provider: ${_doctors.length}');
-    } catch (e) {
-      _error = e.toString();
-      debugPrint('❌ Error fetching doctors: $e');
-    } finally {
-      _isLoading = false;
+    debugPrint('✅ Doctors loaded into provider: ${_doctors.length}');
+  } catch (e) {
+    _error = e.toString();
+    debugPrint('❌ Error fetching doctors: $e');
+  } finally {
+    _isLoading = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       notifyListeners();
-    }
+    });
   }
+}
 
   /// ✅ Refresh doctors manually (e.g. pull-to-refresh)
   Future<void> refreshDoctors() async {

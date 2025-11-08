@@ -12,31 +12,32 @@ class RecipeService {
     double? rating, // min rating
   }) async {
     try {
-      final queryParams = <String, String>{};
-      if (city != null) queryParams['city'] = city;
-      if (category != null) queryParams['category'] = category;
-      if (ingredient != null) queryParams['ingredient'] = ingredient;
-      if (rating != null) queryParams['rating'] = rating.toString();
+  // Build query parameters using interpolation
+  final queryString = [
+    if (city != null) 'city=$city',
+    if (category != null) 'category=$category',
+    if (ingredient != null) 'ingredient=$ingredient',
+    if (rating != null) 'rating=$rating',
+  ].join('&');
 
-      final queryString = queryParams.entries.isNotEmpty
-          ? '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')
-          : '';
+  final fullUrl = queryString.isNotEmpty ? '/recipes?$queryString' : '/recipes';
 
-      final response = await ApiHelper.get('/recipes$queryString');
+  final response = await ApiHelper.get(fullUrl);
 
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
-        final recipes = data.map((json) => Recipe.fromJson(json)).toList();
+  if (response.statusCode == 200) {
+    final List data = jsonDecode(response.body);
+    final recipes = data.map((json) => Recipe.fromJson(json)).toList();
 
-//debugPrint('✅ Fetched ${recipes.length} recipes');
-        return recipes;
-      } else {
-        throw Exception('Failed to load recipes: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('❌ Error loading recipes: $e');
-      throw Exception('Failed to load recipes: $e');
-    }
+    //debugPrint('✅ Fetched ${recipes.length} recipes');
+    return recipes;
+  } else {
+    throw Exception('Failed to load recipes: ${response.statusCode}');
+  }
+} catch (e) {
+  debugPrint('❌ Error loading recipes: $e');
+  throw Exception('Failed to load recipes: $e');
+}
+ 
   }
 
   /// ✅ Create new recipe

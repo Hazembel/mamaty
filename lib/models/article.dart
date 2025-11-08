@@ -1,6 +1,3 @@
-
-
-//import 'package:flutter/foundation.dart';
 class Article {
   String? id;
   String title;
@@ -10,7 +7,8 @@ class Article {
   List<String> likes;
   List<String> dislikes;
   String category;
-  DateTime createdAt; // <-- add this
+  DateTime createdAt;
+  bool isFavorite; // <-- added
 
   Article({
     this.id,
@@ -21,37 +19,29 @@ class Article {
     List<String>? likes,
     List<String>? dislikes,
     required this.category,
-    required this.createdAt, // <-- required
+    required this.createdAt,
+    this.isFavorite = false, // default false
   })  : likes = likes ?? [],
         dislikes = dislikes ?? [];
 
-factory Article.fromJson(Map<String, dynamic> json) {
-  final rawCreatedAt = json['createdAt'];
-  DateTime parsedCreatedAt;
+  factory Article.fromJson(Map<String, dynamic> json) {
+    final rawCreatedAt = json['createdAt'];
+    DateTime parsedCreatedAt =
+        rawCreatedAt != null ? DateTime.tryParse(rawCreatedAt)?.toLocal() ?? DateTime.now() : DateTime.now();
 
-  if (rawCreatedAt != null) {
-    parsedCreatedAt = DateTime.tryParse(rawCreatedAt)?.toLocal() ?? DateTime.now();
-  } else {
-    parsedCreatedAt = DateTime.now();
+    return Article(
+      id: json['_id'],
+      title: json['title'] ?? '',
+      description: List<String>.from(json['description'] ?? []),
+      sources: json['sources'] != null ? List<String>.from(json['sources']) : [],
+      imageUrl: List<String>.from(json['imageUrl'] ?? []),
+      likes: List<String>.from(json['likes'] ?? []),
+      dislikes: List<String>.from(json['dislikes'] ?? []),
+      category: json['category'] ?? '',
+      createdAt: parsedCreatedAt,
+      isFavorite: json['isFavorite'] ?? false, // <-- parse from API if exists
+    );
   }
-
-  // 🔹 DEBUG
-  //debugPrint('🔹 Article "${json['title']}" createdAt from API: $rawCreatedAt');
- // debugPrint('🔹 Parsed createdAt: $parsedCreatedAt');
-
-  return Article(
-    id: json['_id'],
-    title: json['title'] ?? '',
-    description: List<String>.from(json['description'] ?? []),
-    sources: json['sources'] != null ? List<String>.from(json['sources']) : [],
-    imageUrl: List<String>.from(json['imageUrl'] ?? []),
-    likes: List<String>.from(json['likes'] ?? []),
-    dislikes: List<String>.from(json['dislikes'] ?? []),
-    category: json['category'] ?? '',
-    createdAt: parsedCreatedAt,
-  );
-}
-
 
   Map<String, dynamic> toJson() => {
         '_id': id,
@@ -63,5 +53,6 @@ factory Article.fromJson(Map<String, dynamic> json) {
         'dislikes': dislikes,
         'category': category,
         'createdAt': createdAt.toIso8601String(),
+        'isFavorite': isFavorite, // <-- include in JSON
       };
 }

@@ -9,11 +9,12 @@ import '../widgets/app_advise_picker.dart';
 import '../widgets/app_doctor_row.dart';
 import '../widgets/app_recipe_row.dart';
 import '../widgets/app_article_column.dart';
-import '../../theme/dimensions.dart';
+ 
 import '../../providers/baby_provider.dart';
-import '../pages/baby_profile/baby_profile_page_1.dart';
+import '../pages/baby_profile/baby_profile_flow_page.dart';
 import '../providers/article_provider.dart';
 import '../providers/doctor_provider.dart';
+import '../../theme/dimensions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,20 +29,27 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    // Ensure provider calls happen safely after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateBabyAgeAndAdvices();
-      _loadRecipesIfEligible();
+      Future.microtask(() async {
+        await _updateBabyAgeAndAdvices();
+        await _loadRecipesIfEligible();
+        await _loadArticlesAndDoctors();
+        setState(() {}); // rebuild UI after loading
+      });
     });
   }
 
-  void _updateBabyAgeAndAdvices() {
+  /// 🔹 Safely update baby age & load advices
+  Future<void> _updateBabyAgeAndAdvices() async {
     final babyProvider = context.read<BabyProvider>();
     final adviceProvider = context.read<AdviceProvider>();
     final baby = babyProvider.selectedBaby;
 
     if (baby != null && baby.birthday != null && baby.birthday!.isNotEmpty) {
       _babyAgeInDays = _calculateBabyAgeInDays(baby.birthday!);
-      adviceProvider.loadAdvices(
+      await adviceProvider.loadAdvices(
         babyId: baby.id!,
         ageInDays: _babyAgeInDays!,
       );
@@ -50,7 +58,8 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _loadRecipesIfEligible() {
+  /// 🔹 Safely load recipes if baby age is eligible
+  Future<void> _loadRecipesIfEligible() async {
     final babyProvider = context.read<BabyProvider>();
     final recipeProvider = context.read<RecipeProvider>();
     final baby = babyProvider.selectedBaby;
@@ -58,14 +67,25 @@ class _HomePageState extends State<HomePage> {
     if (baby != null && baby.birthday != null && baby.birthday!.isNotEmpty) {
       final ageInDays = _calculateBabyAgeInDays(baby.birthday!);
       if (ageInDays >= 271 && ageInDays <= 720) {
-        recipeProvider.loadRecipes(rating: 4.0); // Load top recipes
+        await recipeProvider.loadRecipes(rating: 4.0);
       }
     }
   }
 
-  
+  /// 🔹 Safely load articles and doctors
+  Future<void> _loadArticlesAndDoctors() async {
+    final baby = context.read<BabyProvider>().selectedBaby;
+    final babyId = baby?.id;
+    final ageInDays = _babyAgeInDays ?? 0;
 
-
+    await Future.wait([
+      context.read<ArticleProvider>().loadArticles(
+            ageInDays: ageInDays,
+            babyId: babyId,
+          ),
+      context.read<DoctorProvider>().loadDoctors(),
+    ]);
+  }
 
   int _calculateBabyAgeInDays(String? birthday) {
     if (birthday == null || birthday.isEmpty) return 0;
@@ -97,116 +117,94 @@ class _HomePageState extends State<HomePage> {
     final userProvider = context.watch<UserProvider>();
     final babyProvider = context.watch<BabyProvider>();
     final adviceProvider = context.watch<AdviceProvider>();
-  
 
     final user = userProvider.user;
     final userName = user?.name ?? 'Utilisateur';
     final userAvatar = user?.avatar;
     final babyProfileData = babyProvider.selectedBaby;
     final advices = adviceProvider.advices;
-     
 
     return Scaffold(
       body: user == null
           ? const Center(child: CircularProgressIndicator())
-           : RefreshIndicator(
-            onRefresh: _refreshHomePage,
-          child: SingleChildScrollView(
-              padding: AppDimensions.pagePadding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 🍼 Header (Baby Profile or shimmer)
-                  if (babyProfileData != null)
-                    HomeHeaderCard(
-                      baby: babyProfileData,
-                      userName: userName,
-                      userAvatar: userAvatar,
-                      onBabyTap: () {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (_) => BabyProfilePage1(
-                              onNext: () {},
-                              babyProfileData: babyProfileData,
+          : RefreshIndicator(
+              onRefresh: _refreshHomePage,
+              child: SingleChildScrollView(
+                 padding: AppDimensions.padding50,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 🍼 Header (Baby Profile or shimmer)
+                    if (babyProfileData != null)
+                      HomeHeaderCard(
+                        baby: babyProfileData,
+                        userName: userName,
+                        userAvatar: userAvatar,
+                        onBabyTap: () {
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (_) => BabyProfileFlowPage(
+                           
+                              ),
                             ),
-                          ),
-                          (Route<dynamic> route) => false,
-                        );
-                      },
-                      onUserTap: () {
-                        Navigator.of(context).pushNamed('/profile');
-                      },
-                    )
-                  else
-                    _buildHomeHeaderSkeleton(),
+                            (Route<dynamic> route) => false,
+                          );
+                        },
+                        onUserTap: () {
+                          Navigator.of(context).pushNamed('/profile');
+                        },
+                      )
+                    else
+                      _buildHomeHeaderSkeleton(),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // 💡 Advices section
-                  _babyAgeInDays == null
-                      ? _buildAdvicesSkeleton()
-                      : adviceProvider.isLoading
-                          ? _buildAdvicesSkeleton()
-                          : advices.isNotEmpty
-                              ? BabyDayPicker(
-                                  advices: advices,
-                                  babyAgeInDays: _babyAgeInDays!,
-                                )
-                              : _buildAdvicesSkeleton(),
+                    // 💡 Advices section
+                    _babyAgeInDays == null
+                        ? _buildAdvicesSkeleton()
+                        : adviceProvider.isLoading
+                            ? _buildAdvicesSkeleton()
+                            : advices.isNotEmpty
+                                ? BabyDayPicker(
+                                    advices: advices,
+                                    babyAgeInDays: _babyAgeInDays!,
+                                  )
+                                : _buildAdvicesSkeleton(),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // 🍲 Recipes Section (only if baby age 271–720 days)
-                  if (_babyAgeInDays != null &&
-                      _babyAgeInDays! >= 271 &&
-                      _babyAgeInDays! <= 720)
-                    RecipeRow(),
+                    // 🍲 Recipes Section (only if baby age 271–720 days)
+                    if (_babyAgeInDays != null &&
+                        _babyAgeInDays! >= 271 &&
+                        _babyAgeInDays! <= 720)
+                      RecipeRow(),
 
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  // 🩺 Doctors Section
-                  const DoctorRow(),
+                    // 🩺 Doctors Section
+                    const DoctorRow(),
 
+                    const SizedBox(height: 20),
 
-   const SizedBox(height: 20),
-
-                  // 🩺 Doctors Section
-                  const ArticleRow(),
-
-                ],
+                    // 📰 Articles Section
+                    const ArticleRow(),
+                  ],
+                ),
               ),
             ),
-    )
     );
-
-
-
-    
   }
-/// 🔹 Pull-to-refresh logic
-Future<void> _refreshHomePage() async {
-  // Reload baby age & advices
-  _updateBabyAgeAndAdvices();
 
-  // Reload recipes if eligible
-  _loadRecipesIfEligible();
+  /// 🔹 Pull-to-refresh logic
+  Future<void> _refreshHomePage() async {
+    // Safely reload all data
+    await _updateBabyAgeAndAdvices();
+    await _loadRecipesIfEligible();
+    await _loadArticlesAndDoctors();
 
-  // Run article and doctor loads at the same time
-final baby = context.read<BabyProvider>().selectedBaby;
-final babyId = baby?.id;
-final ageInDays = _babyAgeInDays ?? 0;
-
-await Future.wait([
-  context.read<ArticleProvider>().loadArticles(
-    ageInDays: ageInDays,
-    babyId: babyId,
-  ),
-  context.read<DoctorProvider>().loadDoctors(),
-]);
-
-  // Force rebuild
-  setState(() {});
-}
+    // Rebuild UI
+    if (mounted) setState(() {});
+  }
 
   /// 💫 Shimmer skeleton matching HomeHeaderCard shape
   Widget _buildHomeHeaderSkeleton() {
@@ -220,7 +218,7 @@ await Future.wait([
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
+              color: Colors.grey.withValues(alpha: 0.2),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),

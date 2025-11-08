@@ -93,7 +93,12 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
   void _shareRecipe() async {
     final shareText =
         "Découvrez cette recette: ${_recipe.title} 🍲\nEssayez-la maintenant!";
-    await Share.share(shareText);
+    await SharePlus.instance.share(
+    ShareParams(
+      text: shareText.toString(),
+      title: 'Partager cet article', // optional
+    ),  
+    );
   }
 
   void _openVideo() async {
@@ -187,7 +192,7 @@ Future<void> _voteRecipe(String type, String userId) async {
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
                       colors: [
-                        AppColors.premier.withOpacity(0.95),
+                        AppColors.premier.withValues(alpha: 0.95),
                         Colors.transparent,
                       ],
                     ),
@@ -214,7 +219,7 @@ Future<void> _voteRecipe(String type, String userId) async {
                     ),
                   ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppDimensions.pagePadding.horizontal),
+                  padding: AppDimensions.pagePadding,
                   child: AppTopBarText(
                     showBack: true,
                     showShare: true,
@@ -245,11 +250,11 @@ Future<void> _voteRecipe(String type, String userId) async {
                     children: [
                       Text(
                         _recipe.category,
-                        style: AppTextStyles.inter12Reg.copyWith(color: AppColors.premier),
+                        style: AppTextStyles.inter12Med.copyWith(color: AppColors.premier),
                       ),
                       Text(
                         _recipe.sources.isNotEmpty ? _recipe.sources.join(' • ') : '',
-                        style: AppTextStyles.inter12Reg.copyWith(color: AppColors.premier),
+                        style: AppTextStyles.inter12Med.copyWith(color: AppColors.premier),
                       ),
                     ],
                   ),
@@ -331,12 +336,12 @@ Future<void> _voteRecipe(String type, String userId) async {
                                   Expanded(
                                     child: Text(
                                       "• ${i.name}",
-                                      style: AppTextStyles.inter14Reg,
+                                      style: AppTextStyles.inter14Med,
                                     ),
                                   ),
                                   Text(
                                     "${i.quantity} ${i.unit}",
-                                    style: AppTextStyles.inter14Reg.copyWith(color: AppColors.premier),
+                                    style: AppTextStyles.inter14Med.copyWith(color: AppColors.premier),
                                   ),
                                 ],
                               ),
@@ -345,7 +350,7 @@ Future<void> _voteRecipe(String type, String userId) async {
                     : _recipe.instructions
                         .map((s) => Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Text("• $s", style: AppTextStyles.inter14Reg),
+                              child: Text("• $s", style: AppTextStyles.inter14Med),
                             ))
                         .toList(),
               ),

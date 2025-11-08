@@ -7,7 +7,7 @@ import '../widgets/app_top_bar_text.dart';
 import '../widgets/app_top_bar_search.dart';
 import '../widgets/filter_modal.dart';
 import '../theme/colors.dart';
-import '../theme/dimensions.dart';
+ 
 import '../providers/recipe_provider.dart';
 import '../models/recipe.dart';
 import '../widgets/filter_ingredients.dart';
@@ -163,100 +163,100 @@ Future<void> _openIngredientFilter() async {
 
 
 
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: AppDimensions.pagePadding,
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppTopBarText(
-                      title: widget.title,
-                      onBack: widget.onBack ??
-                          () {
-                            if (Navigator.canPop(context)) Navigator.pop(context);
-                          },
-                    ),
-                    const SizedBox(height: 15),
-                    AppSearchInput(
-                      searchText: widget.searchPlaceholder,
-                      showIngredientButton: true,
-                      onChanged: _filterRecipes,
-                      onFilterTap: _openFilterModal,
-                      onIngredientTap: _openIngredientFilter, // ingredient filter
-                    ),
-                    const SizedBox(height: 15),
-                  ],
-                ),
-              ),
-
-              // 🔹 Recipes Grid or shimmer
-              _isLoading
-                  ? SliverPadding(
-                      padding: const EdgeInsets.only(top: 10),
-                      sliver: SliverGrid.builder(
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 15,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 150 / 170,
-                        ),
-                        itemCount: 6,
-                        itemBuilder: (_, __) {
-                          return Shimmer.fromColors(
-                            baseColor: Colors.grey.shade300,
-                            highlightColor: Colors.grey.shade100,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          );
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: AppColors.background,
+    body: SafeArea(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        child: CustomScrollView(
+          clipBehavior: Clip.none, // ✅ Added here
+          slivers: [
+            SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppTopBarText(
+                    title: widget.title,
+                    onBack: widget.onBack ??
+                        () {
+                          if (Navigator.canPop(context)) Navigator.pop(context);
                         },
+                  ),
+                  const SizedBox(height: 15),
+                  AppSearchInput(
+                    searchText: widget.searchPlaceholder,
+                    showIngredientButton: true,
+                    onChanged: _filterRecipes,
+                    onFilterTap: _openFilterModal,
+                    onIngredientTap: _openIngredientFilter,
+                  ),
+                  const SizedBox(height: 15),
+                ],
+              ),
+            ),
+
+            // 🔹 Recipes Grid or shimmer
+            _isLoading
+                ? SliverPadding(
+                    padding: const EdgeInsets.only(top: 10),
+                    sliver: SliverGrid.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 15,
+                        mainAxisSpacing: 10,
+                        childAspectRatio: 150 / 170,
                       ),
-                    )
-                  : _filteredRecipes.isEmpty
-                      ? SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: const Center(
-                            child: Text('Aucune recette trouvée.'),
-                          ),
-                        )
-                      : SliverPadding(
-                          padding: const EdgeInsets.only(bottom: 20),
-                          sliver: SliverGrid.builder(
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 15,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 150 / 150,
+                      itemCount: 6,
+                      itemBuilder: (_, __) {
+                        return Shimmer.fromColors(
+                          baseColor: Colors.grey.shade300,
+                          highlightColor: Colors.grey.shade100,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            itemCount: _filteredRecipes.length,
-                            itemBuilder: (context, index) {
-                              final recipe = _filteredRecipes[index];
-                              return AppRecipeBox(
-                                title: recipe.title,
-                                imageUrl: recipe.imageUrl,
-                                rating: recipe.rating,
-                               onTap: () => _openRecipeDetails(recipe),
-                              );
-                            },
                           ),
+                        );
+                      },
+                    ),
+                  )
+                : _filteredRecipes.isEmpty
+                    ? SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: const Center(
+                          child: Text('Aucune recette trouvée.'),
                         ),
-            ],
-          ),
+                      )
+                    : SliverPadding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        sliver: SliverGrid.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 15,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 150 / 150,
+                          ),
+                          itemCount: _filteredRecipes.length,
+                          itemBuilder: (context, index) {
+                            final recipe = _filteredRecipes[index];
+                            return AppRecipeBox(
+                              title: recipe.title,
+                              imageUrl: recipe.imageUrl,
+                              rating: recipe.rating,
+                              onTap: () => _openRecipeDetails(recipe),
+                            );
+                          },
+                        ),
+                      ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

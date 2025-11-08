@@ -29,7 +29,7 @@ class AppTrendingArticle extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha:0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
               spreadRadius: 0,
@@ -57,7 +57,7 @@ class AppTrendingArticle extends StatelessWidget {
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      AppColors.premier.withOpacity(0.95),
+                      AppColors.premier.withValues(alpha:0.95),
                       Colors.transparent,
                     ],
                   ),
@@ -129,7 +129,7 @@ class AppTrendingArticle extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha:0.2),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

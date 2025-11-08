@@ -9,7 +9,8 @@ class AppSearchInput extends StatelessWidget {
   final VoidCallback? onFilterTap;
   final VoidCallback? onIngredientTap;
   final ValueChanged<String>? onChanged;
-  final bool showIngredientButton; // ✅ New flag
+  final bool showIngredientButton; // ingredient button flag
+  final bool showFilterButton;     // ✅ filter button flag
 
   const AppSearchInput({
     super.key,
@@ -19,6 +20,7 @@ class AppSearchInput extends StatelessWidget {
     this.onIngredientTap,
     this.onChanged,
     this.showIngredientButton = false, // hidden by default
+    this.showFilterButton = true,      // shown by default
   });
 
   @override
@@ -43,8 +45,9 @@ class AppSearchInput extends StatelessWidget {
 
         if (showIngredientButton) const SizedBox(width: 10),
 
-        // Main filter button
-        AppFilterButton(onTap: onFilterTap),
+        // Main filter button (conditionally shown)
+        if (showFilterButton)
+          AppFilterButton(onTap: onFilterTap),
       ],
     );
   }

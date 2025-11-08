@@ -8,7 +8,7 @@ import '../widgets/app_doctor_card_vertical.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_location_button.dart';
 import '../theme/colors.dart';
-import '../theme/dimensions.dart';
+ 
 import '../theme/text_styles.dart';
 import '../models/doctor.dart';
 import '../providers/user_provider.dart';
@@ -29,14 +29,19 @@ class DoctorDetailsPage extends StatefulWidget {
 class _DoctorDetailsPageState extends State<DoctorDetailsPage> {
   bool _isSaving = false;
 
-  Future<void> _contactDoctor(String phone) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phone);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
-      debugPrint('❌ Could not launch $phoneUri');
-    }
+Future<void> _contactDoctor(String phone) async {
+  // Clean the phone number (remove spaces)
+  final cleanedPhone = phone.replaceAll(' ', '');
+  final Uri phoneUri = Uri.parse('tel:$cleanedPhone');
+
+  try {
+    // Try to launch the phone dialer
+    await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    debugPrint('❌ Could not launch phone dialer: $e');
   }
+}
+
 
   Future<void> _openLocation(String address) async {
     final Uri mapUri = Uri.parse(
@@ -100,7 +105,7 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: AppDimensions.pagePadding,
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -109,11 +114,17 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
                 showShare: true,
                 showSave: true,
                 onBack: () => Navigator.pop(context),
-                onShare: () async {
-                  final shareText =
-                      "Découvrez le Dr. ${doctor.name}, spécialiste en ${doctor.specialty}, situé à ${doctor.city}.";
-                  await Share.share(shareText);
-                },
+ onShare: () async {
+  final shareText =
+      "Découvrez le Dr. ${doctor.name}, spécialiste en ${doctor.specialty}, situé à ${doctor.city}.";
+
+  await SharePlus.instance.share(
+    ShareParams(
+      text: shareText, // the text to share
+      title: 'Partager le profil du docteur', // optional
+    ),
+  );
+},
                 isSaved: isSaved,
                 onToggleSave: _isSaving
                     ? null

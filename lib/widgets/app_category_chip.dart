@@ -27,7 +27,7 @@ class AppCategoryChip extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : AppColors.lightPremier.withOpacity(0.8),
+                : AppColors.lightPremier.withValues(alpha:0.8),
             width: 1.5,
           ),
         ),
@@ -36,7 +36,7 @@ class AppCategoryChip extends StatelessWidget {
           style: AppTextStyles.inter14Med.copyWith(
             color: isSelected
                 ? Colors.white
-                : AppColors.lightPremier.withOpacity(0.9),
+                : AppColors.lightPremier.withValues(alpha:0.9),
           ),
         ),
       ),

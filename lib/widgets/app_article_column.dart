@@ -5,6 +5,7 @@ import '../models/article.dart';
 import '../providers/article_provider.dart';
 import '../widgets/app_article_box.dart';
 import '../pages/articles_page.dart';
+import '../pages/article_detail_page.dart';
 import '../widgets/row_see_more.dart';
 import '../utils/date_utils.dart';
 import '../providers/baby_provider.dart';
@@ -18,37 +19,38 @@ class ArticleRow extends StatefulWidget {
 
 class _ArticleRowState extends State<ArticleRow> {
   @override
-  void initState() {
-    super.initState();
+@override
+void initState() {
+  super.initState();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
     _loadArticles();
-  }
-
-Future<void> _loadArticles() async {
-  try {
-    // 🔹 Get selected baby from BabyProvider
-    final babyProvider = context.read<BabyProvider>();
-    final selectedBaby = babyProvider.selectedBaby;
-
-    int? ageInDays;
-    String? babyId;
-
-    if (selectedBaby != null) {
-      ageInDays = DateUtilsHelper.calculateAgeInDays(selectedBaby.birthday);
-      babyId = selectedBaby.id;
-      //debugPrint('🔹 Loading articles for baby ${selectedBaby.name}, age: $ageInDays days');
-    } else {
-     // debugPrint('ℹ️ No selected baby, loading all articles');
-    }
-
-    // 🔹 Load articles via ArticleProvider
-    final provider = context.read<ArticleProvider>();
-    await provider.loadArticles(ageInDays: ageInDays, babyId: babyId);
-
-  } catch (e) {
-    debugPrint('❌ Error loading articles: $e');
-  }
+  });
 }
+  Future<void> _loadArticles() async {
+    try {
+      // 🔹 Get selected baby from BabyProvider
+      final babyProvider = context.read<BabyProvider>();
+      final selectedBaby = babyProvider.selectedBaby;
 
+      int? ageInDays;
+      String? babyId;
+
+      if (selectedBaby != null) {
+        ageInDays = DateUtilsHelper.calculateAgeInDays(selectedBaby.birthday);
+        babyId = selectedBaby.id;
+        //debugPrint('🔹 Loading articles for baby ${selectedBaby.name}, age: $ageInDays days');
+      } else {
+        // debugPrint('ℹ️ No selected baby, loading all articles');
+      }
+
+      // 🔹 Load articles via ArticleProvider
+      final provider = context.read<ArticleProvider>();
+      await provider.loadArticles(ageInDays: ageInDays, babyId: babyId);
+    } catch (e) {
+      debugPrint('❌ Error loading articles: $e');
+    }
+  }
 
   String formatTimeAgo(DateTime date) {
     final diff = DateTime.now().difference(date);
@@ -73,12 +75,7 @@ Future<void> _loadArticles() async {
   void _openArticleDetails(Article article) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: Text(article.title)),
-          body: Center(child: Text('Détails pour: ${article.title}')),
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => ArticleDetailPage(article: article)),
     );
   }
 

@@ -77,7 +77,7 @@ class _BabyProfilePage1State extends State<BabyProfilePage1> {
       body: babyProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              padding: AppDimensions.pagePadding,
+              padding: AppDimensions.padding40,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

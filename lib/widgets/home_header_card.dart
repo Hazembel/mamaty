@@ -8,8 +8,8 @@ class HomeHeaderCard extends StatelessWidget {
   final Baby baby;
   final String userName;
   final String? userAvatar;
-  final VoidCallback? onBabyTap; // <-- new
-  final VoidCallback? onUserTap; // <-- new
+  final VoidCallback? onBabyTap;
+  final VoidCallback? onUserTap;
 
   const HomeHeaderCard({
     super.key,
@@ -33,6 +33,18 @@ class HomeHeaderCard extends StatelessWidget {
     }
   }
 
+  ImageProvider _getImageProvider(String? path, String defaultAsset) {
+    if (path == null || path.isEmpty) {
+      return AssetImage(defaultAsset);
+    }
+    // If path is a network URL
+    if (path.startsWith('http')) {
+      return NetworkImage(path);
+    }
+    // Otherwise treat as local asset
+    return AssetImage(path);
+  }
+
   @override
   Widget build(BuildContext context) {
     final int days = _calculateDaysOld(baby.birthday);
@@ -44,13 +56,11 @@ class HomeHeaderCard extends StatelessWidget {
         children: [
           // 👶 Baby Avatar (left)
           GestureDetector(
-            onTap: onBabyTap, // <-- handle baby tap
+            onTap: onBabyTap,
             child: CircleAvatar(
               radius: 25,
-              backgroundImage: baby.avatar != null
-                  ? NetworkImage(baby.avatar!)
-                  : const AssetImage('assets/images/default_baby.png')
-                        as ImageProvider,
+              backgroundImage: _getImageProvider(
+                  baby.avatar, 'assets/images/default_baby.png'),
             ),
           ),
 
@@ -80,13 +90,11 @@ class HomeHeaderCard extends StatelessWidget {
 
           // 🧍 User Avatar (right)
           GestureDetector(
-            onTap: onUserTap, // <-- handle user tap
+            onTap: onUserTap,
             child: CircleAvatar(
               radius: 25,
-              backgroundImage: userAvatar != null
-                  ? NetworkImage(userAvatar!)
-                  : const AssetImage('assets/images/default_user.png')
-                        as ImageProvider,
+              backgroundImage: _getImageProvider(
+                  userAvatar, 'assets/images/default_user.png'),
             ),
           ),
         ],
