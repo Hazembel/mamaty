@@ -23,22 +23,22 @@ class _FaqPageState extends State<FaqPage> {
     super.initState();
     _faqItems = [
       FAQItem(
-        question: 'Lorem ipsum dolor sit amet?',
+        question: 'ALorem ipsum dolor sit amet?',
         answer:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit, magna aliqua. Ut enim ad minim veniam.',
       ),
       FAQItem(
-        question: 'Lorem ipsum dolor sit amet?',
+        question: 'BLorem ipsum dolor sit amet?',
         answer:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit, magna aliqua. Ut enim ad minim veniam.',
       ),
       FAQItem(
-        question: 'Lorem ipsum dolor sit amet?',
+        question: 'CLorem ipsum dolor sit amet?',
         answer:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit, magna aliqua. Ut enim ad minim veniam.',
       ),
       FAQItem(
-        question: 'Lorem ipsum dolor sit amet?',
+        question: 'DLorem ipsum dolor sit amet?',
         answer:
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit, magna aliqua. Ut enim ad minim veniam.',
       ),
@@ -68,7 +68,7 @@ class _FaqPageState extends State<FaqPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

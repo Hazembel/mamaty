@@ -107,7 +107,7 @@ class _DoctorsPageState extends State<DoctorsPage> {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
-          padding:EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          padding:EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(

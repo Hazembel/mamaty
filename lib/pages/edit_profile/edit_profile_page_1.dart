@@ -154,15 +154,13 @@ AppProfileBar(
   onBack: () => Navigator.of(context).pop(),       // left back button
   onFaq: () { Navigator.push(
   context,
-  MaterialPageRoute(builder: (context) => const FavoritePage()),
+  MaterialPageRoute(builder: (context) => const FaqPage ()),
 ); },   
   isSaved: false,                                  // show save button
   onSaveToggle: () {
   Navigator.push(
   context,
-  MaterialPageRoute(
-    builder: (_) => FaqPage(),
-  ),
+  MaterialPageRoute(builder: (context) => const FavoritePage ()),
 );
   },
 ),

@@ -169,7 +169,7 @@ Widget build(BuildContext context) {
     backgroundColor: AppColors.background,
     body: SafeArea(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
         child: CustomScrollView(
           clipBehavior: Clip.none, // ✅ Added here
           slivers: [
