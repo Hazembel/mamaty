@@ -15,6 +15,10 @@ import '../pages/baby_profile/baby_profile_flow_page.dart';
 import '../providers/article_provider.dart';
 import '../providers/doctor_provider.dart';
 import '../../theme/dimensions.dart';
+import '../models/signup_data.dart';
+import 'edit_profile/edit_profile_flow_page.dart';
+
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -150,9 +154,20 @@ class _HomePageState extends State<HomePage> {
                             (Route<dynamic> route) => false,
                           );
                         },
-                        onUserTap: () {
-                          Navigator.of(context).pushNamed('/profile');
-                        },
+                      onUserTap: () {
+  final signupData = SignupData()
+    ..avatar = user.avatar
+    ..gender = user.gender
+    ..birthday = user.birthday
+    ..name = user.name
+    ..lastname = user.lastname
+    ..phone = user.phone
+    ..email = user.email
+    ..password = ''; // optional, leave blank for editing
+
+  EditprofileFlowPage.start(context, signupData);
+},
+
                       )
                     else
                       _buildHomeHeaderSkeleton(),

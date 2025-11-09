@@ -151,4 +151,46 @@ Future<User?> signup({
       return false;
     }
   }
+
+
+
+  //********* UPDATE PROFILE *********//
+Future<User?> updateProfile({
+  required String name,
+  required String lastname,
+  required String email,
+  required String phone,
+  String? avatar,
+  String? gender,
+  String? birthday,
+}) async {
+  try {
+    final response = await ApiHelper.put(
+      '/users/profile',
+      {
+        'name': name,
+        'lastname': lastname,
+        'email': email,
+        'phone': phone,
+        'avatar': avatar,
+        'gender': gender,
+        'birthday': birthday,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final user = User.fromJson(data['user']);
+      await saveUser(user); // save updated user locally
+      debugPrint('✅ Profile updated: ${user.name}');
+      return user;
+    } else {
+      debugPrint('❌ Update profile failed: ${response.body}');
+      return null;
+    }
+  } catch (e) {
+    debugPrint('❌ Update profile exception: $e');
+    return null;
+  }
+}
 }

@@ -7,23 +7,23 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../models/signup_data.dart';
 
-class SignupPage3 extends StatefulWidget {
-  final SignupData signupData; // ✅ shared signup data
+class Editprofile3 extends StatefulWidget {
+  final SignupData editProfileData; // ✅ shared signup data
   final VoidCallback onNext; // ✅ next step callback
   final VoidCallback onBack; // go previous
 
-  const SignupPage3({
+  const Editprofile3({
     super.key,
-    required this.signupData,
+    required this.editProfileData,
     required this.onNext,
     required this.onBack,
   });
 
   @override
-  State<SignupPage3> createState() => _SignupPage3State();
+  State<Editprofile3> createState() => _Editprofile3State();
 }
 
-class _SignupPage3State extends State<SignupPage3> {
+class _Editprofile3State extends State<Editprofile3> {
   String? _code;
   bool _isLoading = false;
 
@@ -50,7 +50,7 @@ class _SignupPage3State extends State<SignupPage3> {
     });
 
     // ✅ Save code (optional)
-    widget.signupData.otpCode = _code;
+    widget.editProfileData.otpCode = _code;
 
     // Continue to next step
     debugPrint('✅ Code verified: $_code');
@@ -59,7 +59,7 @@ class _SignupPage3State extends State<SignupPage3> {
 
   void _resendCode() {
 
-    debugPrint('🔁 Resending code to ${widget.signupData.phone ?? 'unknown'}');
+    debugPrint('🔁 Resending code to ${widget.editProfileData.phone ?? 'unknown'}');
   }
 
   // send code to phone number
@@ -102,7 +102,7 @@ class _SignupPage3State extends State<SignupPage3> {
                       ),
                     ),
                     TextSpan(
-                      text: widget.signupData.phone ?? '',
+                      text: widget.editProfileData.phone ?? '',
                       style: AppTextStyles.inter14Med.copyWith(
                         color: AppColors.black,
                         fontWeight: FontWeight.bold,
