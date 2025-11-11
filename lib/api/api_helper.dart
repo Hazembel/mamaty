@@ -4,8 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:flutter/foundation.dart';
 
 class ApiHelper {
-  static const String baseUrl =
-      "http://192.168.1.17:5000"; // change for your backend
+  static const String baseUrl = "http://38.242.200.236:3000/myapp";
 
   /// Read token from SharedPreferences
   static Future<String?> getToken() async {
@@ -35,7 +34,7 @@ class ApiHelper {
     //debugPrint('🔐 Headers: $headers');
 
     final response = await http.get(Uri.parse(url), headers: headers);
-   // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+    // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -46,14 +45,14 @@ class ApiHelper {
   ) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
- //   debugPrint('🔗 POST $url');
-  //  debugPrint('📦 Body: $body');
+    //   debugPrint('🔗 POST $url');
+    //  debugPrint('📦 Body: $body');
     final response = await http.post(
       Uri.parse(url),
       headers: headers,
       body: jsonEncode(body),
     );
-   // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+    // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -64,14 +63,14 @@ class ApiHelper {
   ) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
-  //  debugPrint('🔗 PUT $url');
-//debugPrint('📦 Body: $body');
+    //  debugPrint('🔗 PUT $url');
+    //debugPrint('📦 Body: $body');
     final response = await http.put(
       Uri.parse(url),
       headers: headers,
       body: jsonEncode(body),
     );
-   // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+    // debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -79,9 +78,9 @@ class ApiHelper {
   static Future<http.Response> delete(String path) async {
     final url = '$baseUrl$path';
     final headers = await getHeaders();
-  //  debugPrint('🔗 DELETE $url');
+    //  debugPrint('🔗 DELETE $url');
     final response = await http.delete(Uri.parse(url), headers: headers);
- //   debugPrint('📥 Response (${response.statusCode}): ${response.body}');
+    //   debugPrint('📥 Response (${response.statusCode}): ${response.body}');
     return response;
   }
 
@@ -89,13 +88,13 @@ class ApiHelper {
   static Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('token', token);
- //   debugPrint('💾 Token saved');
+    //   debugPrint('💾 Token saved');
   }
 
   /// Remove token (logout)
   static Future<void> removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
- //   debugPrint('🗑️ Token removed');
+    //   debugPrint('🗑️ Token removed');
   }
 }
