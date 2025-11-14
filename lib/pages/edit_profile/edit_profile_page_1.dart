@@ -175,7 +175,7 @@ AppProfileBar(
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
 
             // Avatar selector
             AvatarSelector(
@@ -202,8 +202,7 @@ AppProfileBar(
               onGenderSelected: _onGenderSelected,
             ),
 
-            const SizedBox(height: 30),
-
+          
             // button for form validation
             const SizedBox(height: 20),
 

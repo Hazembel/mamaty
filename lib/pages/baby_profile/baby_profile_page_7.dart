@@ -45,7 +45,7 @@ class _BabyProfilePage7State extends State<BabyProfilePage7> {
             // Top bar with step
             AppTopBar(currentStep: 4, totalSteps: 6, onBack: widget.onBack),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             Center(
               child: Text(
@@ -57,7 +57,7 @@ class _BabyProfilePage7State extends State<BabyProfilePage7> {
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
             // Head Size Ruler
             Center(
@@ -75,7 +75,7 @@ class _BabyProfilePage7State extends State<BabyProfilePage7> {
               ),
             ),
 
-            const SizedBox(height: 117),
+       
 
             AppButton(
               title: 'Continuer',

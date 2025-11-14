@@ -93,7 +93,7 @@ widget.babyProfileData.headSize ??= _headSize;
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppTopBar(currentStep: 4, totalSteps: 6, onBack: widget.onBack),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             Center(
               child: Text(
                 'Quelle est la taille de sa tête ?',
@@ -103,7 +103,7 @@ widget.babyProfileData.headSize ??= _headSize;
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
             if (!_canEditHeadSize) ...[
               Center(
                 child: Text(
@@ -129,7 +129,7 @@ widget.babyProfileData.headSize ??= _headSize;
                 },
               ),
             ),
-            const SizedBox(height: 50),
+    
             AppButton(
               title: 'Continuer',
               onPressed: _onContinue,

@@ -110,6 +110,12 @@ class BabyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+void clear() {
+  _babies.clear();
+  _selectedBaby = null;
+  _isLoading = false;
+  notifyListeners();
+}
 
  
 }

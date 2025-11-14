@@ -56,7 +56,7 @@ class _SignupPage1State extends State<SignupPage1> {
 
     // Pre-fill gender
     selectedGender = widget.signupData.gender ?? 'male';
-widget.signupData.gender = selectedGender;
+    widget.signupData.gender = selectedGender;
 
     // Pre-fill avatars list based on gender
     currentAvatars = selectedGender == 'male' ? fatherAvatars : motherAvatars;
@@ -98,7 +98,6 @@ widget.signupData.gender = selectedGender;
     } else {
       // ❌ Form invalid
       debugPrint('❌ Form has errors');
-      
     }
   }
 
@@ -149,7 +148,7 @@ widget.signupData.gender = selectedGender;
           children: [
             const AppTopBar(),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 10),
 
             Text(
               'Inscrivez-vous pour commencer',
@@ -158,7 +157,7 @@ widget.signupData.gender = selectedGender;
               ),
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 5),
 
             // Avatar selector
             AvatarSelector(
@@ -185,8 +184,7 @@ widget.signupData.gender = selectedGender;
               onGenderSelected: _onGenderSelected,
             ),
 
-            const SizedBox(height: 30),
-
+        
             // button for form validation
             const SizedBox(height: 20),
 

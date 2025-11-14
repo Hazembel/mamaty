@@ -5,7 +5,9 @@ import '../../theme/text_styles.dart';
 import '../../theme/dimensions.dart';
 import '../../models/baby.dart';
 import '../../widgets/app_button.dart';
-import '../../widgets/app_custom_checkbox.dart'; // ✅ import your 
+import '../../widgets/app_custom_checkbox.dart';
+import '../../widgets/app_snak_bar.dart';
+
 class EditBabyProfilePage5 extends StatefulWidget {
   final Baby babyProfileData;
   final VoidCallback onNext;
@@ -47,11 +49,33 @@ class _EditBabyProfilePage5State extends State<EditBabyProfilePage5> {
     widget.babyProfileData.disease = disease;
   }
 
-  void _validateAndContinue() {
+void _validateAndContinue() async {
+  // If the selected disease is not "Aucune"
+  if (selectedDisease != 'Aucune') {
+    AppSnackBar.show(
+      context,
+      message:
+             "⚠️ Votre bébé a était malade.\n"
+          "Veuillez vérifier cette information a l'accueil.\n",
+      backgroundColor: Colors.orange,
+      durationSeconds: 4,
+    );
+
+    // ⏳ Wait for the SnackBar to finish showing
+    await Future.delayed(const Duration(seconds:5));
+
+    // ➜ Then continue automatically
     widget.babyProfileData.disease = selectedDisease;
-    debugPrint('✅ Selected disease: ${widget.babyProfileData.disease}');
     widget.onNext();
+    return;
   }
+
+  // Normal flow when disease == Aucune
+  widget.babyProfileData.disease = selectedDisease;
+  widget.onNext();
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +86,10 @@ class _EditBabyProfilePage5State extends State<EditBabyProfilePage5> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppTopBar(currentStep:5, totalSteps: 6, onBack: widget.onBack),
+            AppTopBar(currentStep: 5, totalSteps: 6, onBack: widget.onBack),
 
             const SizedBox(height: 30),
- 
+
             Center(
               child: Text(
                 'Choisissez une maladie',
@@ -83,7 +107,8 @@ class _EditBabyProfilePage5State extends State<EditBabyProfilePage5> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: SvgCheckboxRow(
                   label: disease,
-               isSelected: selectedDisease?.toLowerCase() == disease.toLowerCase(),
+                  isSelected:
+                      selectedDisease?.toLowerCase() == disease.toLowerCase(),
                   onTap: () => _onDiseaseSelected(disease),
                 ),
               ),

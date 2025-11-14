@@ -22,6 +22,7 @@ class _FaqPageState extends State<FaqPage> {
   void initState() {
     super.initState();
     _faqItems = [
+      /// TODO: Add more FAQs
       FAQItem(
         question: 'ALorem ipsum dolor sit amet?',
         answer:

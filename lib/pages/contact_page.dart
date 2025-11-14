@@ -186,6 +186,7 @@ Future<void> _openSocial(String url) async {
   spacing: 12,
   runSpacing: 12,
   children: [
+    //TODO: Add social media links
     _socialCard(
       iconName: AppIcons.instagram,
       title: 'Instagram',

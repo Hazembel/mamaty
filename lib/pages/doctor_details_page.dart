@@ -155,7 +155,10 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
               _buildSectionTitle("Adresse"),
               _buildSectionContent(doctor.address),
 
-              const SizedBox(height: 155),
+     
+
+          // Push bottom buttons to bottom if there’s extra space
+     SizedBox(height: MediaQuery.of(context).size.height * 0.2), 
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -176,6 +179,8 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
                   ),
                 ],
               ),
+                       
+          const SizedBox(height: 10),
             ],
           ),
         ),

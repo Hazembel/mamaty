@@ -24,7 +24,7 @@ class AppTextField extends StatelessWidget {
       children: [
         TextField(
           controller: controller,
-          inputFormatters: [LengthLimitingTextInputFormatter(20)],
+          inputFormatters: [LengthLimitingTextInputFormatter(40)],
           style: AppTextStyles.inter14Med.copyWith(color: AppColors.black),
           decoration: InputDecoration(
             labelText: labelText,

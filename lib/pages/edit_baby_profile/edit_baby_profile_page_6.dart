@@ -6,6 +6,7 @@ import '../../theme/dimensions.dart';
 import '../../models/baby.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_custom_checkbox.dart'; // ✅ your reusable checkbox
+import '../../widgets/app_snak_bar.dart';
 
 class EditBabyProfilePage6 extends StatefulWidget {
   final Baby babyProfileData;
@@ -49,12 +50,33 @@ class _EditBabyProfilePage6State extends State<EditBabyProfilePage6> {
     widget.babyProfileData.allergy = allergy;
   }
 
-  void _validateAndContinue() {
+
+void _validateAndContinue() async {
+  // If the selected alergy is not "Aucune"
+  if (selectedAllergy != 'Aucune') {
+    AppSnackBar.show(
+      context,
+      message:
+          "⚠️ Votre bébé a était allergique.\n"
+          "Veuillez vérifier cette information a l'accueil.\n",
+          
+      backgroundColor: Colors.orange,
+      durationSeconds: 4,
+    );
+
+    // ⏳ Wait for the SnackBar to finish showing
+    await Future.delayed(const Duration(seconds:5));
+
+    // ➜ Then continue automatically
     widget.babyProfileData.allergy = selectedAllergy;
-    debugPrint('✅ Selected allergy: ${widget.babyProfileData.allergy}');
     widget.onNext();
+    return;
   }
 
+  // Normal flow when disease == Aucune
+ widget.babyProfileData.allergy = selectedAllergy;
+  widget.onNext();
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
