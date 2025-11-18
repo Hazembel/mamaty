@@ -11,7 +11,7 @@ import '../widgets/app_article_box.dart';
 import '../widgets/app_snak_bar.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
- 
+ import '../providers/user_provider.dart';
 import '../services/article_service.dart';
 
 class ArticleDetailPage extends StatefulWidget {
@@ -32,16 +32,14 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   @override
   void initState() {
     super.initState();
-    _isLiked = widget.article.likes.contains('local');
-    _isDisliked = widget.article.dislikes.contains('local');
-
+  
     // simulate network delay for shimmer effect
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _isLoading = false);
     });
   }
 
-  Future<void> _onVote(String type) async {
+  Future<void> _onVote(String type, String userId) async {
     final provider = context.read<ArticleProvider>();
     setState(() {
       if (type == 'like') {
@@ -53,7 +51,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       }
     });
     try {
-      await provider.voteArticle(widget.article, 'local', type);
+      await provider.voteArticle(widget.article, userId, type);
       if (!mounted) return;
       final message = type == 'like'
           ? "Vous avez aimé cet article 👍"
@@ -158,6 +156,10 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   Widget build(BuildContext context) {
     final provider = context.watch<ArticleProvider>();
     final userProvider = context.watch<UserProvider>();
+ 
+    final currentUserId = userProvider.user?.id;
+
+
     final isSaved =
         userProvider.user?.articles.contains(widget.article.id) ?? false;
 
@@ -294,12 +296,13 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                               ),
                               const SizedBox(height: 15),
                             ],
+                               if (currentUserId != null)
                             AppRowLikeDislike(
                               titletext: 'Cet article est-il utile ?',
                               isLiked: _isLiked,
                               isDisliked: _isDisliked,
-                              onLike: () => _onVote('like'),
-                              onDislike: () => _onVote('dislike'),
+                              onLike: () => _onVote('like',currentUserId),
+                              onDislike: () => _onVote('dislike',currentUserId),
                             ),
                             const SizedBox(height: 15),
                             if (related.isNotEmpty) ...[
