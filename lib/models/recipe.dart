@@ -64,29 +64,37 @@ class Recipe {
         dislikes = dislikes ?? [],
         sources = sources ?? [];
 
-  factory Recipe.fromJson(Map<String, dynamic> json) {
-    return Recipe(
-      id: json['_id'],
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      ingredients: (json['ingredients'] as List<dynamic>?)
-              ?.map((e) => Ingredient.fromJson(e))
-              .toList() ??
-          [],
-      instructions: List<String>.from(json['instructions'] ?? []),
-      imageUrl: json['imageUrl'] ?? '',
-      videoUrl: json['videoUrl'],
-      category: json['category'] ?? '',
-      city: json['city'],
-      sources: List<String>.from(json['sources'] ?? []),
-      likes: List<String>.from(json['likes'] ?? []),
-      dislikes: List<String>.from(json['dislikes'] ?? []),
-      rating: (json['rating'] ?? 0).toDouble(),
-      minDay: json['minDay'] ?? 270,
-      maxDay: json['maxDay'] ?? 720,
-      isFavorite: json['isFavorite'], // ✅ parse from API if available
-    );
+ factory Recipe.fromJson(Map<String, dynamic> json) {
+  final categoryObj = json['category'];
+  String categoryName = '';
+  if (categoryObj is Map<String, dynamic>) {
+    categoryName = categoryObj['name'] ?? '';
+  } else if (categoryObj is String) {
+    categoryName = categoryObj;
   }
+
+  return Recipe(
+    id: json['_id'],
+    title: json['title'] ?? '',
+    description: json['description'] ?? '',
+    ingredients: (json['ingredients'] as List<dynamic>?)
+            ?.map((e) => Ingredient.fromJson(e))
+            .toList() ??
+        [],
+    instructions: List<String>.from(json['instructions'] ?? []),
+    imageUrl: json['imageUrl'] ?? '',
+    videoUrl: json['videoUrl'],
+    category: categoryName, // <-- use name, not object
+    city: json['city'],
+    sources: List<String>.from(json['sources'] ?? []),
+    likes: List<String>.from(json['likes'] ?? []),
+    dislikes: List<String>.from(json['dislikes'] ?? []),
+    rating: (json['rating'] ?? 0).toDouble(),
+    minDay: json['minDay'] ?? 270,
+    maxDay: json['maxDay'] ?? 720,
+    isFavorite: json['isFavorite'],
+  );
+}
 
   Map<String, dynamic> toJson() => {
         '_id': id,
