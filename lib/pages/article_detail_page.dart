@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:share_plus/share_plus.dart';
+ 
+import '../widgets/app_top_bar.dart';
+
 import '../models/article.dart';
 import '../providers/article_provider.dart';
 import '../providers/user_provider.dart';
-import '../widgets/app_top_bar_text.dart';
+ 
 import '../widgets/app_row_likedislike.dart';
 import '../widgets/app_article_box.dart';
 import '../widgets/app_snak_bar.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
- import '../providers/user_provider.dart';
 import '../services/article_service.dart';
 
 class ArticleDetailPage extends StatefulWidget {
@@ -24,35 +25,36 @@ class ArticleDetailPage extends StatefulWidget {
 }
 
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
-  bool _isLiked = false;
-  bool _isDisliked = false;
-  bool _isLoading = true; // shimmer loading
-  bool _isSaving = false; // ✅ Add this
-  bool _isSaved = false; // ✅ Track favorite state
+  late Article _article;
+  bool _isLoading = true; // shimmer loading state
+
   @override
   void initState() {
     super.initState();
-  
-    // simulate network delay for shimmer effect
+    _article = widget.article;
+
+    // simulate loading delay for shimmer effect
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     });
   }
 
-  Future<void> _onVote(String type, String userId) async {
-    final provider = context.read<ArticleProvider>();
-    setState(() {
-      if (type == 'like') {
-        _isLiked = !_isLiked;
-        if (_isLiked) _isDisliked = false;
-      } else {
-        _isDisliked = !_isDisliked;
-        if (_isDisliked) _isLiked = false;
-      }
-    });
+  Future<void> _vote(String type, String userId) async {
     try {
-      await provider.voteArticle(widget.article, userId, type);
+      final updatedArticle = await ArticleService.voteArticle(
+        articleId: _article.id!,
+        userId: userId,
+        type: type,
+      );
       if (!mounted) return;
+
+      setState(() {
+        _article.likes = updatedArticle.likes;
+        _article.dislikes = updatedArticle.dislikes;
+      });
+
       final message = type == 'like'
           ? "Vous avez aimé cet article 👍"
           : "Vous n'avez pas aimé cet article 👎";
@@ -83,7 +85,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(height: 220, width: double.infinity, color: Colors.white),
           const SizedBox(height: 15),
@@ -103,209 +105,168 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     );
   }
 
-  Future<void> _toggleFavorite(UserProvider userProvider) async {
-    final articleId = widget.article.id;
-    if (articleId == null) return;
-
-    setState(() => _isSaving = true);
-
-    try {
-      debugPrint('🔹 Calling backend to toggle favorite article $articleId...');
-
-      // Call backend (no named parameter)
-      await ArticleService.toggleFavoriteArticle(articleId);
-
-      debugPrint('🔹 Backend call completed, updating provider...');
-
-      // Update provider
-      await userProvider.toggleFavoriteArticle(articleId);
-
-      // Update local UI state
-      final isSaved = userProvider.user?.articles.contains(articleId) ?? false;
-      setState(() {
-        _isSaved = isSaved;
-      });
-
-      if (!mounted) return;
-
-      AppSnackBar.show(
-        context,
-        message: isSaved
-            ? "L'article a été ajouté aux favoris ❤️"
-            : "L'article a été retiré des favoris 💔",
-      );
-
-      debugPrint(
-        '💾 Favorite articles after toggle: ${userProvider.user?.articles}',
-      );
-    } catch (e) {
-      debugPrint('❌ Failed to toggle favorite article: $e');
-      if (!mounted) return;
-
-      AppSnackBar.show(
-        context,
-        message: "Impossible de modifier les favoris.",
-        backgroundColor: Colors.redAccent,
-      );
-    } finally {
-      if (mounted) setState(() => _isSaving = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<ArticleProvider>();
-    final userProvider = context.watch<UserProvider>();
- 
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final articleProvider = context.watch<ArticleProvider>();
     final currentUserId = userProvider.user?.id;
 
-
-    final isSaved =
-        userProvider.user?.articles.contains(widget.article.id) ?? false;
-
-    final related = provider.articles
-        .where((a) => a.id != widget.article.id)
+    final related = articleProvider.articles
+        .where((a) => a.id != _article.id)
         .take(3)
         .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-                padding:EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-          child: Column(
-            children: [
-              AppTopBarText(
-                title: '',
-                showBack: true,
-                showShare: true,
-                showSave: true,
-                isSaved: isSaved,
-                onToggleSave: () => _toggleFavorite(userProvider),
-                onShare: () async {
-                  final shareText = StringBuffer()
-                    ..write("📖 Découvrez cet article : ")
-                    ..write(widget.article.title)
-                    ..write("\n\n")
-                    ..write(
-                      widget.article.description.isNotEmpty
-                          ? widget.article.description.first
-                          : '',
-                    )
-                    ..write("\n\n")
-                    ..write("Catégorie : ${widget.article.category}")
-                    ..write("\n\n")
-                    ..write("Lisez-le maintenant !");
+      body: SingleChildScrollView(
+        child: _isLoading
+            ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _buildShimmer(),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Top image + AppTopBar
+                  Stack(
+                    children: [
+                      if (_article.imageUrl.isNotEmpty)
+                        SizedBox(
+                          height: 290,
+                          width: double.infinity,
+                          child: Image.network(
+                            _article.imageUrl.first,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      else
+                        Container(
+                          height: 290,
+                          color: Colors.grey.shade300,
+                          alignment: Alignment.center,
+                          child: const Icon(
+                            Icons.image,
+                            size: 50,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        child: AppTopBar(
+                          showBack: true,
+                          showLogout: false,
+                          onBack: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                   await SharePlus.instance.share(
-    ShareParams(
-      text: shareText.toString(),
-      title: 'Partager cet article', // optional
-    ),
-  );
-                },
-                onBack: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(height: 15),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: _isLoading
-                      ? _buildShimmer()
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          _article.title,
+                          style: AppTextStyles.inter16SemiBold.copyWith(
+                            color: AppColors.premier,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Main image
-                            if (widget.article.imageUrl.isNotEmpty)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: Image.network(
-                                  widget.article.imageUrl.first,
-                                  width: double.infinity,
-                                  height: 220,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: double.infinity,
-                                    height: 220,
-                                    color: Colors.grey.shade200,
-                                  ),
-                                ),
-                              ),
-                            const SizedBox(height: 15),
                             Text(
-                              widget.article.title,
-                              style: AppTextStyles.inter16SemiBold.copyWith(
+                              '${_article.category} • ${formatTimeAgo(_article.createdAt)}',
+                              style: AppTextStyles.inter12Med.copyWith(
                                 color: AppColors.premier,
                               ),
                             ),
-                            const SizedBox(height: 15),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '${widget.article.category} • ${formatTimeAgo(widget.article.createdAt)}',
-                                  style: AppTextStyles.inter12Reg.copyWith(
-                                    color: AppColors.premier,
-                                  ),
-                                ),
-                                Text(
-                                  widget.article.sources != null &&
-                                          widget.article.sources!.isNotEmpty
-                                      ? widget.article.sources!.join(' • ')
-                                      : '',
-                                  style: AppTextStyles.inter12Reg.copyWith(
-                                    color: AppColors.premier,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 15),
-                            if (widget.article.description.isNotEmpty)
-                              Text(
-                                widget.article.description[0],
-                                style: AppTextStyles.inter12Med.copyWith(
-                                  color: AppColors.black,
-                                ),
+                            Text(
+                              _article.sources != null && _article.sources!.isNotEmpty
+                                  ? _article.sources!.join(' • ')
+                                  : '',
+                              style: AppTextStyles.inter12Med.copyWith(
+                                color: AppColors.premier,
                               ),
-                            const SizedBox(height: 15),
-                            for (
-                              int i = 1;
-                              i < widget.article.description.length &&
-                                  i < widget.article.imageUrl.length;
-                              i++
-                            ) ...[
-                              ClipRRect(
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        if (_article.description.isNotEmpty)
+                          Text(
+                            _article.description.first,
+                            style: AppTextStyles.inter12Med.copyWith(
+                              color: AppColors.black,
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+
+                        // Additional images
+                        if (_article.imageUrl.length > 1)
+                          ..._article.imageUrl.sublist(1).map(
+                            (img) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: ClipRRect(
                                 borderRadius: BorderRadius.circular(16),
-                                child: Image.network(
-                                  widget.article.imageUrl[i],
+                                child: SizedBox(
+                                  height: 200,
                                   width: double.infinity,
-                                  height: 220,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    width: double.infinity,
-                                    height: 220,
-                                    color: Colors.grey.shade200,
+                                  child: Image.network(
+                                    img,
+                                    fit: BoxFit.cover,
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 15),
-                              Text(
-                                widget.article.description[i],
-                                style: AppTextStyles.inter14Med.copyWith(
-                                  color: AppColors.black,
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                            ],
-                               if (currentUserId != null)
-                            AppRowLikeDislike(
-                              titletext: 'Cet article est-il utile ?',
-                              isLiked: _isLiked,
-                              isDisliked: _isDisliked,
-                              onLike: () => _onVote('like',currentUserId),
-                              onDislike: () => _onVote('dislike',currentUserId),
                             ),
-                            const SizedBox(height: 15),
-                            if (related.isNotEmpty) ...[
+                          )
+                        else
+                          Container(
+                            height: 200,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            alignment: Alignment.center,
+                            child: const Text(' '),
+                          ),
+                        const SizedBox(height: 10),
+
+                        if (_article.description.length > 1)
+                          Text(
+                            _article.description[1],
+                            style: AppTextStyles.inter12Med.copyWith(
+                              color: AppColors.black,
+                            ),
+                          ),
+                        const SizedBox(height: 10),
+
+                        // Like/Dislike row using model
+                        if (currentUserId != null)
+                          AppRowLikeDislike(
+                            titletext: 'Cet article est-il utile ?',
+                            isLiked: _article.isLikedBy(currentUserId),
+                            isDisliked: _article.isDislikedBy(currentUserId),
+                            onLike: () => _vote('like', currentUserId),
+                            onDislike: () => _vote('dislike', currentUserId),
+                          )
+                        else
+                          const Text(
+                            'Connectez-vous pour voter',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.black,
+                            ),
+                          ),
+
+                        const SizedBox(height: 20),
+
+                        // Related articles
+                        if (related.isNotEmpty)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
                                 'En rapport',
                                 style: AppTextStyles.inter16SemiBold.copyWith(
@@ -317,9 +278,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                 children: related
                                     .map(
                                       (a) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 12,
-                                        ),
+                                        padding: const EdgeInsets.only(bottom: 12),
                                         child: AppArticleBox(
                                           title: a.title,
                                           imageUrl: a.imageUrl.isNotEmpty
@@ -327,30 +286,26 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                               : '',
                                           category: a.category,
                                           timeAgo: formatTimeAgo(a.createdAt),
-                                          onTap: () =>
-                                              Navigator.pushReplacement(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      ArticleDetailPage(
-                                                        article: a,
-                                                      ),
-                                                ),
-                                              ),
+                                          onTap: () => Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => ArticleDetailPage(article: a),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     )
                                     .toList(),
                               ),
                             ],
-                            const SizedBox(height: 30),
-                          ],
-                        ),
-                ),
+                          ),
+
+                        const SizedBox(height: 30),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
       ),
     );
   }

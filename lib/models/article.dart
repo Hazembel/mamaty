@@ -4,11 +4,11 @@ class Article {
   List<String> description;
   List<String>? sources;
   List<String> imageUrl;
-  List<String> likes;
-  List<String> dislikes;
+  List<String> likes;     // user IDs
+  List<String> dislikes;  // user IDs
   String category;
   DateTime createdAt;
-  bool isFavorite; // <-- added
+  bool isFavorite;        // favorite flag
 
   Article({
     this.id,
@@ -20,14 +20,15 @@ class Article {
     List<String>? dislikes,
     required this.category,
     required this.createdAt,
-    this.isFavorite = false, // default false
+    this.isFavorite = false,
   })  : likes = likes ?? [],
         dislikes = dislikes ?? [];
 
   factory Article.fromJson(Map<String, dynamic> json) {
     final rawCreatedAt = json['createdAt'];
-    DateTime parsedCreatedAt =
-        rawCreatedAt != null ? DateTime.tryParse(rawCreatedAt)?.toLocal() ?? DateTime.now() : DateTime.now();
+    DateTime parsedCreatedAt = rawCreatedAt != null
+        ? DateTime.tryParse(rawCreatedAt)?.toLocal() ?? DateTime.now()
+        : DateTime.now();
 
     return Article(
       id: json['_id'],
@@ -39,7 +40,7 @@ class Article {
       dislikes: List<String>.from(json['dislikes'] ?? []),
       category: json['category'] ?? '',
       createdAt: parsedCreatedAt,
-      isFavorite: json['isFavorite'] ?? false, // <-- parse from API if exists
+      isFavorite: json['isFavorite'] ?? false,
     );
   }
 
@@ -53,6 +54,12 @@ class Article {
         'dislikes': dislikes,
         'category': category,
         'createdAt': createdAt.toIso8601String(),
-        'isFavorite': isFavorite, // <-- include in JSON
+        'isFavorite': isFavorite,
       };
+
+  // ✅ getters and helpers like Advice model
+  int get likeCount => likes.length;
+  int get dislikeCount => dislikes.length;
+  bool isLikedBy(String userId) => likes.contains(userId);
+  bool isDislikedBy(String userId) => dislikes.contains(userId);
 }
