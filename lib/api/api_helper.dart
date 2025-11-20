@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 //import 'package:flutter/foundation.dart';
 
 class ApiHelper {
-  static const String baseUrl = "https://mamaty-backend.onrender.com/api";
+  static const String baseUrl = "https://mamaty-backend.onrender.com/myapp";
 
   /// Read token from SharedPreferences
   static Future<String?> getToken() async {
