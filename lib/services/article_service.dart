@@ -99,4 +99,17 @@ static Future<List<Article>> getArticles({
       throw Exception('Failed to toggle favorite article');
     }
   }
+
+static Future<int> viewArticle(String articleId) async {
+  final response = await ApiHelper.post('/articles/$articleId/view', {});
+  
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    return data['viewsCount']; // returns total unique views
+  } else {
+    throw Exception('Failed to register view: ${response.statusCode}');
+  }
 }
+
+}
+

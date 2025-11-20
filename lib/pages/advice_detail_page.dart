@@ -24,20 +24,35 @@ class _AdviceDetailPageState extends State<AdviceDetailPage> {
   late Advice _advice;
   bool _isLoading = true; // shimmer loading state
 
-  @override
-  void initState() {
-    super.initState();
-    _advice = widget.advice;
+@override
+void initState() {
+  super.initState();
+  _advice = widget.advice;
 
-    // simulate loading delay for shimmer effect
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    });
+  // ✅ Register view for advice silently
+  _registerView();
+
+  // simulate loading delay for shimmer effect
+  Future.delayed(const Duration(seconds: 2), () {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  });
+}
+Future<void> _registerView() async {
+  try {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.id;
+    if (userId == null) return;
+
+    // Call backend endpoint to register advice view
+    await AdviceService.viewAdvice(_advice.id!);
+  } catch (e) {
+    debugPrint('Failed to register advice view: $e');
   }
+}
 
   Future<void> _vote(String type, String userId) async {
     try {

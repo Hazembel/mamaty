@@ -100,6 +100,16 @@ static Future<bool> toggleFavoriteRecipe({
     throw Exception('Failed to toggle favorite: ${response.statusCode}');
   }
 }
-
+  // ✅ Register a view
+  static Future<int> viewRecipe(String recipeId) async {
+    final response = await ApiHelper.post('/recipes/$recipeId/view', {});
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['viewsCount']; // total unique views
+    } else {
+      throw Exception('Failed to register recipe view: ${response.statusCode}');
+    }
+  }
 
 }

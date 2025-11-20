@@ -35,7 +35,8 @@ class _RecipeDetailPageState extends State<RecipeDetailPage> {
 void initState() {
   super.initState();
   _recipe = widget.recipe;
-
+  // ✅ Register view silently
+  _registerRecipeView();
   // Initialize isSaved based on user's favorites
   WidgetsBinding.instance.addPostFrameCallback((_) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -44,7 +45,19 @@ void initState() {
     });
   });
 }
+Future<void> _registerRecipeView() async {
+  try {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.id;
+    if (userId == null) return;
 
+    // Call backend endpoint to register view
+     await RecipeService.viewRecipe(_recipe.id!);
+   
+  } catch (e) {
+    debugPrint('Failed to register recipe view: $e');
+  }
+}
 Future<void> _toggleFavorite(UserProvider userProvider) async {
   final recipeId = widget.recipe.id;
   if (recipeId == null) return;

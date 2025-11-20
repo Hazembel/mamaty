@@ -81,4 +81,17 @@ class AdviceService {
       throw Exception('Failed to vote advice: ${response.statusCode}');
     }
   }
+
+  static Future<int> viewAdvice(String adviceId) async {
+    final response = await ApiHelper.post('/advices/$adviceId/view', {});
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['viewsCount'];
+    } else {
+      throw Exception('Failed to register view: ${response.statusCode}');
+    }
+  }
+
+
+
 }

@@ -28,18 +28,34 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
   late Article _article;
   bool _isLoading = true; // shimmer loading state
 
-  @override
-  void initState() {
-    super.initState();
-    _article = widget.article;
+@override
+void initState() {
+  super.initState();
+  _article = widget.article;
 
-    // simulate loading delay for shimmer effect
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    });
+  // ✅ Register view silently
+  _registerView();
+
+  Future.delayed(const Duration(seconds: 2), () {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  });
+}
+
+
+Future<void> _registerView() async {
+  try {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.id;
+    if (userId == null) return;
+
+    // Call backend endpoint to register view
+    await ArticleService.viewArticle(_article.id!);
+  } catch (e) {
+    debugPrint('Failed to register article view: $e');
   }
+}
 
   Future<void> _vote(String type, String userId) async {
     try {
