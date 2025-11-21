@@ -45,18 +45,52 @@ class FormControllers {
   }
 
   /// Phone: required + 8 digits
-   String? validatePhone(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Le numéro est requis';
-    }
-    if (value.length != 8) {
-      return 'Le numéro doit contenir 8 chiffres';
-    }
-    if (!RegExp(r'^\d+$').hasMatch(value)) {
-      return 'Le numéro ne doit contenir que des chiffres';
-    }
-    return null;
+String? validatePhone(String? value) {
+  if (value == null || value.trim().isEmpty) {
+    return 'Le numéro est requis';
   }
+
+  // Remove spaces, dashes, parentheses
+  String digits = value.replaceAll(RegExp(r'\D'), '');
+
+  // Check if starts with Tunisian country code
+  if (digits.startsWith('216')) {
+    digits = digits.substring(3); // remove country code
+  } else if (digits.startsWith('00216')) {
+    digits = digits.substring(5); // remove 00216
+  } else if (digits.startsWith('0') && digits.length == 9) {
+    digits = digits.substring(1); // remove leading 0
+  }
+
+  // Now the remaining should be 8 digits
+  if (digits.length != 8) {
+    return 'Le numéro doit contenir 8 chiffres';
+  }
+
+  if (!RegExp(r'^\d+$').hasMatch(digits)) {
+    return 'Le numéro ne doit contenir que des chiffres';
+  }
+
+  return null; // valid
+}
+
+/// Optional: Normalize to full international format
+String normalizeTunisianPhone(String value) {
+  String digits = value.replaceAll(RegExp(r'\D'), '');
+
+  if (digits.startsWith('216')) {
+    return '+$digits';
+  } else if (digits.startsWith('00216')) {
+    return '+${digits.substring(2)}';
+  } else if (digits.length == 8) {
+    return '+216$digits';
+  } else if (digits.startsWith('0') && digits.length == 9) {
+    return '+216${digits.substring(1)}';
+  }
+
+  throw FormatException('Numéro de téléphone invalide');
+}
+
 
   /// Email: required + valid + famous domains
    String? validateEmail(String? value) {
