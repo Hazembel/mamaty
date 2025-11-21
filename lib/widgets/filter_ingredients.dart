@@ -4,6 +4,7 @@ import '../theme/text_styles.dart';
 import '../widgets/app_button.dart';
 import '../widgets/filter_chip_box.dart';
 import '../widgets/app_search_bar.dart';
+import './ingredient_assets.dart';
 
 class IngredientFilterModalResult {
   final List<String> ingredients; // ✅ multiple ingredients
@@ -90,14 +91,8 @@ class _IngredientFilterModalState extends State<IngredientFilterModal> {
                     final isSelected = selectedIngredients.contains(ingredient);
 
                     // Optional: emoji mapping
-                    final emojiMap = {
-                      'Tomate': '🍅',
-                      'Fromage': '🧀',
-                      'Poulet': '🍗',
-                      'Carotte': '🥕',
-                      // add more as needed
-                    };
-                    final displayLabel = '${emojiMap[ingredient] ?? ''} $ingredient';
+                final emoji = IngredientAssets.emoji[ingredient] ?? '';
+final displayLabel = '$emoji $ingredient';
 
                     return FilterChipBox(
                       label: displayLabel,

@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
  
-import '../widgets/app_top_bar.dart';
-
 import '../models/article.dart';
 import '../providers/article_provider.dart';
 import '../providers/user_provider.dart';
- 
+ import 'package:share_plus/share_plus.dart';
 import '../widgets/app_row_likedislike.dart';
 import '../widgets/app_article_box.dart';
 import '../widgets/app_snak_bar.dart';
 import '../theme/colors.dart';
 import '../theme/text_styles.dart';
 import '../services/article_service.dart';
+//immport top bar
+import '../widgets/app_top_bar_text.dart';
 
 class ArticleDetailPage extends StatefulWidget {
   final Article article;
@@ -27,7 +27,8 @@ class ArticleDetailPage extends StatefulWidget {
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
   late Article _article;
   bool _isLoading = true; // shimmer loading state
-
+  bool _isSaving = false; // ✅ Add this
+  bool _isSaved = false; // ✅ Track favorite state
 @override
 void initState() {
   super.initState();
@@ -54,6 +55,52 @@ Future<void> _registerView() async {
     await ArticleService.viewArticle(_article.id!);
   } catch (e) {
     debugPrint('Failed to register article view: $e');
+  }
+}
+
+
+
+
+Future<void> _toggleFavorite(UserProvider userProvider) async {
+  final articleId = widget.article.id;
+  if (articleId == null) return;
+
+  // ✅ Optimistic update: toggle locally immediately
+  final previousState = _isSaved;
+  setState(() => _isSaved = !_isSaved);
+
+  try {
+    debugPrint('🔹 Calling backend to toggle favorite article $articleId...');
+
+    // Call backend asynchronously
+    await ArticleService.toggleFavoriteArticle(articleId);
+
+    // Update provider after backend succeeds
+    await userProvider.toggleFavoriteArticle(articleId);
+
+    if (!mounted) return;
+
+    AppSnackBar.show(
+      context,
+      message: _isSaved
+          ? "L'article a été ajouté aux favoris ❤️"
+          : "L'article a été retiré des favoris 💔",
+    );
+
+    debugPrint(
+      '💾 Favorite articles after toggle: ${userProvider.user?.articles}',
+    );
+  } catch (e) {
+    debugPrint('❌ Failed to toggle favorite article: $e');
+
+    // Rollback UI if backend fails
+    if (mounted) setState(() => _isSaved = previousState);
+
+    AppSnackBar.show(
+      context,
+      message: "Impossible de modifier les favoris.",
+      backgroundColor: Colors.redAccent,
+    );
   }
 }
 
@@ -136,7 +183,7 @@ Future<void> _registerView() async {
       body: SingleChildScrollView(
         child: _isLoading
             ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
                 child: _buildShimmer(),
               )
             : Column(
@@ -165,14 +212,39 @@ Future<void> _registerView() async {
                             color: Colors.grey,
                           ),
                         ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        child: AppTopBar(
-                          showBack: true,
-                          showLogout: false,
-                          onBack: () => Navigator.of(context).pop(),
-                        ),
-                      ),
+                     Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      child: AppTopBarText(
+        title: '',
+        showBack: true,
+        showShare: true,
+        showSave: true,
+        isSaved: _isSaved,
+        onBack: () => Navigator.of(context).pop(),
+        onShare: () async {
+          final shareText = StringBuffer()
+            ..write("📖 Découvrez cet article : ")
+            ..write(_article.title)
+            ..write("\n\n")
+            ..write(
+              _article.description.isNotEmpty
+                  ? _article.description.first
+                  : '',
+            )
+            ..write("\n\n")
+            ..write("Catégorie : ${_article.category}")
+            ..write("\n\n")
+            ..write("Lisez-le maintenant !");
+          await SharePlus.instance.share(
+            ShareParams(
+              text: shareText.toString(),
+              title: 'Partager cet article',
+            ),
+          );
+        },
+        onToggleSave: () => _toggleFavorite(userProvider),
+      ),
+    ),
                     ],
                   ),
 

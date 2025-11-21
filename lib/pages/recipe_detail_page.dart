@@ -62,43 +62,59 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
   final recipeId = widget.recipe.id;
   if (recipeId == null) return;
 
-  setState(() => _isSaving = true);
+  // 🔥 Optimistic update: instantly update UI
+  final wasSaved = userProvider.user?.recipes.contains(recipeId) ?? false;
+
+  setState(() {
+    if (wasSaved) {
+      userProvider.user?.recipes.remove(recipeId);
+    } else {
+      userProvider.user?.recipes.add(recipeId);
+    }
+    isSaved = !wasSaved; // update UI state immediately
+  });
 
   try {
-    // Call backend
+    // Backend call (async)
     await RecipeService.toggleFavoriteRecipe(recipeId: recipeId);
 
-    // Update provider
+    // Ensure provider is synced
     await userProvider.toggleFavoriteRecipe(recipeId);
-
-    // Update the heart icon
-    setState(() {
-      isSaved = userProvider.user?.recipes.contains(recipeId) ?? false;
-    });
 
     if (!mounted) return;
 
-    // Show success message
     AppSnackBar.show(
       context,
       message: isSaved
           ? "La recette a été ajoutée aux favoris ❤️"
           : "La recette a été retirée des favoris 💔",
     );
+
   } catch (e) {
     debugPrint('❌ Failed to toggle favorite: $e');
+
+    // Rollback UI because backend failed
+    if (mounted) {
+      setState(() {
+        if (wasSaved) {
+          userProvider.user?.recipes.add(recipeId);
+        } else {
+          userProvider.user?.recipes.remove(recipeId);
+        }
+        isSaved = wasSaved; // revert
+      });
+    }
+
     if (!mounted) return;
 
-    // Show error message
     AppSnackBar.show(
       context,
       message: 'Impossible de modifier les favoris.',
       backgroundColor: Colors.redAccent,
     );
-  } finally {
-    if (mounted) setState(() => _isSaving = false);
   }
 }
+
 
 
 

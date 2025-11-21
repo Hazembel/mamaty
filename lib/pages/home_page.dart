@@ -9,7 +9,7 @@ import '../widgets/app_advise_picker.dart';
 import '../widgets/app_doctor_row.dart';
 import '../widgets/app_recipe_row.dart';
 import '../widgets/app_article_column.dart';
- 
+
 import '../../providers/baby_provider.dart';
 import '../pages/baby_profile/baby_profile_flow_page.dart';
 import '../providers/article_provider.dart';
@@ -17,8 +17,7 @@ import '../providers/doctor_provider.dart';
 import '../../theme/dimensions.dart';
 import '../models/signup_data.dart';
 import 'edit_profile/edit_profile_flow_page.dart';
-
-
+import '../widgets/app_bottom_home.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -84,9 +83,9 @@ class _HomePageState extends State<HomePage> {
 
     await Future.wait([
       context.read<ArticleProvider>().loadArticles(
-            ageInDays: ageInDays,
-            babyId: babyId,
-          ),
+        ageInDays: ageInDays,
+        babyId: babyId,
+      ),
       context.read<DoctorProvider>().loadDoctors(),
     ]);
   }
@@ -129,84 +128,95 @@ class _HomePageState extends State<HomePage> {
     final advices = adviceProvider.advices;
 
     return Scaffold(
-      body: user == null
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _refreshHomePage,
-              child: SingleChildScrollView(
-                 padding: AppDimensions.padding50,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 🍼 Header (Baby Profile or shimmer)
-                    if (babyProfileData != null)
-                      HomeHeaderCard(
-                        baby: babyProfileData,
-                        userName: userName,
-                        userAvatar: userAvatar,
-                        onBabyTap: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (_) => BabyProfileFlowPage(
-                           
-                              ),
-                            ),
-                            (Route<dynamic> route) => false,
-                          );
-                        },
-                      onUserTap: () {
-  final signupData = SignupData()
-    ..avatar = user.avatar
-    ..gender = user.gender
-    ..birthday = user.birthday
-    ..name = user.name
-    ..lastname = user.lastname
-    ..phone = user.phone
-    ..email = user.email
-    ..password = ''; // optional, leave blank for editing
+      backgroundColor: Colors.white, // optional
+      body: Stack(
+        children: [
+          user == null
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _refreshHomePage,
+                  child: SingleChildScrollView(
+                    padding: AppDimensions.padding50,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // 🍼 Header
+                        if (babyProfileData != null)
+                          HomeHeaderCard(
+                            baby: babyProfileData,
+                            userName: userName,
+                            userAvatar: userAvatar,
+                            onBabyTap: () {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                  builder: (_) => BabyProfileFlowPage(),
+                                ),
+                                (route) => false,
+                              );
+                            },
+                            onUserTap: () {
+                              final signupData = SignupData()
+                                ..avatar = user.avatar
+                                ..gender = user.gender
+                                ..birthday = user.birthday
+                                ..name = user.name
+                                ..lastname = user.lastname
+                                ..phone = user.phone
+                                ..email = user.email
+                                ..password = '';
 
-  EditprofileFlowPage.start(context, signupData);
-},
+                              EditprofileFlowPage.start(context, signupData);
+                            },
+                          )
+                        else
+                          _buildHomeHeaderSkeleton(),
 
-                      )
-                    else
-                      _buildHomeHeaderSkeleton(),
+                        const SizedBox(height: 20),
 
-                    const SizedBox(height: 20),
-
-                    // 💡 Advices section
-                    _babyAgeInDays == null
-                        ? _buildAdvicesSkeleton()
-                        : adviceProvider.isLoading
+                        // 💡 Advices
+                        _babyAgeInDays == null
+                            ? _buildAdvicesSkeleton()
+                            : adviceProvider.isLoading
                             ? _buildAdvicesSkeleton()
                             : advices.isNotEmpty
-                                ? BabyDayPicker(
-                                    advices: advices,
-                                    babyAgeInDays: _babyAgeInDays!,
-                                  )
-                                : _buildAdvicesSkeleton(),
+                            ? BabyDayPicker(
+                                advices: advices,
+                                babyAgeInDays: _babyAgeInDays!,
+                              )
+                            : _buildAdvicesSkeleton(),
 
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                    // 🍲 Recipes Section (only if baby age 271–720 days)
-                    if (_babyAgeInDays != null &&
-                        _babyAgeInDays! >= 271 &&
-                        _babyAgeInDays! <= 720)
-                      RecipeRow(),
+                        // 🍲 Recipes
+                        if (_babyAgeInDays != null &&
+                            _babyAgeInDays! >= 271 &&
+                            _babyAgeInDays! <= 720)
+                          RecipeRow(),
 
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                    // 🩺 Doctors Section
-                    const DoctorRow(),
+                        // 🩺 Doctors
+                        const DoctorRow(),
 
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                    // 📰 Articles Section
-                    const ArticleRow(),
-                  ],
+                        // 📰 Articles
+                        const ArticleRow(),
+                        SizedBox(height: 100), // extra bottom padding for bar
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
+
+          // 🟢 Floating Bottom Bar
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 10,
+            child: HomeBottomBar(),
+          ),
+        ],
+      ),
     );
   }
 

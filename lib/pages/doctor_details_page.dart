@@ -43,33 +43,62 @@ Future<void> _contactDoctor(String phone) async {
 }
 
 
-  Future<void> _openLocation(String address) async {
-    final Uri mapUri = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(address)}',
-    );
-    if (await canLaunchUrl(mapUri)) {
-      await launchUrl(mapUri, mode: LaunchMode.externalApplication);
-    } else {
-      debugPrint('❌ Could not open maps for $address');
-    }
-  }
+Future<void> _openLocation(String address) async {
+  final encodedAddress = Uri.encodeComponent(address);
 
-Future<void> _toggleFavorite(UserProvider userProvider) async {
-  setState(() => _isSaving = true);
+  // Try to open the Google Maps app (Android)
+  final Uri googleMapsAppUri = Uri.parse("geo:0,0?q=$encodedAddress");
+
+  // Try the universal Google Maps website (fallback)
+  final Uri googleMapsWebUri = Uri.parse(
+    "https://www.google.com/maps/search/?api=1&query=$encodedAddress",
+  );
 
   try {
-    // Call backend
-    await DoctorService.toggleFavoriteDoctor(widget.doctor.id);
+    // If the Google Maps app is available
+    if (await canLaunchUrl(googleMapsAppUri)) {
+      await launchUrl(googleMapsAppUri, mode: LaunchMode.externalApplication);
+      return;
+    }
 
-    // Update provider
-    await userProvider.toggleFavoriteDoctor(widget.doctor.id);
+    // Otherwise open Google Maps on the browser
+    if (await canLaunchUrl(googleMapsWebUri)) {
+      await launchUrl(googleMapsWebUri, mode: LaunchMode.externalApplication);
+      return;
+    }
 
-    // Check if doctor is now a favorite
-    final isFavorite = userProvider.user?.doctors.contains(widget.doctor.id) ?? false;
+    debugPrint("❌ No app or browser available to open maps.");
+  } catch (e) {
+    debugPrint("❌ Error opening maps: $e");
+  }
+}
+
+
+Future<void> _toggleFavorite(UserProvider userProvider) async {
+  final doctorId = widget.doctor.id;
+  if (doctorId == null) return;
+
+  // ✅ Optimistic update: toggle locally immediately
+  final wasFavorite = userProvider.user?.doctors.contains(doctorId) ?? false;
+  setState(() {
+    if (wasFavorite) {
+      userProvider.user?.doctors.remove(doctorId);
+    } else {
+      userProvider.user?.doctors.add(doctorId);
+    }
+  });
+
+  try {
+    // Call backend asynchronously
+    await DoctorService.toggleFavoriteDoctor(doctorId);
+
+    // Update provider to ensure consistency
+    await userProvider.toggleFavoriteDoctor(doctorId);
 
     if (!mounted) return;
 
     // Show success message
+    final isFavorite = userProvider.user?.doctors.contains(doctorId) ?? false;
     AppSnackBar.show(
       context,
       message: isFavorite
@@ -79,6 +108,17 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
   } catch (e) {
     debugPrint('❌ Failed to toggle favorite: $e');
 
+    // Rollback UI if backend fails
+    if (mounted) {
+      setState(() {
+        if (wasFavorite) {
+          userProvider.user?.doctors.add(doctorId);
+        } else {
+          userProvider.user?.doctors.remove(doctorId);
+        }
+      });
+    }
+
     if (!mounted) return;
 
     // Show error message
@@ -87,10 +127,9 @@ Future<void> _toggleFavorite(UserProvider userProvider) async {
       message: "Impossible de modifier les favoris.",
       backgroundColor: Colors.redAccent,
     );
-  } finally {
-    if (mounted) setState(() => _isSaving = false);
   }
 }
+
 
 
 

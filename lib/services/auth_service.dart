@@ -4,7 +4,7 @@ import '../models/user.dart';
 import '../api/api_helper.dart';
 import 'package:flutter/material.dart';
 import '../services/messaging_service.dart'; 
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 class AuthService {
 
   //********* LOGIN *********//
@@ -27,6 +27,7 @@ Future<User?> login({required String phone, required String password}) async {
       debugPrint('✅ Logged in: ${user.name}');
 
       // --- NEW: Send FCM token to backend after login ---
+     if (!kIsWeb) { 
       try {
         String? fcmToken = await MessagingService.getToken(); // get current FCM token
         if (fcmToken != null) {
@@ -36,7 +37,7 @@ Future<User?> login({required String phone, required String password}) async {
       } catch (e) {
         debugPrint('❌ Failed to send FCM token after login: $e');
       }
-
+      }
       return user;
     } else {
       debugPrint('❌ Login failed: ${response.body}');

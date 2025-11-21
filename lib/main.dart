@@ -13,10 +13,12 @@ import 'providers/baby_provider.dart';
 import 'providers/doctor_provider.dart';
 import 'providers/recipe_provider.dart';
 import 'providers/article_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+ if (!kIsWeb) {
  try {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -26,7 +28,7 @@ void main() async {
   debugPrint('❌ Firebase init error: $e');
   debugPrint('$st');
 } 
-
+ }
   runApp(
     MultiProvider(
       providers: [
