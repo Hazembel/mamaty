@@ -3,37 +3,51 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../api/api_helper.dart';
 import 'package:flutter/material.dart';
+import '../services/messaging_service.dart'; 
 
 class AuthService {
 
   //********* LOGIN *********//
-  Future<User?> login({required String phone, required String password}) async {
-    try {
-      final response = await ApiHelper.post('/users/login', {
-        'phone': phone,
-        'password': password,
-      });
+Future<User?> login({required String phone, required String password}) async {
+  try {
+    final response = await ApiHelper.post('/users/login', {
+      'phone': phone,
+      'password': password,
+    });
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final user = User.fromJson(data['user']);
-        final token = user.token; // token from backend
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final user = User.fromJson(data['user']);
+      final token = user.token; // token from backend
 
-        // Save token + user locally using SharedPreferences
-        await saveToken(token ?? '');
-        await saveUser(user);
+      // Save token + user locally
+      await saveToken(token ?? '');
+      await saveUser(user);
 
-        debugPrint('✅ Logged in: ${user.name}');
-        return user;
-      } else {
-        debugPrint('❌ Login failed: ${response.body}');
-        return null;
+      debugPrint('✅ Logged in: ${user.name}');
+
+      // --- NEW: Send FCM token to backend after login ---
+      try {
+        String? fcmToken = await MessagingService.getToken(); // get current FCM token
+        if (fcmToken != null) {
+          await MessagingService.sendTokenToBackend(fcmToken);
+          debugPrint('✅ FCM token sent after login: $fcmToken');
+        }
+      } catch (e) {
+        debugPrint('❌ Failed to send FCM token after login: $e');
       }
-    } catch (e) {
-      debugPrint('❌ Login exception: $e');
+
+      return user;
+    } else {
+      debugPrint('❌ Login failed: ${response.body}');
       return null;
     }
+  } catch (e) {
+    debugPrint('❌ Login exception: $e');
+    return null;
   }
+}
+
 
   //********* LOGOUT *********//
   Future<void> logout() async {

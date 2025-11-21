@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "222922418762",
+    "project_id": "mamty-efb09",
+    "storage_bucket": "mamty-efb09.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:222922418762:android:15395abfd57bf0ac8814b3",
+        "android_client_info": {
+          "package_name": "com.example.mamaty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAr5rPqwqc_c7geFRFziyR-PYsINFmKf-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
